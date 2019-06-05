@@ -1,0 +1,243 @@
+/* Copyright (c) 2019 Brian Thomas Murphy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+#include <string.h>
+
+#include "common.h"
+#include "debug_ser.h"
+#include "fast_log.h"
+#include "hal_can.h"
+#include "hal_int.h"
+#include "io.h"
+#include "shell.h"
+#include "stm32_hal.h"
+#include "stm32_regs.h"
+#include "xassert.h"
+#if BMOS
+#include "bmos_op_msg.h"
+#include "bmos_msg_queue.h"
+#endif
+#include "shell.h"
+
+#define CAN_SJW 1
+/* for an 80MHz input clock these result in 1Mbit */
+/* TS2 + 1 + TS1 + 1 + 1 is a can bit time */
+#define CAN_TS2 (4 - 1)
+#define CAN_TS1 (3 - 1)
+/* input clock divider */
+#define CAN_BRP (10 - 1)
+
+#define CAN_MCR_INRQ BIT(0)
+#define CAN_MCR_SLEEP BIT(1)
+#define CAN_MCR_TXFP BIT(2)
+#define CAN_MCR_RFLM BIT(3)
+#define CAN_MCR_DBF BIT(16)
+
+#define CAN_IER_TMEIE BIT(0)
+#define CAN_IER_FMPIE0 BIT(1)
+#define CAN_IER_FFIE0 BIT(2)
+#define CAN_IER_FOVIE0 BIT(3)
+
+#define CAN_TSR_TME0 BIT(26)
+#define CAN_TSR_RQCP0 BIT(0)
+
+#define CAN_RFR_FOVR BIT(4)
+#define CAN_RFR_RFOM BIT(5)
+
+static int can_send(volatile stm32_can_t *can, can_t *pkt)
+{
+  unsigned int val[2];
+
+  if (can->t[0].i & 1)
+    return -1;
+
+  memcpy(val, pkt->data, pkt->len);
+
+  can->t[0].d[0] = val[0];
+  can->t[0].d[1] = val[1];
+
+  can->t[0].dt = pkt->len;
+  can->t[0].i = ((pkt->id & 0x3ff) << 21) | 1;
+
+  return 0;
+}
+
+static void _can_filter_add(volatile stm32_can_t *can,
+                            unsigned int index, unsigned int id)
+{
+  can->fs1r |= BIT(index);
+  can->fa1r |= BIT(index);
+  can->f[index].id = id << 21;
+  can->f[index].mask = 0x7ffUL << 21;
+}
+
+static void can_init(volatile stm32_can_t *can, unsigned int *id,
+                     unsigned int id_len)
+{
+  unsigned int i;
+
+  can->mcr &= ~(CAN_MCR_SLEEP | CAN_MCR_DBF);
+
+  can->mcr |= CAN_MCR_INRQ;
+
+  while ((can->msr & CAN_MCR_INRQ) == 0)
+    ;
+
+
+  can->btr = (CAN_SJW << 24) | (CAN_TS2 << 20) | (CAN_TS1 << 16) | (CAN_BRP);
+
+  can->fmr = 1;
+  can->fm1r = 0;
+  can->fs1r = 0;
+  can->ffa1r = 0; /* FIFO 0 */
+
+  for (i = 0; i < id_len; i++)
+    _can_filter_add(can, i, id[i]);
+
+  can->fmr = 0;
+
+  can->mcr |= CAN_MCR_RFLM | CAN_MCR_TXFP;
+  can->mcr &= ~CAN_MCR_INRQ;
+
+  can->ier = (CAN_IER_FMPIE0 | CAN_IER_FFIE0 | CAN_IER_FOVIE0 | CAN_IER_TMEIE);
+#if 0
+  can->tsr = 0xffffffff;
+#endif
+}
+
+#if BMOS
+static void _tx(candev_t *c)
+{
+  volatile stm32_can_t *can = c->base;
+  bmos_op_msg_t *m;
+  unsigned int len;
+
+  if (!(can->tsr & CAN_TSR_TME0)) {
+    can->ier |= CAN_IER_TMEIE;
+    return;
+  }
+
+  m = op_msg_get(c->txq);
+  if (!m) {
+    can->ier &= ~CAN_IER_TMEIE;
+    return;
+  }
+
+  len = m->len;
+  if (len == sizeof(can_t)) {
+    can_t *pkt = (can_t *)BMOS_OP_MSG_GET_DATA(m);
+
+    can_send(can, pkt);
+  }
+
+  op_msg_return(m);
+}
+
+void can_isr(void *arg)
+{
+  candev_t *c = arg;
+  volatile stm32_can_t *can = c->base;
+  bmos_op_msg_t *m;
+  can_t *cdata;
+  int count;
+  unsigned int rfr = can->rfr[0];
+
+  if (rfr & CAN_RFR_FOVR) {
+    /* ack overflow interrupt */
+    can->rfr[0] = CAN_RFR_FOVR;
+    c->stats.hw_overrun++;
+  }
+
+  count = rfr & 0x3;
+  if (count) {
+    unsigned char *d = (unsigned char *)&can->r[0].d[0];
+
+    m = op_msg_get(c->pool);
+    if (m) {
+      cdata = BMOS_OP_MSG_GET_DATA(m);
+
+      cdata->id = (can->r[0].i >> 21) & 0x7ff;
+      cdata->len = can->r[0].dt & 0xf;
+      for (int i = 0; i < cdata->len; i++)
+        cdata->data[i] = d[i];
+
+      op_msg_put(c->rxq, m, c->op, sizeof(can_t));
+    } else
+      c->stats.overrun++;
+
+    can->rfr[0] = CAN_RFR_RFOM;
+  }
+
+  return;
+}
+
+void can_tx_isr(void *arg)
+{
+  candev_t *c = arg;
+
+  _tx(c);
+
+  return;
+}
+
+
+static void _put(void *p)
+{
+  unsigned int saved;
+  candev_t *c = p;
+
+  saved = interrupt_disable();
+
+  _tx(c);
+
+  interrupt_enable(saved);
+}
+
+
+bmos_queue_t *can_open(candev_t *c, unsigned int *id, unsigned int id_len,
+                       bmos_queue_t *rxq, unsigned int op)
+{
+  volatile stm32_can_t *candev = c->base;
+  const char *pool_name = "cpool", *tx_queue_name = "ctx";
+
+  if (c->pool_name)
+    pool_name = c->pool_name;
+  c->pool = op_msg_pool_create(pool_name, QUEUE_TYPE_DRIVER, 4, sizeof(can_t));
+  XASSERT(c->pool);
+
+  if (c->tx_queue_name)
+    tx_queue_name = c->tx_queue_name;
+  c->txq = queue_create(tx_queue_name, QUEUE_TYPE_DRIVER);
+  XASSERT(c->txq);
+
+  (void)queue_set_put_f(c->txq, _put, (void *)c);
+
+  c->rxq = rxq;
+  c->op = (unsigned short)op;
+
+  can_init(candev, id, id_len);
+
+  irq_register(c->name, can_tx_isr, c, c->tx_irq);
+  irq_register(c->name, can_isr, c, c->irq);
+
+  return c->txq;
+}
+#endif

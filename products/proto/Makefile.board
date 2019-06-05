@@ -1,0 +1,299 @@
+# Copyright (c) 2019 Brian Thomas Murphy
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+# IN THE SOFTWARE.
+
+TOOLCHAIN_ROOT = /usr/local/compilers/arm/gcc-arm-none-eabi-8-2018-q4-major/bin
+#TOOLCHAIN_ROOT = /usr/local/compilers/arm/v1/bin
+
+CONFIG_NEWLIB ?= n
+
+XCC = $(TOOLCHAIN_ROOT)/arm-none-eabi-gcc
+XOBJCOPY = $(TOOLCHAIN_ROOT)/arm-none-eabi-objcopy
+
+BUILD_DIR ?= build
+
+OBJDIR = $(BUILD_DIR)/obj-$(PROG)
+
+all: $(BUILD_DIR)/$(PROG).bin
+
+clean:
+	rm -fr $(BUILD_DIR)
+
+XCFLAGS.h7xx += -DSTM32_H7XX
+XCFLAGS.h7xx += -mcpu=cortex-m7
+STACK_END.h7xx = 0x20020000
+XCFLAGS.h7xx += -DCONFIG_LWIP -DLWIP_DEBUG
+
+XCFLAGS.l4r += -DSTM32_L4R
+XCFLAGS.l4r += -mcpu=cortex-m4
+STACK_END.l4r = 0x200A0000
+
+XCFLAGS.f429 += -DSTM32_F429 -DSTM32_LCD
+XCFLAGS.f429 += -mcpu=cortex-m4
+STACK_END.f429 = 0x20030000
+
+XCFLAGS.f746 += -DSTM32_F746 -DSTM32_LCD
+XCFLAGS.f746 += -mcpu=cortex-m7
+STACK_END.f746 = 0x20050000
+XCFLAGS.f746 += -DCONFIG_LWIP -DLWIP_DEBUG
+
+XCFLAGS.f767 += -DSTM32_F767
+XCFLAGS.f767 += -mcpu=cortex-m7
+STACK_END.f767 = 0x20080000
+XCFLAGS.f767 += -DCONFIG_LWIP -DLWIP_DEBUG
+
+XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
+XCFLAGS.l432 += -mcpu=cortex-m4
+STACK_END.l432 = 0x20010000
+
+XCFLAGS.l452 += -DSTM32_L452 -DSTM32_L4XX
+XCFLAGS.l452 += -mcpu=cortex-m4
+STACK_END.l452 = 0x20028000
+
+XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
+XCFLAGS.l496 += -mcpu=cortex-m4
+STACK_END.l496 = 0x20040000
+
+XCFLAGS += $(XCFLAGS.$(PROG))
+STACK_END = $(STACK_END.$(PROG))
+
+XCFLAGS += -DARCH_STM32
+XCFLAGS += -mthumb
+XCFLAGS += -Wall -Werror
+#XCFLAGS += -Os
+XCFLAGS += -O2
+XCFLAGS += -mno-unaligned-access
+XCFLAGS += -ffunction-sections
+# generate dependency information
+XCFLAGS += -MD
+XCFLAGS += -DAPPL
+XCFLAGS += -DBMOS
+
+ifeq ($(CONFIG_NEWLIB), y)
+XCFLAGS += -DCONFIG_NEWLIB
+XCFLAGS += -DPRIVATE_SBRK
+endif
+
+ifeq ($(CONFIG_NEWLIB), y)
+XLDFLAGS += -lc -lnosys
+XLDFLAGS += -specs=nano.specs
+else
+XLDFLAGS += -nostdlib
+endif
+ifeq ($(PROG), h7xx)
+XLDFLAGS += -T appl-h7xx.ld
+else
+XLDFLAGS += -T appl.ld
+endif
+XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
+XLDFLAGS += -Wl,--gc-sections
+XLDFLAGS += $(XCFLAGS)
+
+MODULES += std
+MODULES += appl/shell
+MODULES += appl/prod/proto
+MODULES += appl/xslog
+MODULES += hal/core
+MODULES += hal/cpu/arm
+MODULES += hal/stm32/core
+MODULES += os/bmos
+MODULES += appl/xmodem
+MODULES += hal/misc
+
+MODULES += prot/net/lwip/core
+MODULES += prot/net/lwip/core_ipv4
+MODULES += prot/net/lwip/netif
+MODULES += prot/net/lwip/httpd
+
+MODULES += prot/net/lwip/apps/test
+
+ifneq ($(CONFIG_NEWLIB), y)
+MODULES += lib/libc_min
+endif
+
+XCFLAGS += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
+
+VPATH += $(addsuffix /src, $(addprefix $(ROOT)/modules/, $(MODULES)))
+
+FILES += main.o
+FILES += start.o
+FILES += stm32_hal_gpio.o
+FILES += stm32_can.o
+FILES += shell.o
+FILES += cortexm.o
+FILES += xtime.o
+FILES += hal_common.o
+FILES += hal_gpio.o
+FILES += hal_int.o
+FILES += io.o
+FILES += mem.o
+FILES += misc.o
+FILES += fast_log.o
+FILES += stm32_hal.o
+FILES += stm32_timer.o
+FILES += xslog.o
+
+# BMOS
+FILES += reg.o
+FILES += task.o
+FILES += queue.o
+FILES += op_msg.o
+
+ifneq ($(CONFIG_NEWLIB), y)
+FILES += libc.o
+FILES += malloc.o
+endif
+
+FILES.h7xx += stm32_usart_b.o
+FILES.h7xx += stm32_rcc_c.o
+FILES.h7xx += stm32_board_h7xx.o
+FILES.h7xx += stm32_hal_rtc.o
+FILES.h7xx += stm32_flash_h7xx.o
+FILES.h7xx += stm32_wdog.o
+FILES.h7xx += stm32_exti_h7xx.o
+FILES.h7xx += stm32_pwr_h7xx.o
+FILES.h7xx += stm32_eth_h7xx.o
+FILES.h7xx += stm32_hal_bdma.o
+FILES.h7xx += stm32_hal_i2c.o
+FILES.h7xx += hd44780.o
+
+FILES.fxxx += stm32_pwr_fxxx.o
+FILES.fxxx += stm32_exti_fxxx.o
+
+FILES.f429 += stm32_usart_a.o
+FILES.f429 += stm32_rcc_a.o
+FILES.f429 += stm32_board_f429.o
+FILES.f429 += stm32_hal_spi.o
+FILES.f429 += $(FILES.fxxx)
+
+FILES.f746 += stm32_usart_b.o
+FILES.f746 += stm32_rcc_a.o
+FILES.f746 += stm32_hal_rtc.o
+FILES.f746 += stm32_board_f746.o
+FILES.f746 += stm32_eth.o
+FILES.f746 += $(FILES.fxxx)
+
+FILES.f767 += stm32_usart_b.o
+FILES.f767 += stm32_rcc_a.o
+FILES.f767 += stm32_hal_rtc.o
+FILES.f767 += stm32_eth.o
+FILES.f767 += stm32_board_f767.o
+FILES.f767 += $(FILES.fxxx)
+
+
+#core
+FILES.lwip += altcp_alloc.o
+FILES.lwip += altcp.o
+FILES.lwip += altcp_tcp.o
+FILES.lwip += def.o
+FILES.lwip += dns.o
+FILES.lwip += inet_chksum.o
+FILES.lwip += init.o
+FILES.lwip += ip.o
+FILES.lwip += mem.o
+FILES.lwip += memp.o
+FILES.lwip += netif.o
+FILES.lwip += pbuf.o
+FILES.lwip += raw.o
+FILES.lwip += stats.o
+FILES.lwip += sys.o
+FILES.lwip += tcp.o
+FILES.lwip += tcp_in.o
+FILES.lwip += tcp_out.o
+FILES.lwip += timeouts.o
+FILES.lwip += udp.o
+
+#core ipv4
+FILES.lwip += autoip.o
+FILES.lwip += dhcp.o
+FILES.lwip += etharp.o
+FILES.lwip += icmp.o
+FILES.lwip += igmp.o
+FILES.lwip += ip4_addr.o
+FILES.lwip += ip4.o
+FILES.lwip += ip4_frag.o
+
+FILES.lwip += ethernet.o
+
+FILES.lwip += integ.o
+
+FILES.lwip += fs.o httpd.o
+
+FILES.lwip += lwip_test.o
+
+FILES.h7xx += $(FILES.lwip)
+FILES.f767 += $(FILES.lwip)
+FILES.f746 += $(FILES.lwip)
+
+FILES.l4xx += stm32_usart_b.o
+FILES.l4xx += stm32_rcc_b.o
+FILES.l4xx += stm32_board_l432.o
+FILES.l4xx += stm32_flash.o
+FILES.l4xx += crc_ccitt16.o
+FILES.l4xx += xmodem.o
+FILES.l4xx += stm32_wdog.o
+FILES.l4xx += stm32_pwr_lxxx.o
+FILES.l4xx += stm32_exti_lxxx.o
+
+FILES.l432 += stm32_hal_rtc.o
+FILES.l432 += stm32_hal_spi.o
+
+FILES.l452 += stm32_hal_rtc.o
+
+FILES.l496 += stm32_hal_bdma.o
+FILES.l496 += stm32_hal_spi.o
+FILES.l496 += stm32_hal_adc.o
+
+FILES.l432 += $(FILES.l4xx)
+FILES.l452 += $(FILES.l4xx)
+FILES.l496 += $(FILES.l4xx)
+
+#FILES.l496 += ds1302.o
+#FILES.l496 += ds1302_test.o
+FILES.l496 += stm32_hal_rtc.o
+
+FILES.l4r += stm32_usart_b.o
+FILES.l4r += stm32_rcc_b.o
+FILES.l4r += stm32_board_l4r.o
+FILES.l4r += stm32_wdog.o
+
+FILES += $(FILES.$(PROG))
+
+DEPFILES = $(addprefix $(OBJDIR)/,$(patsubst %.o,%.d,$(FILES)))
+
+# include dependency information
+-include $(DEPFILES)
+
+$(BUILD_DIR) $(OBJDIR):
+	mkdir -p $@
+
+OFILES = $(addprefix $(OBJDIR)/,$(FILES))
+$(OFILES): | $(OBJDIR)
+
+$(BUILD_DIR)/$(PROG).elf: $(OFILES) |$(BUILD_DIR)
+	 $(XCC) -o $@ $^ $(XLDFLAGS)
+
+$(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
+	 $(XOBJCOPY) -O binary -R .eth $^ $@
+
+$(OBJDIR)/%.o: %.S
+	 $(XCC) -c $(XCFLAGS) -o $@ $<
+
+$(OBJDIR)/%.o: %.c
+	 $(XCC) -c $(XCFLAGS) -D__S_FILE__=\"$(notdir $<)\" -o $@ $<

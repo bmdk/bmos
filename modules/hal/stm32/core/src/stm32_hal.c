@@ -1,0 +1,110 @@
+/* Copyright (c) 2019 Brian Thomas Murphy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
+#include "common.h"
+#include "hal_gpio.h"
+#include "stm32_hal.h"
+#include "stm32_hal_gpio.h"
+#include "stm32_leds.h"
+#include "shell.h"
+#include "io.h"
+
+static const gpio_handle_t led[] = {
+  STM32_LEDS
+};
+
+void led_set(unsigned int n, unsigned int v)
+{
+  if (n >= ARRSIZ(led))
+    return;
+
+  gpio_set(led[n], v);
+}
+
+void led_init(void)
+{
+  unsigned int i;
+
+  for (i = 0; i < ARRSIZ(led); i++)
+    gpio_init(led[i], GPIO_OUTPUT);
+}
+
+void delay(unsigned int count)
+{
+  unsigned int i;
+
+  for (i = 0; i < count; i++)
+    asm volatile ("nop");
+}
+
+#if STM32_H7XX
+#define DBGMCU_IDCODE 0x5C001000
+#else
+#define DBGMCU_IDCODE 0xE0042000
+#endif
+#define DBGMCU_IDCODE_ID(val) ((val) & 0xfff)
+#define DBGMCU_IDCODE_REV(val) ((val) >> 16 & 0xffff)
+
+int cmd_devid(int argc, char *argv[])
+{
+  unsigned int val = *(unsigned int *)DBGMCU_IDCODE;
+  unsigned int id = DBGMCU_IDCODE_ID(val);
+  const char *idstr;
+
+  switch (id) {
+  case 0x413:
+    idstr = "F405/407/415/417";
+    break;
+  case 0x415:
+    idstr = "L475/476/486";
+    break;
+  case 0x419:
+    idstr = "F42x/43x";
+    break;
+  case 0x435:
+    idstr = "L43x/44x";
+    break;
+  case 0x450:
+    idstr = "H743/753/750";
+    break;
+  case 0x451:
+    idstr = "F76x/77x";
+    break;
+  case 0x462:
+    idstr = "L45x/46x";
+    break;
+  case 0x464:
+    idstr = "L41x/42x";
+    break;
+  case 0x461:
+    idstr = "L496/4A6";
+    break;
+  default:
+    idstr = "Unknown";
+    break;
+  }
+
+  xprintf("Chip: %s (%03x) Rev: %04x\n", idstr, id, DBGMCU_IDCODE_REV(val));
+
+  return 0;
+}
+
+SHELL_CMD(devid, cmd_devid);

@@ -1,0 +1,19 @@
+#!/bin/sh
+
+UNCR_BIN=/usr/local/bin/uncrustify
+VER=Uncrustify_d-0.71.0
+
+UNCR_VER=`$UNCR_BIN -v`
+
+if [ "x$UNCR_VER" != "x$VER" ]; then
+  echo "Invalid uncrustify version $UNCR_VER, needed $VER"
+  exit 1
+fi
+
+UNCR="$UNCR_BIN --replace --no-backup -c tools/bmos.uncrustify"
+
+if [ "x$1" != "x" ]; then
+  $UNCR $@
+else
+  find . -regex ".*\.[ch]" -a ! -path "*/modules/prot/net/lwip/*" -a ! -path "*/modules/lib/libc_min/src/dlmalloc.c" | xargs -i $UNCR {}
+fi
