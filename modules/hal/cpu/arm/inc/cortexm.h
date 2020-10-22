@@ -58,9 +58,9 @@ typedef struct {
   unsigned int pad1[24];
   unsigned int ispr[8];
   unsigned int pad2[24];
-  unsigned int icpr[8];;
+  unsigned int icpr[8];
   unsigned int pad3[24];
-  unsigned int iabr[8];;
+  unsigned int iabr[8];
   unsigned int pad4[56];
   unsigned int ip[240];
   unsigned int pad5[644];
