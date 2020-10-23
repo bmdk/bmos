@@ -46,31 +46,40 @@ void pin_init()
   enable_ahb2(0); /* GPIOA */
   enable_ahb2(1); /* GPIOB */
   enable_ahb2(2); /* GPIOC */
+  enable_ahb2(3); /* GPIOD */
+  enable_ahb2(4); /* GPIOE */
+  enable_ahb2(6); /* GPIOG */
 
-  /* USART1 */
-  enable_apb2(14);
-  gpio_init_attr(GPIO(0, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 10),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
+  gpio_init_attr(GPIO(2, 13),
+                 GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
 
   /* USART2 */
   enable_apb1(17);
-  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 15), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
-                                 GPIO_SPEED_HIG, 3, GPIO_ALT));
+  gpio_init_attr(GPIO(3, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
+  gpio_init_attr(GPIO(3, 6),
+                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
+                                 GPIO_ALT));
+
+  /* LPUART1 */
+  enable_apb1(32);
+  gpio_init_attr(GPIO(6, 7), GPIO_ATTR_STM32(0,
+        GPIO_SPEED_LOW, 8, GPIO_ALT));
+  gpio_init_attr(GPIO(6, 8), GPIO_ATTR_STM32(0,
+        GPIO_SPEED_LOW, 8, GPIO_ALT));
+
+  /* TIM1_CH4 */
+  gpio_init_attr(GPIO(4, 14), GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 1, GPIO_ALT));
 
   /* SPI1 */
   enable_apb2(12);
 
-  gpio_init_attr(GPIO(0, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
+  gpio_init_attr(GPIO(4, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
+  gpio_init_attr(GPIO(4, 15), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
 #if 0
-  gpio_init_attr(GPIO(0, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
+  gpio_init_attr(GPIO(4, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
 #else
-  gpio_init(GPIO(0, 4), GPIO_OUTPUT);
+  gpio_init(GPIO(4, 12), GPIO_OUTPUT);
 #endif
-  gpio_init(GPIO(0, 6), GPIO_OUTPUT);
 
   /* SYSCFG */
   enable_apb2(0);
@@ -83,6 +92,23 @@ void pin_init()
 
   /* TIM 2 */
   enable_apb1(0);
+
+  /* DMA 1 */
+  enable_ahb1(0);
+  /* DMA 2 */
+  enable_ahb1(1);
+  /* ADC */
+  enable_ahb2(13);
+
+  stm32_exti_irq_set_edge_rising(13, 1);
+  stm32_exti_irq_enable(13, 1);
+  stm32_exti_ev_enable(13, 1);
+  stm32_syscfg_set_exti(2, 13);
+
+#if 1
+  PWR->scr = 0xffffffff;
+  PWR->cr[2] = 1 << 1;
+#endif
 }
 
 #define USART1_BASE (void *)0x40013800
@@ -102,7 +128,10 @@ void pin_init()
 #endif
 
 #if BMOS
-uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 38 };
+uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
+#if 0
+uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37 };
+#endif
 #endif
 
 void hal_board_init()
@@ -115,5 +144,5 @@ void hal_board_init()
   clock_init_ls();
   led_init();
 
-  debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
+  debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
 }

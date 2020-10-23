@@ -163,17 +163,19 @@ FILES.f767 += $(FILES.fxxx)
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
 FILES.l4xx += stm32_hal_rtc.o
-FILES.l4xx += stm32_board_l432.o
 FILES.l4xx += stm32_pwr_lxxx.o
 FILES.l4xx += stm32_exti_lxxx.o
 
+FILES.l432 += $(FILES.l4xx)
+FILES.l432 += stm32_board_l432.o
 FILES.l432 += stm32_hal_spi.o
 
-FILES.l496 += stm32_hal_spi.o
-
-FILES.l432 += $(FILES.l4xx)
 FILES.l452 += $(FILES.l4xx)
+FILES.l452 += stm32_board_l452.o
+
 FILES.l496 += $(FILES.l4xx)
+FILES.l496 += stm32_board_l496.o
+FILES.l496 += stm32_hal_spi.o
 
 FILES.l4r += stm32_usart_b.o
 FILES.l4r += stm32_rcc_b.o
