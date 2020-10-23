@@ -98,11 +98,6 @@ static void usart_set_baud(volatile stm32_usart_b_t *usart,
   if (flags & 1)
     divider <<= 8;
 
-#if STM32_L4R
-  unsigned int presc = divider / 256;
-  divider %= 256;
-  usart->presc = presc;
-#endif
   usart->brr = divider;
 }
 
