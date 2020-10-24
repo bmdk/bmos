@@ -31,8 +31,8 @@
 
 void pin_init()
 {
-  enable_ahb2(1); /* GPIOB */
   enable_ahb2(3); /* GPIOD */
+  enable_ahb2(6); /* GPIOG */
 
   /* USART2 Pull up on rx signal to handle that it's not connected */
   enable_apb1(17);
@@ -41,19 +41,27 @@ void pin_init()
                  GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
                                  GPIO_ALT));
 
-  /* reset the red led gpio from the bootloader */
-  gpio_init(GPIO(1, 14), GPIO_INPUT);
+  /* LPUART1 */
+  enable_apb1(32);
+  gpio_init_attr(GPIO(6, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 8, GPIO_ALT));
+  gpio_init_attr(GPIO(6, 8),
+                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 8,
+                                 GPIO_ALT));
 
-  /* CAN1 */
-  enable_apb1(25);
-  gpio_init_attr(GPIO(3, 0), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
-  gpio_init_attr(GPIO(3, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+  /* TIM 2 */
+  enable_apb1(0);
 }
 
 #define USART2_BASE (void *)0x40004400
+#define LPUART1_BASE (void *)0x40008000
+#define APB1_CLOCK 80000000
 #define APB2_CLOCK 80000000
 #if BMOS
+#if 0
+uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
+#else
 uart_t debug_uart = { "debug", USART2_BASE, APB2_CLOCK, 38 };
+#endif
 #endif
 
 void hal_board_init()
@@ -61,5 +69,7 @@ void hal_board_init()
   pin_init();
   clock_init();
   led_init();
+
+  debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
   debug_uart_init(USART2_BASE, 115200, APB2_CLOCK, 0);
 }
