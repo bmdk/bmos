@@ -23,27 +23,28 @@
 #include "hal_gpio.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
-#include "stm32_leds.h"
 #include "shell.h"
 #include "io.h"
 
-static const gpio_handle_t led[] = {
-  STM32_LEDS
-};
+static unsigned char nleds;
+static const gpio_handle_t *led;
 
 void led_set(unsigned int n, unsigned int v)
 {
-  if (n >= ARRSIZ(led))
+  if (n >= nleds || !led)
     return;
 
   gpio_set(led[n], v);
 }
 
-void led_init(void)
+void led_init(const gpio_handle_t *led_list, unsigned int _nleds)
 {
   unsigned int i;
 
-  for (i = 0; i < ARRSIZ(led); i++)
+  nleds = _nleds;
+  led = led_list;
+
+  for (i = 0; i < nleds; i++)
     gpio_init(led[i], GPIO_OUTPUT);
 }
 

@@ -469,11 +469,13 @@ void lcd_panel_init()
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 #endif
 
+static const gpio_handle_t leds[] = { GPIO(6, 13), GPIO(6, 14) };
+
 void hal_board_init()
 {
   pin_init();
   clock_init();
-  led_init();
+  led_init(leds, ARRSIZ(leds));
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
   stm32_hal_spi_init((void *)0x40015000, 8);
   lcd_panel_init();

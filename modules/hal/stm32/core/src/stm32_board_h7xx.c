@@ -151,13 +151,16 @@ uart_t debug_uart_2 =
 #endif
 #endif
 
+/* Red, Green, Blue */
+static const gpio_handle_t leds[] = { GPIO(1, 0), GPIO(1, 14), GPIO(1, 7) };
+
 void hal_board_init()
 {
   pin_init();
   clock_init();
   backup_domain_protect(0);
   clock_init_ls();
-  led_init();
+  led_init(leds, ARRSIZ(leds));
 
 #if APPL
   stm32_syscfg_eth_phy(SYSCFG_ETH_PHY_RMII);

@@ -31,6 +31,8 @@
 
 void pin_init()
 {
+  enable_ahb2(1); /* GPIOB */
+  enable_ahb2(2); /* GPIOC */
   enable_ahb2(3); /* GPIOD */
   enable_ahb2(6); /* GPIOG */
 
@@ -64,11 +66,14 @@ uart_t debug_uart = { "debug", USART2_BASE, APB2_CLOCK, 38 };
 #endif
 #endif
 
+// Red, Green, Blue
+static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(2, 7), GPIO(1, 7) };
+
 void hal_board_init()
 {
   pin_init();
   clock_init();
-  led_init();
+  led_init(leds, ARRSIZ(leds));
 
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
   debug_uart_init(USART2_BASE, 115200, APB2_CLOCK, 0);

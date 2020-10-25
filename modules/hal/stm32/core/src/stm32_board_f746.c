@@ -281,13 +281,16 @@ void pin_init()
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 #endif
 
+//led_init(leds, ARRSIZ(leds));
+static const gpio_handle_t leds[] = { GPIO(8, 1) };
+
 void hal_board_init()
 {
   pin_init();
   clock_init();
   backup_domain_protect(0);
   clock_init_ls();
-  led_init();
+  led_init(leds, ARRSIZ(leds));
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 #if APPL
   lcd_init(480, 272);

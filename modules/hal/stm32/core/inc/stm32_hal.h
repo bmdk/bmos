@@ -22,6 +22,8 @@
 #ifndef STM32_HAL_H
 #define STM32_HAL_H
 
+#include "hal_gpio.h"
+
 void delay(unsigned int cycles);
 void led_set(unsigned int n, unsigned int v);
 
@@ -30,7 +32,7 @@ void led_set(unsigned int n, unsigned int v);
 void debug_uart_init(void *base, unsigned int baud,
                      unsigned int clock, unsigned int flags);
 void clock_init(void);
-void led_init(void);
+void led_init(const gpio_handle_t *led_list, unsigned int _nleds);
 
 void enable_ahb1(unsigned int dev);
 void enable_ahb2(unsigned int dev);

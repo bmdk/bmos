@@ -130,6 +130,8 @@ static void pin_init()
 uart_t debug_uart = { "debugser", (void *)USART3_BASE, APB2_CLOCK, 39 };
 #endif
 
+static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7) };
+
 void hal_board_init()
 {
   pin_init();
@@ -138,7 +140,7 @@ void hal_board_init()
   backup_domain_protect(0);
   clock_init_ls();
 #endif
-  led_init();
+  led_init(leds, ARRSIZ(leds));
 
   debug_uart_init((void *)USART3_BASE, 115200, APB2_CLOCK, 0);
 }
