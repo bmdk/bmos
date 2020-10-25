@@ -28,12 +28,20 @@ void i2c_init(volatile stm32_i2c_t *i2c);
 int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
                   const void *bufp, unsigned int buflen);
 
+int i2c_write_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+                       void *wbufp, unsigned int wbuflen,
+                       void *rbufp, unsigned int rbuflen);
+
 #define I2C1_BASE 0x40005400
 #define I2C2_BASE 0x40005800
+
+#if STM32_G4XX
+#define I2C3_BASE 0x40007800
+#define I2C4_BASE 0x40008400
+#else
 #define I2C3_BASE 0x40005C00
 
 #define I2C4_BASE 0x58001C00
-
-#define I2C ((volatile stm32_i2c_t *)I2C4_BASE)
+#endif
 
 #endif

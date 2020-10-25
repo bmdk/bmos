@@ -43,6 +43,7 @@ void pin_init()
   enable_ahb2(0); /* GPIOA */
   enable_ahb2(1); /* GPIOB */
   enable_ahb2(2); /* GPIOC */
+  enable_ahb2(5); /* GPIOF */
 
   gpio_init_attr(GPIO(2, 13),
                  GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
@@ -54,12 +55,14 @@ void pin_init()
   gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
                                              GPIO_SPEED_LOW, 12, GPIO_ALT));
 
+#if 0
   /* USART1 */
   enable_apb2(14);
   gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
   gpio_init_attr(GPIO(2, 5),
                  GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
                                  GPIO_ALT));
+#endif
 
   /* SYSCFG */
   enable_apb2(0);
@@ -84,6 +87,22 @@ void pin_init()
 
   gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
   gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+
+  /* I2C1 */
+  enable_apb1(21);
+
+#if 1
+  /* CN7 17 (CN7 16 3V3)*/
+  gpio_init_attr(GPIO(0, 15),
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN | GPIO_FLAG_PULL_PU,
+                                 GPIO_SPEED_HIG, 4, GPIO_ALT)); /* SCL */
+  /* CN7 21 (CN7 22 GND) */
+  gpio_init_attr(GPIO(1, 7),
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN | GPIO_FLAG_PULL_PU,
+                                 GPIO_SPEED_HIG, 4, GPIO_ALT)); /* SDA */
+#endif
+
+  gpio_init(GPIO(0, 14), GPIO_OUTPUT); /* CN7 15 */
 
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);

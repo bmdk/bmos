@@ -91,6 +91,16 @@ void pin_init()
   stm32_syscfg_set_exti(0, 0);
 
   gpio_init(GPIO(1, 0), GPIO_OUTPUT);
+
+  /* I2C1 */
+  enable_apb1(21);
+
+  gpio_init_attr(GPIO(1, 8),
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                                 GPIO_SPEED_HIG, 4, GPIO_ALT));
+  gpio_init_attr(GPIO(1, 9),
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                                 GPIO_SPEED_HIG, 4, GPIO_ALT));
 }
 
 #define USART1_BASE (void *)0x40011000

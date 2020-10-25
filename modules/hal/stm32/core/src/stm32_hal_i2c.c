@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "common.h"
 #include "shell.h"
 #include "io.h"
@@ -71,17 +72,17 @@ struct _stm32_i2c_t {
 
 void i2c_init(volatile stm32_i2c_t *i2c)
 {
-  I2C->cr1 &= ~I2C_CR1_PE;
+  i2c->cr1 &= ~I2C_CR1_PE;
 
-  I2C->timingr = I2C_TIMINGR_PRESC(0x1) | \
+  i2c->timingr = I2C_TIMINGR_PRESC(0x2) | \
                  I2C_TIMINGR_SCLDEL(0xc) | I2C_TIMINGR_SDADEL(0x0) | \
-                 I2C_TIMINGR_SCLH(0xec) | I2C_TIMINGR_SCLL(0xff);
+                 I2C_TIMINGR_SCLH(0x08) | I2C_TIMINGR_SCLL(0x08);
 
-  I2C->cr1 |= I2C_CR1_PE;
+  i2c->cr1 |= I2C_CR1_PE;
 }
 
-int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
-                  const void *bufp, unsigned int buflen)
+static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+                          const void *bufp, unsigned int buflen)
 {
   const char *buf = bufp;
 
@@ -97,7 +98,7 @@ int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
       unsigned int isr = i2c->isr;
 
       if (--timeout == 0) {
-        xprintf("TO isr %08x\n", isr);
+        xprintf("W TO isr %08x\n", isr);
         return -1;
       }
 
@@ -107,12 +108,8 @@ int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
       if (isr & I2C_ISR_BUSY)
         continue;
 
-      if (isr & I2C_ISR_NACKF) {
-#if 0
-        xprintf("NACK add %d isr %08x\n", addr, isr);
-#endif
+      if (isr & I2C_ISR_NACKF)
         return -1;
-      }
     }
 
     i2c->txdr = *buf++;
@@ -122,45 +119,61 @@ int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-static int i2c_cmd(int argc, char *argv[])
+static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+                         void *bufp, unsigned int buflen)
 {
-  char buf[16];
-  unsigned int addr;
-  int err, len, i;
+  char *buf = bufp;
 
-  switch (argv[1][0]) {
-  case 'i':
-    xprintf("init\n");
-    i2c_init(I2C);
-    break;
-  case 'w':
-    if (argc < 4)
-      return -1;
-    addr = strtoul(argv[2], 0, 0);
-    len = argc - 3;
-    if (len > sizeof(buf))
-      len = sizeof(buf);
+  i2c->cr2 = I2C_CR2_AUTOEND | I2C_CR2_NBYTES(buflen) | I2C_CR2_RD_WRN |
+             I2C_CR2_SADD(addr << 1);
+  i2c->cr2 |= I2C_CR2_START;
 
-    for (i = 0; i < len; i++)
-      buf[i] = strtoul(argv[3 + i], 0, 0);
+  i2c->icr |= I2C_ISR_STOPF | I2C_ISR_NACKF;
 
-    err = i2c_write_buf(I2C, addr, buf, len);
-    if (err != 0)
-      xprintf("error %d\n", err);
-    break;
-  case 'p':
-    buf[0] = 0xff;
-    for (addr = 8; addr < 0x78; addr++) {
-      i2c_init(I2C);
-      hal_delay_us(1000);
-      err = i2c_write_buf(I2C, addr, buf, 1);
-      if (err == 0)
-        xprintf("addr %02x\n", addr);
+  while (buflen) {
+    unsigned int timeout = 1000000;
+
+    for (;;) {
+      unsigned int isr = i2c->isr;
+
+      if (--timeout == 0) {
+        xprintf("R TO isr %08x\n", isr);
+        return -1;
+      }
+
+      if (isr & I2C_ISR_RXNE)
+        break;
+
+      if (isr & I2C_ISR_BUSY)
+        continue;
+
+      if (isr & I2C_ISR_NACKF)
+        return -1;
     }
-    break;
+
+    *buf++ = i2c->rxdr;
+    buflen--;
   }
 
   return 0;
 }
 
-SHELL_CMD(i2c, i2c_cmd);
+
+int i2c_write_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+                       void *wbufp, unsigned int wbuflen,
+                       void *rbufp, unsigned int rbuflen)
+{
+  if (_i2c_write_buf(i2c, addr, wbufp, wbuflen) < 0)
+    return -1;
+
+  if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
+    return -1;
+
+  return 0;
+}
+
+int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+                  const void *bufp, unsigned int buflen)
+{
+  return _i2c_write_buf(i2c, addr, bufp, buflen);
+}

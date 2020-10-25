@@ -39,7 +39,7 @@ static void hd44780_write_byte(unsigned int b)
 {
   unsigned char c = b | L;
 
-  i2c_write_buf(I2C, 0x27, &c, 1);
+  i2c_write_buf((void *)I2C2_BASE, 0x27, &c, 1);
 }
 
 #define DELAY 500
