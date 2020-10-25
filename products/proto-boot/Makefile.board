@@ -180,6 +180,7 @@ FILES.l496 += stm32_hal_spi.o
 FILES.l4r += stm32_usart_b.o
 FILES.l4r += stm32_rcc_b.o
 FILES.l4r += stm32_board_l4r.o
+FILES.l4r += stm32_pwr_lxxx.o
 
 FILES += $(FILES.$(PROG))
 

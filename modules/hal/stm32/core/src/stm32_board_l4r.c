@@ -20,14 +20,15 @@
  */
 
 #include "common.h"
+#include "debug_ser.h"
 #include "hal_gpio.h"
+#include "hal_uart.h"
 #include "io.h"
+#include "stm32_can.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_pwr_lxxx.h"
 #include "stm32_regs.h"
-#include "debug_ser.h"
-#include "stm32_can.h"
-#include "hal_uart.h"
 
 void pin_init()
 {
@@ -52,6 +53,9 @@ void pin_init()
 
   /* TIM 2 */
   enable_apb1(0);
+
+  /* PWR */
+  enable_apb1(28);
 }
 
 #define USART2_BASE (void *)0x40004400
@@ -59,11 +63,7 @@ void pin_init()
 #define APB1_CLOCK 80000000
 #define APB2_CLOCK 80000000
 #if BMOS
-#if 0
 uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
-#else
-uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 38 };
-#endif
 #endif
 
 // Red, Green, Blue
@@ -72,9 +72,9 @@ static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(2, 7), GPIO(1, 7) };
 void hal_board_init()
 {
   pin_init();
+  vddio2_en(1);
   clock_init();
   led_init(leds, ARRSIZ(leds));
 
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
-  debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
 }
