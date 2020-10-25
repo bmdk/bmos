@@ -104,11 +104,6 @@ void pin_init()
   stm32_exti_irq_enable(13, 1);
   stm32_exti_ev_enable(13, 1);
   stm32_syscfg_set_exti(2, 13);
-
-#if 1
-  PWR->scr = 0xffffffff;
-  PWR->cr[2] = 1 << 1;
-#endif
 }
 
 #define USART1_BASE (void *)0x40013800
@@ -128,13 +123,14 @@ void pin_init()
 #endif
 
 #if BMOS
-uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
 #if 0
-uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37 };
+uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
+#else
+uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 38 };
 #endif
 #endif
 
-static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(2, 7), GPIO(1, 7) };
+static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7), GPIO(2, 7) };
 
 void hal_board_init()
 {
@@ -146,5 +142,9 @@ void hal_board_init()
   clock_init_ls();
   led_init(leds, ARRSIZ(leds));
 
+#if 0
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
+#else
+  debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
+#endif
 }
