@@ -123,11 +123,7 @@ void pin_init()
 #endif
 
 #if BMOS
-#if 0
 uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
-#else
-uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 38 };
-#endif
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7), GPIO(2, 7) };
@@ -135,6 +131,7 @@ static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7), GPIO(2, 7) };
 void hal_board_init()
 {
   pin_init();
+  vddio2_en(1);
 #if CLOCK_HS
   clock_init();
 #endif
@@ -142,9 +139,5 @@ void hal_board_init()
   clock_init_ls();
   led_init(leds, ARRSIZ(leds));
 
-#if 0
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
-#else
-  debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
-#endif
 }
