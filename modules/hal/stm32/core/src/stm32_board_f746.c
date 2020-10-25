@@ -281,7 +281,6 @@ void pin_init()
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 #endif
 
-//led_init(leds, ARRSIZ(leds));
 static const gpio_handle_t leds[] = { GPIO(8, 1) };
 
 void hal_board_init()
