@@ -63,9 +63,9 @@ void pin_init()
   /* LPUART1 */
   enable_apb1(32);
   gpio_init_attr(GPIO(6, 7), GPIO_ATTR_STM32(0,
-        GPIO_SPEED_LOW, 8, GPIO_ALT));
+                                             GPIO_SPEED_LOW, 8, GPIO_ALT));
   gpio_init_attr(GPIO(6, 8), GPIO_ATTR_STM32(0,
-        GPIO_SPEED_LOW, 8, GPIO_ALT));
+                                             GPIO_SPEED_LOW, 8, GPIO_ALT));
 
   /* TIM1_CH4 */
   gpio_init_attr(GPIO(4, 14), GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 1, GPIO_ALT));
