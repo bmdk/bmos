@@ -243,7 +243,6 @@ FILES.f746 += $(FILES.lwip)
 
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
-FILES.l4xx += stm32_board_l432.o
 FILES.l4xx += stm32_flash.o
 FILES.l4xx += crc_ccitt16.o
 FILES.l4xx += xmodem.o
@@ -253,12 +252,15 @@ FILES.l4xx += stm32_exti_lxxx.o
 
 FILES.l432 += stm32_hal_rtc.o
 FILES.l432 += stm32_hal_spi.o
+FILES.l432 += stm32_board_l432.o
 
 FILES.l452 += stm32_hal_rtc.o
+FILES.l452 += stm32_board_l452.o
 
 FILES.l496 += stm32_hal_bdma.o
 FILES.l496 += stm32_hal_spi.o
 FILES.l496 += stm32_hal_adc.o
+FILES.l496 += stm32_board_l496.o
 
 FILES.l432 += $(FILES.l4xx)
 FILES.l452 += $(FILES.l4xx)
