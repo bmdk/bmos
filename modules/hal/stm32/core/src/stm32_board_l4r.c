@@ -62,7 +62,7 @@ void pin_init()
 #if 0
 uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
 #else
-uart_t debug_uart = { "debug", USART2_BASE, APB2_CLOCK, 38 };
+uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 38 };
 #endif
 #endif
 
@@ -76,5 +76,5 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
 
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
-  debug_uart_init(USART2_BASE, 115200, APB2_CLOCK, 0);
+  debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
 }
