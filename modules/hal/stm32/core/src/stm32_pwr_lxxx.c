@@ -30,6 +30,14 @@ void backup_domain_protect(int on)
     PWR->cr[0] |= PWR_CR1_DBP;
 }
 
+void vddio2_en(int on)
+{
+  if (on)
+    PWR->cr[1] |= PWR_CR2_IOSV;
+  else
+    PWR->cr[1] &= ~PWR_CR2_IOSV;
+}
+
 void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
 {
   unsigned int reg, ofs;
