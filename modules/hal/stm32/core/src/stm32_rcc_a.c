@@ -24,8 +24,44 @@
 #include "stm32_regs.h"
 #include "stm32_pwr.h"
 
+typedef struct {
+  unsigned int cr;
+  unsigned int pllcfgr;
+  unsigned int cfgr;
+  unsigned int cir;
+  unsigned int ahb1rstr;
+  unsigned int ahb2rstr;
+  unsigned int ahb3rstr;
+  unsigned int pad1;
+  unsigned int apb1rstr;
+  unsigned int apb2rstr;
+  unsigned int pad2[2];
+  unsigned int ahb1enr;
+  unsigned int ahb2enr;
+  unsigned int ahb3enr;
+  unsigned int pad3;
+  unsigned int apb1enr;
+  unsigned int apb2enr;
+  unsigned int pad4[2];
+  unsigned int ahb1lpenr;
+  unsigned int ahb2lpenr;
+  unsigned int ahb3lpenr;
+  unsigned int pad5;
+  unsigned int apb1lpenr;
+  unsigned int apb2lpenr;
+  unsigned int pad6[2];
+  unsigned int bdcr;
+  unsigned int csr;
+  unsigned int pad7[2];
+  unsigned int sscgr;
+  unsigned int pll12scfgr;
+  unsigned int pllsaicfgr;
+  unsigned int dckcfgr1;
+  unsigned int dckcfgr2;
+} stm32_rcc_t;
+
 #define FLASH_ACR ((volatile unsigned int *)0x40023c00)
-#define RCC ((volatile stm32_rcc_a_t *)0x40023800)
+#define RCC ((volatile stm32_rcc_t *)0x40023800)
 
 #define RCC_CR_PLLSAIRDY BIT(29)
 #define RCC_CR_PLLSAION BIT(28)

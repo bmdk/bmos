@@ -24,6 +24,49 @@
 #include "stm32_hal.h"
 #include "stm32_regs.h"
 
+typedef struct {
+  unsigned int cr;
+  unsigned int icscr;
+  unsigned int cfgr;
+  unsigned int pllcfgr;
+  unsigned int pllsai1cfgr;
+  unsigned int pllsai2cfgr;
+  unsigned int cier;
+  unsigned int cifr;
+  unsigned int cicr;
+  unsigned int pad0;
+  unsigned int ahb1rstr;
+  unsigned int ahb2rstr;
+  unsigned int ahb3rstr;
+  unsigned int pad1;
+  unsigned int apb1rstr1;
+  unsigned int apb1rstr2;
+  unsigned int apb2rstr;
+  unsigned int pad2;
+  unsigned int ahb1enr;
+  unsigned int ahb2enr;
+  unsigned int ahb3enr;
+  unsigned int pad3;
+  unsigned int apb1enr1;
+  unsigned int apb1enr2;
+  unsigned int apb2enr;
+  unsigned int pad4;
+  unsigned int ahb1smenr;
+  unsigned int ahb2smenr;
+  unsigned int ahb3smenr;
+  unsigned int pad5;
+  unsigned int apb1smenr1;
+  unsigned int apb1smenr2;
+  unsigned int apb2smenr;
+  unsigned int pad6;
+  unsigned int ccipr;
+  unsigned int pad7;
+  unsigned int bdcr;
+  unsigned int csr;
+  unsigned int crrcr;
+  unsigned int ccipr2;
+} stm32_rcc_t;
+
 #define FLASH_ACR ((volatile unsigned int *)0x40022000)
 #define RCC ((volatile stm32_rcc_t *)0x40021000)
 
