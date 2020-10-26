@@ -57,6 +57,13 @@ void pin_init()
   gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
         GPIO_SPEED_LOW, 8, GPIO_ALT));
 
+  /* USART1 */
+  enable_apb2(14);
+  gpio_init_attr(GPIO(0, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 10),
+                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
+                                 GPIO_ALT));
+
   /* SYSCFG */
   enable_apb2(0);
 
@@ -95,7 +102,11 @@ void pin_init()
 #endif
 
 #if BMOS
+#if 1
 uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
+#else
+uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37 };
+#endif
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(1, 13) };
@@ -105,10 +116,16 @@ void hal_board_init()
   pin_init();
 #if CLOCK_HS
   clock_init();
+#else
+  clock_init_low();
 #endif
   backup_domain_protect(0);
   clock_init_ls();
   led_init(leds, ARRSIZ(leds));
 
+#if 1
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
+#else
+  debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
+#endif
 }
