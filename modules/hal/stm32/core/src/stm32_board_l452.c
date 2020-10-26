@@ -50,42 +50,12 @@ void pin_init()
   gpio_init_attr(GPIO(2, 13),
                  GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
 
-#if 0
   /* LPUART1 */
   enable_apb1(32);
-
-  gpio_init_attr(GPIO(6, 7),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_LOW, 8,
-                                 GPIO_ALT));
-  gpio_init_attr(GPIO(6, 8),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_LOW, 8,
-                                 GPIO_ALT));
-
-  /* USART1 */
-  enable_apb2(14);
-  gpio_init_attr(GPIO(0, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 10),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
-#endif
-
-  /* USART2 */
-  enable_apb1(17);
-  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 15), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
-                                              GPIO_SPEED_HIG, 3, GPIO_ALT));
-
-  gpio_init_attr(GPIO(2, 10),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PD, GPIO_SPEED_LOW, 0,
-                                 GPIO_INPUT));
-  gpio_init_attr(GPIO(2, 11),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PD, GPIO_SPEED_LOW, 0,
-                                 GPIO_INPUT));
-  gpio_init_attr(GPIO(2, 12),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PD, GPIO_SPEED_LOW, 0,
-                                 GPIO_INPUT));
-
-  gpio_init(GPIO(1, 0), GPIO_OUTPUT);
+  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
+        GPIO_SPEED_LOW, 8, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
+        GPIO_SPEED_LOW, 8, GPIO_ALT));
 
   /* SYSCFG */
   enable_apb2(0);
@@ -126,9 +96,6 @@ void pin_init()
 
 #if BMOS
 uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
-#if 0
-uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37 };
-#endif
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(1, 13) };
