@@ -184,6 +184,8 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
       ;
   }
 
+  FLASH->cr &= ~FLASH_CR_PG;
+
   flash_lock();
 
   sr = FLASH->sr;
