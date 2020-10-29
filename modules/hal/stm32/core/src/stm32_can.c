@@ -89,7 +89,7 @@ static void _can_filter_add(volatile stm32_can_t *can,
   can->f[index].mask = 0x7ffUL << 21;
 }
 
-static void can_init(volatile stm32_can_t *can, unsigned int *id,
+static void can_init(volatile stm32_can_t *can, const unsigned int *id,
                      unsigned int id_len)
 {
   unsigned int i;
@@ -212,8 +212,9 @@ static void _put(void *p)
 }
 
 
-bmos_queue_t *can_open(candev_t *c, unsigned int *id, unsigned int id_len,
-                       bmos_queue_t *rxq, unsigned int op)
+bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
+                       unsigned int id_len, bmos_queue_t *rxq,
+                       unsigned int op)
 {
   volatile stm32_can_t *candev = c->base;
   const char *pool_name = "cpool", *tx_queue_name = "ctx";
