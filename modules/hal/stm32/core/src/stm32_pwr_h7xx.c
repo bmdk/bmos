@@ -102,16 +102,15 @@ void stm32_pwr_wkup_en(unsigned int n, int en)
     PWR->wkupepr &= ~BIT(n);
 }
 
-#define PWR_D3CR_VOSRDY BIT(13)
+void stm32_pwr_power(unsigned int val)
+{
+  reg_set_field(&PWR->cr3, 6, 0, val);
+}
 
-#define PWR_CR3_BYPASS BIT(0)
-#define PWR_CR3_LDOEN BIT(1)
-#define PWR_CR3_SCUEN BIT(2)
+#define PWR_D3CR_VOSRDY BIT(13)
 
 void stm32_pwr_vos(unsigned int vos)
 {
-  reg_set_field(&PWR->cr3, 3, 0, PWR_CR3_SCUEN | PWR_CR3_LDOEN);
-
   reg_set_field(&PWR->d3cr, 2, 14, vos);
 
   while ((PWR->d3cr & PWR_D3CR_VOSRDY) == 0)

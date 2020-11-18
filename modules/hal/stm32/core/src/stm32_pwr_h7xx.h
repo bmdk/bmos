@@ -35,6 +35,12 @@ void stm32_pwr_wkup_en(unsigned int n, int en);
 #define PWR_VOS_MED 2
 #define PWR_VOS_HIG 3
 
+#define PWR_CR3_BYPASS BIT(0)
+#define PWR_CR3_LDOEN BIT(1)
+#define PWR_CR3_SDEN BIT(2)
+#define PWR_CR3_SCUEN BIT(2)
+
+void stm32_pwr_power(unsigned int val);
 void stm32_pwr_vos(unsigned int vos);
 
 #endif

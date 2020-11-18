@@ -35,8 +35,11 @@ all: $(BUILD_DIR)/$(PROG).bin
 clean:
 	rm -fr $(BUILD_DIR)
 
-XCFLAGS.h7xx += -DSTM32_H7XX
-STACK_END.h7xx = 0x20020000
+XCFLAGS.h735dk += -DSTM32_H7XX
+STACK_END.h735dk = 0x20020000
+
+XCFLAGS.h743nucleo += -DSTM32_H7XX
+STACK_END.h743nucleo = 0x20020000
 
 XCFLAGS.l4r += -DSTM32_L4R
 STACK_END.l4r = 0x200A0000
@@ -124,7 +127,7 @@ FILES += crc_ccitt16.o
 FILES += xmodem.o
 FILES += stm32_timer.o
 FILES += xslog_simple.o
-ifneq ($(PROG), h7xx)
+ifeq ($(findstring $(PROG), h743nucleo h735dk),)
 FILES += stm32_flash.o
 endif
 
@@ -134,10 +137,15 @@ endif
 
 FILES.h7xx += stm32_usart_b.o
 FILES.h7xx += stm32_rcc_c.o
-FILES.h7xx += stm32_board_h7xx.o
 FILES.h7xx += stm32_hal_rtc.o
 FILES.h7xx += stm32_flash_h7xx.o
 FILES.h7xx += stm32_pwr_h7xx.o
+
+FILES.h743nucleo += stm32_board_h743nucleo.o
+FILES.h743nucleo += $(FILES.h7xx)
+
+FILES.h735dk += stm32_board_h735dk.o
+FILES.h735dk += $(FILES.h7xx)
 
 FILES.fxxx += stm32_pwr_fxxx.o
 FILES.fxxx += stm32_exti_fxxx.o

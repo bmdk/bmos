@@ -37,6 +37,13 @@ SECTIONS
     . = ALIGN(8);
   } >RAM2
 
+  .framebuf :
+  {
+    . = ALIGN(8);
+    KEEP(*(.framebuf))
+    . = ALIGN(8);
+  } >RAM2
+
   .isr_vector :
   {
     _flash_start = .;

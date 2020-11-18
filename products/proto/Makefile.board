@@ -35,10 +35,18 @@ all: $(BUILD_DIR)/$(PROG).bin
 clean:
 	rm -fr $(BUILD_DIR)
 
-XCFLAGS.h7xx += -DSTM32_H7XX
-XCFLAGS.h7xx += -mcpu=cortex-m7
-STACK_END.h7xx = 0x20020000
-XCFLAGS.h7xx += -DCONFIG_LWIP -DLWIP_DEBUG
+XCFLAGS.h735dk += -DSTM32_H7XX
+XCFLAGS.h735dk += -DSTM32_H735DK
+STACK_END.h735dk = 0x20020000
+XCFLAGS.h735dk += -mcpu=cortex-m7
+XCFLAGS.h735dk += -DCONFIG_LWIP -DLWIP_DEBUG
+
+
+XCFLAGS.h743nucleo += -DSTM32_H7XX
+STACK_END.h743nucleo = 0x20020000
+XCFLAGS.h743nucleo += -mcpu=cortex-m7
+XCFLAGS.h743nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
+
 
 XCFLAGS.l4r += -DSTM32_L4R
 XCFLAGS.l4r += -mcpu=cortex-m4
@@ -96,10 +104,10 @@ XLDFLAGS += -specs=nano.specs
 else
 XLDFLAGS += -nostdlib
 endif
-ifeq ($(PROG), h7xx)
-XLDFLAGS += -T appl-h7xx.ld
-else
+ifeq ($(findstring $(PROG), h743nucleo h735dk),)
 XLDFLAGS += -T appl.ld
+else
+XLDFLAGS += -T appl-h7xx.ld
 endif
 XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
 XLDFLAGS += -Wl,--gc-sections
@@ -162,7 +170,6 @@ endif
 
 FILES.h7xx += stm32_usart_b.o
 FILES.h7xx += stm32_rcc_c.o
-FILES.h7xx += stm32_board_h7xx.o
 FILES.h7xx += stm32_hal_rtc.o
 FILES.h7xx += stm32_flash_h7xx.o
 FILES.h7xx += stm32_wdog.o
@@ -172,6 +179,11 @@ FILES.h7xx += stm32_eth_h7xx.o
 FILES.h7xx += stm32_hal_bdma.o
 FILES.h7xx += stm32_hal_i2c.o
 FILES.h7xx += hd44780.o
+
+FILES.h735dk += stm32_lcd.o
+FILES.h735dk += stm32_board_h735dk.o
+
+FILES.h743nucleo += stm32_board_h743nucleo.o
 
 FILES.fxxx += stm32_pwr_fxxx.o
 FILES.fxxx += stm32_exti_fxxx.o
@@ -242,6 +254,9 @@ FILES.h7xx += $(FILES.lwip)
 FILES.f767 += $(FILES.lwip)
 FILES.f746 += $(FILES.lwip)
 
+FILES.h735dk += $(FILES.h7xx)
+FILES.h743nucleo += $(FILES.h7xx)
+
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
 FILES.l4xx += stm32_flash.o
@@ -294,7 +309,7 @@ $(BUILD_DIR)/$(PROG).elf: $(OFILES) |$(BUILD_DIR)
 	 $(XCC) -o $@ $^ $(XLDFLAGS)
 
 $(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
-	 $(XOBJCOPY) -O binary -R .eth $^ $@
+	 $(XOBJCOPY) -O binary -R .eth -R .framebuf $^ $@
 
 $(OBJDIR)/%.o: %.S
 	 $(XCC) -c $(XCFLAGS) -o $@ $<

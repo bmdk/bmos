@@ -234,6 +234,20 @@ bmos_queue_t *syspool;
 
 extern uart_t debug_uart_2;
 
+#if STM32_H735DK
+void set_lcd(unsigned int start, unsigned int width, unsigned int height);
+
+void lcd_task(void *arg)
+{
+  unsigned int i = 0;
+
+  for (;;) {
+    set_lcd(i++, 480, 272);
+    task_delay(10);
+  }
+}
+#endif
+
 int main()
 {
   interrupt_disable();
@@ -270,6 +284,10 @@ int main()
   task_init(shell_task, &shell_info, "shell", 2, 0, 4096);
 
   io_set_output(shell_info.txq[0], 0);
+
+#if STM32_H735DK
+  task_init(lcd_task, NULL, "lcd", 2, 0, 512);
+#endif
 
 #if CONFIG_LWIP
   task_init(task_net, NULL, "net", 4, 0, 8192);

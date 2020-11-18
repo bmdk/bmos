@@ -32,6 +32,8 @@ int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
 #define I2C2_BASE 0x40005800
 #define I2C3_BASE 0x40005C00
 
-#define I2C ((volatile stm32_i2c_t *)I2C2_BASE)
+#define I2C4_BASE 0x58001C00
+
+#define I2C ((volatile stm32_i2c_t *)I2C4_BASE)
 
 #endif
