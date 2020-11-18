@@ -113,6 +113,9 @@ int cmd_devid(int argc, char *argv[])
   case 0x461:
     idstr = "L496/4A6";
     break;
+  case 0x483:
+    idstr = "H72x/H73x";
+    break;
   default:
     idstr = "Unknown";
     break;
