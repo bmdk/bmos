@@ -23,6 +23,7 @@
 #include "hal_common.h"
 #include "stm32_hal.h"
 #include "stm32_pwr_h7xx.h"
+#include "stm32_rcc_c.h"
 
 #if STM32_H7XX
 #define RCC_BASE 0x58024400
@@ -207,24 +208,15 @@ static void _clock_pll_presc(unsigned int num, unsigned int div)
 {
   unsigned int shift;
 
-  switch (num) {
-  case 0:
-    shift = 4;
-    break;
-  case 1:
-    shift = 12;
-    break;
-  case 2:
-    shift = 20;
-    break;
-  default:
+  if (num > 2)
     return;
-  }
+
+  shift = 4 + num * 8;
 
   reg_set_field(&RCC->pllckselr, 6, shift, div);
 }
 
-static void pll1_set(unsigned int mul, unsigned int div)
+static void pll1_set(struct pll_params_t *params)
 {
   RCC->cr |= RCC_CR_CSION;
   while ((RCC->cr & RCC_CR_CSIRDY) == 0)
@@ -240,13 +232,12 @@ static void pll1_set(unsigned int mul, unsigned int div)
 
   /* PLL source is HSE */
   _clock_pll_src(CLOCK_PLL_SRC_HSE);
-  /* Divide by 1 */
-  _clock_pll_presc(0, 1);
+  _clock_pll_presc(0, params->divm1);
 
-  /* DIVN */
-  reg_set_field(&RCC->pll1divr, 9, 0, mul - 1);
-  /* DIVP */
-  reg_set_field(&RCC->pll1divr, 7, 9, div - 1);
+  reg_set_field(&RCC->pll1divr, 9, 0, params->divn1 - 1);
+  reg_set_field(&RCC->pll1divr, 7, 9, params->divp1 - 1);
+  reg_set_field(&RCC->pll1divr, 7, 16, params->divq1 - 1);
+  reg_set_field(&RCC->pll1divr, 7, 24, params->divr1 - 1);
 
   RCC->cr |= RCC_CR_PLL1ON;
   while ((RCC->cr & RCC_CR_PLL1RDY) == 0)
@@ -257,8 +248,28 @@ static void pll1_set(unsigned int mul, unsigned int div)
     ;
 }
 
-static void _clock_init()
+static void pll3_set(unsigned int mul, unsigned int div, unsigned int prediv)
 {
+  RCC->cr &= ~RCC_CR_PLL3ON;
+  while ((RCC->cr & RCC_CR_PLL3RDY) != 0)
+    ;
+
+  _clock_pll_presc(2, prediv);
+
+  /* DIVN */
+  reg_set_field(&RCC->pll3divr, 9, 0, mul - 1);
+  /* DIVR */
+  reg_set_field(&RCC->pll3divr, 7, 24, div - 1);
+
+  RCC->cr |= RCC_CR_PLL3ON;
+  while ((RCC->cr & RCC_CR_PLL3RDY) == 0)
+    ;
+}
+
+static void _clock_init(struct pll_params_t *params)
+{
+  unsigned int pllcfgr;
+
   /* disable pll1,2,3 */
   RCC->cr &= ~(RCC_CR_PLL1ON | RCC_CR_PLL2ON | RCC_CR_PLL3ON);
   /* Turn on high speed external clock */
@@ -281,16 +292,24 @@ static void _clock_init()
 
   reg_set_field(&RCC->d3cfgr, 3, 4, RCC_DIV3_2);
 
-  RCC->pllcfgr &= ~(RCC_PLLCFGR_DIVQ1EN | RCC_PLLCFGR_DIVR1EN | \
-                    RCC_PLLCFGR_DIVP2EN | RCC_PLLCFGR_DIVQ2EN |
-                    RCC_PLLCFGR_DIVR2EN | \
-                    RCC_PLLCFGR_DIVP3EN | RCC_PLLCFGR_DIVQ3EN |
-                    RCC_PLLCFGR_DIVR3EN);
-  RCC->pllcfgr |= RCC_PLLCFGR_DIVP1EN;
+  pllcfgr = RCC->pllcfgr;
+
+  pllcfgr &= ~(RCC_PLLCFGR_DIVQ1EN | RCC_PLLCFGR_DIVR1EN | \
+               RCC_PLLCFGR_DIVP2EN | RCC_PLLCFGR_DIVQ2EN |
+               RCC_PLLCFGR_DIVR2EN | \
+               RCC_PLLCFGR_DIVP3EN | RCC_PLLCFGR_DIVQ3EN |
+               RCC_PLLCFGR_DIVR3EN);
+  pllcfgr |= RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVR3EN;
+
+  if (1)
+    pllcfgr |= RCC_PLLCFGR_DIVQ1EN;
+
+  RCC->pllcfgr = pllcfgr;
 
   reg_set_field(&RCC->pllcfgr, 2, 2, RCC_PLLCFGR_RGE_4_8);
 
-  pll1_set(100, 2);
+  pll1_set(params);
+  pll3_set(5, 10, 1);
 
   /* turn off hsi */
   RCC->cr &= ~RCC_CR_HSION;
@@ -298,10 +317,10 @@ static void _clock_init()
     ;
 }
 
-void clock_init(void)
+void clock_init(struct pll_params_t *params)
 {
   stm32_pwr_vos(PWR_VOS_HIG);
-  _clock_init();
+  _clock_init(params);
 }
 
 void enable_ahb1(unsigned int dev)
@@ -318,14 +337,39 @@ void enable_apb1(unsigned int dev)
 {
   if (dev >= 32) {
     dev -= 32;
-    RCC->apb1henr |= (1U << dev);
+    RCC->apb1henr |= BIT(dev);
   } else
-    RCC->apb1lenr |= (1U << dev);
+    RCC->apb1lenr |= BIT(dev);
+}
+
+void disable_apb1(unsigned int dev)
+{
+  if (dev >= 32) {
+    dev -= 32;
+    RCC->apb1henr &= ~BIT(dev);
+  } else
+    RCC->apb1lenr &= ~BIT(dev);
+}
+
+
+void enable_apb2(unsigned int dev)
+{
+  RCC->apb2enr |= BIT(dev);
+}
+
+void enable_apb3(unsigned int dev)
+{
+  RCC->apb3enr |= BIT(dev);
 }
 
 void enable_apb4(unsigned int dev)
 {
   RCC->apb4enr |= (1U << dev);
+}
+
+void set_fdcansel(unsigned int sel)
+{
+  reg_set_field(&RCC->d2ccip1r, 2, 28, sel);
 }
 
 #define RCC_BDCR_LSEON BIT(0)
