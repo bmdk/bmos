@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Copyright (c) 2019 Brian Thomas Murphy
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,9 +36,9 @@ CMD_ERASE = 0x43
 CMD_ERASE_EXTENDED = 0x44
 BLOCK_SIZE = 256
 
-INIT = '\x7f'
-ACK = '\x79'
-NACK = '\x1f'
+INIT = b'\x7f'
+ACK = b'\x79'
+NACK = b'\x1f'
 
 CMD_ERASE_MASS = 0
 CMD_ERASE_MASS_BANK_1 = 1
@@ -48,12 +48,17 @@ CMD_ERASE_MASS_BANK_2 = 2
 def calc_xor(data):
     xor = 0
     for i in data:
-        xor ^= ord(i)
+        xor ^= i
     return xor
 
 
 def calc_comp(data):
     return 0xff ^ data
+
+
+def print_im(s):
+    sys.stderr.write(s)
+    sys.stderr.flush()
 
 
 def dump(name, data):
@@ -64,7 +69,7 @@ def dump(name, data):
         if left > 16:
             left = 16
         for j in range(0, left):
-            sys.stderr.write("%02x " % ord(data[i + j]))
+            sys.stderr.write("%02x " % data[i + j])
         sys.stderr.write("\n")
 
 
@@ -114,10 +119,11 @@ class stm32_ser:
         elif data == NACK:
             raise Exception("Error, got NACK")
         else:
-            raise Exception("Error, got %02x response" % ord(data))
+            raise Exception("Error, got %02x response" % data)
 
     def get_resp(self):
-        count = ord(self.read(1)) + 1
+        r = self.read(1)
+        count = r[0] + 1
         data = self.read(count)
         self.get_ack()
 
@@ -129,7 +135,7 @@ class stm32_ser:
         while True:
             self.write(INIT)
             data = self.read(1024)
-            if data and data[-1] == ACK:
+            if data and data[-1:] == ACK:
                 break
             else:
                 count += 1
@@ -141,7 +147,7 @@ class stm32_ser:
 
     def send_cmd(self, cmd):
         comp = calc_comp(cmd)
-        cmd_data = chr(cmd) + chr(comp)
+        cmd_data = bytes((cmd, comp))
         self.write(cmd_data)
         self.get_ack()
 
@@ -153,48 +159,41 @@ class stm32_ser:
         self.send_cmd(CMD_GET_ID)
         return self.get_resp()
 
+    def write_data(self, data):
+        xor = calc_xor(data)
+        data += bytes((xor,))
+        self.write(data)
+        self.get_ack()
+
     def cmd_go(self, addr):
         self.send_cmd(CMD_GO)
 
         data = struct.pack(">I", addr)
-
-        xor = calc_xor(data)
-        data += chr(xor)
-        self.write(data)
-        self.get_ack()
+        self.write_data(data)
 
     def send_addr(self, addr):
         data = struct.pack(">I", addr)
-        xor = calc_xor(data)
-        data += chr(xor)
-        self.write(data)
-        self.get_ack()
+        self.write_data(data)
 
     def cmd_read_block(self, addr, size):
         self.send_cmd(CMD_READ)
-
         self.send_addr(addr)
-
-        data = chr(size - 1)
-        xor = calc_comp(ord(data[0]))
-        data += chr(xor)
-        self.write(data)
-        self.get_ack()
+        self.send_cmd(size - 1)
 
         return self.read(size)
 
     def cmd_read(self, addr, size, progress=False):
-        data = ''
+        data = b''
         for i in range(0, size, BLOCK_SIZE):
             if progress:
-                sys.stderr.write(".")
+                print_im(".")
             left = size - i
             if left > BLOCK_SIZE:
                 left = BLOCK_SIZE
             data += self.cmd_read_block(addr, left)
             addr += BLOCK_SIZE
         if progress:
-            sys.stderr.write("\n")
+            print_im("\n")
         return data
 
     def cmd_write_block(self, addr, data):
@@ -204,25 +203,22 @@ class stm32_ser:
 
         size = len(data)
 
-        wdata = chr(size - 1)
+        wdata = bytes((size - 1,))
         wdata += data
-        xor = calc_xor(wdata)
-        wdata += chr(xor)
-        self.write(wdata)
-        self.get_ack()
+        self.write_data(wdata)
 
     def cmd_write(self, addr, data, progress=False):
         size = len(data)
         for i in range(0, size, BLOCK_SIZE):
             if progress:
-                sys.stderr.write(".")
+                print_im(".")
             left = size - i
             if left > BLOCK_SIZE:
                 left = BLOCK_SIZE
             self.cmd_write_block(addr, data[i:i+left])
             addr += BLOCK_SIZE
         if progress:
-            sys.stderr.write("\n")
+            print_im("\n")
 
     def cmd_erase_ext_special(self, cmd):
         self.send_cmd(CMD_ERASE_EXTENDED)
@@ -236,7 +232,7 @@ class stm32_ser:
 
         wdata = struct.pack(">H", dcmd)
         xor = calc_xor(wdata)
-        wdata += chr(xor)
+        wdata += bytes((xor,))
         self.write(wdata)
         for i in range(0, 8):
             try:
@@ -254,10 +250,7 @@ class stm32_ser:
         for i in range(0, size):
             wdata += struct.pack(">H", page_list[i])
 
-        xor = calc_xor(wdata)
-        wdata += chr(xor)
-        self.write(wdata)
-        self.get_ack()
+        self.write_data(wdata)
 
 
 def usage(name):
@@ -275,7 +268,7 @@ def main():
     try:
         opts, args = getopt.getopt(sys.argv[1:], "a:e:")
     except getopt.GetoptError as err:
-        print str(err)
+        print(str(err))
         usage(progname)
     for o, a in opts:
         if o == "-a":
@@ -305,7 +298,7 @@ def main():
 
     get_res = s.cmd_get()
     erase_cmd = get_res[7]
-    if ord(erase_cmd) != CMD_ERASE_EXTENDED:
+    if erase_cmd != CMD_ERASE_EXTENDED:
         sys.stderr.write("FIXME: Only extended erase supported\n")
         sys.exit(1)
 
@@ -314,9 +307,9 @@ def main():
         dump("invalid chip identifier", ident)
     else:
         sys.stderr.write("chip identifier %02x:%02x\n" %
-                         (ord(ident[0]), ord(ident[1])))
+                         (ident[0], ident[1]))
 
-    data = open(imfile).read()
+    data = open(imfile, 'rb').read()
 
     if n_erase > 0:
         sys.stderr.write("Erasing %d block(s)\n" % n_erase)
