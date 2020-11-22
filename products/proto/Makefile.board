@@ -187,6 +187,7 @@ FILES.f746 += stm32_rcc_a.o
 FILES.f746 += stm32_hal_rtc.o
 FILES.f746 += stm32_board_f746.o
 FILES.f746 += stm32_eth.o
+FILES.f746 += stm32_lcd.o
 FILES.f746 += $(FILES.fxxx)
 
 FILES.f767 += stm32_usart_b.o

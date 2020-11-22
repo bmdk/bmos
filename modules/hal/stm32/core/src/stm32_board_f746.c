@@ -36,92 +36,19 @@
 #include "stm32_pwr.h"
 #include "stm32_pwr_fxxx.h"
 #include "stm32_regs.h"
+#include "stm32_lcd.h"
 
 void clear_button_int()
 {
   EXTI->pr = BIT(11);
 }
 
-volatile stm32_lcd_t *lcd = (stm32_lcd_t *)0x40016800;
-
-#define LCD_MEM_SIZE (480 * 272)
-
-unsigned char framebuf[LCD_MEM_SIZE];
-
 #define LCD_X 480
 #define LCD_Y 272
 
-#define LCD_PFCR_RGB888 1
-#define LCD_PFCR_RGB565 2
-#define LCD_PFCR_L8 5
+#define LCD_MEM_SIZE (LCD_X * LCD_Y)
 
-#define LCD_CR_LEN BIT(0)
-#define LCD_CR_COLKEN BIT(1)
-#define LCD_CR_CLUTEN BIT(4)
-
-void draw_line(unsigned int fgcol, unsigned int bgcol,
-               int min, int max)
-{
-  int x, y;
-  unsigned short col;
-
-  for (x = 0; x < LCD_X; x++) {
-    if (x > min && x <= max)
-      col = fgcol;
-    else
-      col = bgcol;
-
-    for (y = 0; y < LCD_Y; y++)
-      framebuf[y * 480 + x] = col;
-  }
-}
-
-void set_lcd_colour(unsigned int colour)
-{
-  for (int i = 0; i < LCD_MEM_SIZE; i++)
-    framebuf[i] = colour & 0xffff;
-}
-
-static void set_clut(unsigned int idx, unsigned int r, unsigned int g,
-                     unsigned int b)
-{
-  lcd->l1clutwr = ((idx & 0xff) << 24) | ((r & 0xff) << 16 ) |
-                  ((g & 0xff) << 8 ) | ((b & 0xff) << 0 );
-}
-
-void lcd_init(unsigned int x, unsigned int y)
-{
-  unsigned int i;
-
-  lcd->sscr = (9 << 16) | (1);
-  lcd->bpcr = (29 << 16) | (3);
-  lcd->awcr = ((x + 29) << 16) | ((y + 3));
-  lcd->twcr = ((x + 29 + 10) << 16) | (y + 4 + 3);
-  lcd->bccr = 0x0000ff00;
-
-  lcd->gcr = 0x00000001;
-
-  set_lcd_colour(0);
-
-  lcd->l1pfcr = LCD_PFCR_L8;
-  lcd->l1cacr = 0xff;
-  lcd->l1dccr = 0x0;
-  lcd->l1bfcr = (6 << 8) | (7);
-  lcd->l1whpcr = ((x + 29) << 16) | (29 + 1);
-  lcd->l1wvpcr = ((y + 3) << 16) | (3 + 1);
-  lcd->l1cfbar = (unsigned int)framebuf;
-  lcd->l1cfblr = ((x * 2) << 16) | (x * 2 + 3);
-  lcd->l1cfblnr = y;
-
-  lcd->l1cr = LCD_CR_LEN;
-  lcd->srcr = 1;
-
-  for (i = 0; i < 256; i++)
-    set_clut(i, 0, 0, i);
-
-  lcd->l1cr |= LCD_CR_CLUTEN;
-  lcd->srcr = 1;
-}
+unsigned char framebuf[LCD_MEM_SIZE];
 
 typedef struct {
   gpio_handle_t gpio;
@@ -292,6 +219,6 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 #if APPL
-  lcd_init(480, 272);
+  lcd_init(LCD_X, LCD_Y);
 #endif
 }
