@@ -47,6 +47,7 @@ void enable_ahb3(unsigned int dev);
 void enable_ahb4(unsigned int dev);
 void enable_apb1(unsigned int dev);
 void enable_apb2(unsigned int dev);
+void enable_apb3(unsigned int dev);
 void enable_apb4(unsigned int dev);
 
 void disable_ahb1(unsigned int dev);
@@ -55,6 +56,7 @@ void disable_ahb3(unsigned int dev);
 void disable_ahb4(unsigned int dev);
 void disable_apb1(unsigned int dev);
 void disable_apb2(unsigned int dev);
+void disable_apb3(unsigned int dev);
 void disable_apb4(unsigned int dev);
 
 void clock_init_ls(void);
