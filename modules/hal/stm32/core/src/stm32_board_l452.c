@@ -47,6 +47,8 @@ void pin_init()
   enable_ahb2(1); /* GPIOB */
   enable_ahb2(2); /* GPIOC */
 
+  gpio_init(GPIO(0, 0), GPIO_OUTPUT);
+
   gpio_init_attr(GPIO(2, 13),
                  GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
 
@@ -75,6 +77,12 @@ void pin_init()
 
   /* TIM 2 */
   enable_apb1(0);
+
+  /* DMA 1 */
+  enable_ahb1(0);
+
+  /* DMA 2 */
+  enable_ahb1(1);
 
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);

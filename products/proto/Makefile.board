@@ -69,14 +69,18 @@ XCFLAGS.f767 += -DCONFIG_LWIP -DLWIP_DEBUG
 XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
 XCFLAGS.l432 += -mcpu=cortex-m4
 STACK_END.l432 = 0x20010000
+XCFLAGS.l432 += -DWS2811
 
 XCFLAGS.l452 += -DSTM32_L452 -DSTM32_L4XX
 XCFLAGS.l452 += -mcpu=cortex-m4
 STACK_END.l452 = 0x20028000
 
+XCFLAGS.l452 += -DWS2811
+
 XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
 XCFLAGS.l496 += -mcpu=cortex-m4
 STACK_END.l496 = 0x20040000
+XCFLAGS.l496 += -DWS2811
 
 XCFLAGS += $(XCFLAGS.$(PROG))
 STACK_END = $(STACK_END.$(PROG))
@@ -266,17 +270,22 @@ FILES.l4xx += stm32_wdog.o
 FILES.l4xx += stm32_pwr_lxxx.o
 FILES.l4xx += stm32_exti_lxxx.o
 
+FILES.l432 += stm32_hal_bdma.o
 FILES.l432 += stm32_hal_rtc.o
 FILES.l432 += stm32_hal_spi.o
 FILES.l432 += stm32_board_l432.o
+FILES.l432 += ws2811.o
 
+FILES.l452 += stm32_hal_bdma.o
 FILES.l452 += stm32_hal_rtc.o
 FILES.l452 += stm32_board_l452.o
+FILES.l452 += ws2811.o
 
 FILES.l496 += stm32_hal_bdma.o
 FILES.l496 += stm32_hal_spi.o
 FILES.l496 += stm32_hal_adc.o
 FILES.l496 += stm32_board_l496.o
+FILES.l496 += ws2811.o
 
 FILES.l432 += $(FILES.l4xx)
 FILES.l452 += $(FILES.l4xx)

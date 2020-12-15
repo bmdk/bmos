@@ -44,8 +44,8 @@
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_regs.h"
-#include "xtime.h"
 #include "xslog.h"
+#include "xtime.h"
 
 #if CONFIG_LWIP
 #include "lwip/init.h"
@@ -249,6 +249,8 @@ void lcd_task(void *arg)
 }
 #endif
 
+void task_led();
+
 int main()
 {
   interrupt_disable();
@@ -292,6 +294,10 @@ int main()
 
 #if CONFIG_LWIP
   task_init(task_net, NULL, "net", 4, 0, 8192);
+#endif
+
+#if WS2811
+  task_init(task_led, NULL, "lcd", 4, 0, 1024);
 #endif
 
   syspool = op_msg_pool_create("sys", QUEUE_TYPE_TASK, 10, 64);
