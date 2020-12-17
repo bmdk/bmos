@@ -181,6 +181,8 @@ FILES.h7xx += stm32_exti_h7xx.o
 FILES.h7xx += stm32_pwr_h7xx.o
 FILES.h7xx += stm32_eth_h7xx.o
 FILES.h7xx += stm32_hal_bdma.o
+FILES.h7xx += stm32_hal_dma.o
+FILES.h7xx += stm32_hal_dmamux.o
 FILES.h7xx += stm32_hal_i2c.o
 FILES.h7xx += hd44780.o
 
