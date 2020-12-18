@@ -43,11 +43,14 @@ typedef struct {
 } stm32_dma_t;
 
 #ifdef STM32_H7XX
-static volatile stm32_dma_t *dma[] = { (void *)0x40020000,
-                                       (void *)0x40020400 };
+#define DMA_LIST (void *)0x40020000, (void *)0x40020400
+#elif STM32_F429
+#define DMA_LIST (void *)0x40026000, (void *)0x40026400
 #else
 #error Define dmamux for this platform
 #endif
+
+static volatile stm32_dma_t *dma[] = { DMA_LIST };
 
 static volatile stm32_dma_t *num2addr(unsigned int num)
 {
@@ -81,6 +84,7 @@ void stm32_dma_sw_trig(unsigned int num, unsigned int chan)
   volatile stm32_dma_chan_t *c = &d->chan[chan];
 
   c->cr &= ~(DMA_CR_DIR_M2M | DMA_CR_EN);
+  c->fcr = DMA_FCR_DMDIS;
   c->cr |= (DMA_CR_DIR_M2M | DMA_CR_EN);
 }
 
@@ -90,12 +94,30 @@ void stm32_dma_trans(unsigned int num, unsigned int chan,
 {
   volatile stm32_dma_t *d = num2addr(num);
   volatile stm32_dma_chan_t *c = &d->chan[chan];
+  unsigned int ifcr_reg = 0, ofs = 0;
+
+  if (chan > 8)
+    return;
 
   c->cr &= ~DMA_CR_EN;
 
-  c->ndtr = n;
+  if (chan >= 4) {
+    ifcr_reg = 1;
+    chan -= 4;
+  }
+
+  if (chan >= 2) {
+    ofs = 16;
+    chan -= 2;
+  }
+
+  ofs += chan * 6;
+
+  d->ifcr[ifcr_reg] = (BIT(6) - 1) << ofs;
+
   c->par = (unsigned int)src;
   c->mar[0] = (unsigned int)dst;
+  c->ndtr = n;
 
   c->cr = flags;
 }
@@ -135,7 +157,7 @@ int cmd_dma(int argc, char *argv[])
     chan = atoi(argv[2]);
     devid = atoi(argv[3]);
 
-    stm32_dma_set_chan(0, chan, devid);
+    stm32_dma_set_chan(1, chan, devid);
     break;
   case 'm':
     if (argc < 5)
@@ -145,15 +167,15 @@ int cmd_dma(int argc, char *argv[])
     n = strtoul(argv[4], 0, 0);
 
     xprintf("copy src: %08x dst: %08x cnt: %d\n", src, dst, n);
-    stm32_dma_memcpy(0, (void *)src, (void *)dst, n);
+    stm32_dma_memcpy(1, (void *)src, (void *)dst, n);
     break;
   case 't':
     if (argc < 3)
       return -1;
-    stm32_dma_sw_trig(0, atoi(argv[2]));
+    stm32_dma_sw_trig(1, atoi(argv[2]));
     break;
   case 'd':
-    stm32_dma_chan_dump(0);
+    stm32_dma_chan_dump(1);
     break;
   }
 
