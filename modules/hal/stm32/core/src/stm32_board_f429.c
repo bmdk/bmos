@@ -133,8 +133,17 @@ void pin_init()
   gpio_init_attr(GPIO(0, 10), GPIO_ATTR_STM32(0, \
                                               GPIO_SPEED_HIG, 7, GPIO_ALT));
 
+  /* TIM1 */
+  enable_apb2(0);
+
   /* TIM2 */
   enable_apb1(0);
+
+  /* DMA 1 */
+  enable_ahb1(21);
+
+  /* DMA 2 */
+  enable_ahb1(22);
 
 #if 0
   /* CAN1 */
@@ -167,7 +176,6 @@ void pin_init()
                                              GPIO_SPEED_HIG, 5, GPIO_ALT));
 #endif
 
-#if 1
   /* LCD */
   enable_apb2(26);
 
@@ -176,7 +184,6 @@ void pin_init()
     gpio_init_attr(e->gpio, GPIO_ATTR_STM32(0, \
                                             GPIO_SPEED_HIG, e->alt, GPIO_ALT));
   }
-#endif
 }
 
 #if 0
