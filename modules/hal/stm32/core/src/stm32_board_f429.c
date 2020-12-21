@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "debug_ser.h"
+#include "debug_ser.h"
 #include "hal_board.h"
 #include "hal_gpio.h"
 #include "hal_uart.h"
@@ -31,11 +32,11 @@
 #include "shell.h"
 #include "stm32_can.h"
 #include "stm32_hal.h"
-#include "stm32_hal_spi.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_hal_spi.h"
 #include "stm32_pwr_fxxx.h"
+#include "stm32_rcc_a.h"
 #include "stm32_regs.h"
-#include "debug_ser.h"
 
 volatile stm32_lcd_t *lcd = (stm32_lcd_t *)0x40016800;
 
@@ -478,10 +479,28 @@ uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 
 static const gpio_handle_t leds[] = { GPIO(6, 13), GPIO(6, 14) };
 
+/* 8MHz crystal input
+   120MHz CPU clock
+   60MHz AHB1
+   30MHz AHB2
+ */
+static const struct pll_params_t pll_params = {
+  .src   = RCC_A_CLK_HSE_OSC,
+  .pllr  = 0,
+  .pllp  = RCC_A_PLLP_2,
+  .pllq  = 5,
+  .plln  = 120,
+  .pllm  = 4,
+  .hpre  = 0,
+  .ppre1 = RCC_A_PPRE_4,
+  .ppre2 = RCC_A_PPRE_2,
+  .acr   = 5
+};
+
 void hal_board_init()
 {
   pin_init();
-  clock_init();
+  clock_init(&pll_params);
   led_init(leds, ARRSIZ(leds));
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
   stm32_hal_spi_init((void *)0x40015000, 8);

@@ -26,12 +26,13 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "stm32_can.h"
+#include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_fxxx.h"
+#include "stm32_rcc_a.h"
 #include "stm32_regs.h"
-#include "stm32_exti.h"
 
 #if APPL
 static void eth_pin_init()
@@ -132,10 +133,23 @@ uart_t debug_uart = { "debugser", (void *)USART3_BASE, APB2_CLOCK, 39 };
 
 static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7) };
 
+static const struct pll_params_t pll_params = {
+  .src   = RCC_A_CLK_HSE_OSC,
+  .pllr  = 0,
+  .pllp  = RCC_A_PLLP_2,
+  .pllq  = 5,
+  .plln  = 120,
+  .pllm  = 4,
+  .hpre  = 0,
+  .ppre1 = RCC_A_PPRE_4,
+  .ppre2 = RCC_A_PPRE_2,
+  .acr   = 5
+};
+
 void hal_board_init()
 {
   pin_init();
-  clock_init();
+  clock_init(&pll_params);
 #if 1
   backup_domain_protect(0);
   clock_init_ls();

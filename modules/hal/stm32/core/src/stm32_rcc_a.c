@@ -23,6 +23,7 @@
 #include "hal_common.h"
 #include "stm32_regs.h"
 #include "stm32_pwr.h"
+#include "stm32_rcc_a.h"
 
 typedef struct {
   unsigned int cr;
@@ -81,30 +82,6 @@ typedef struct {
    (((src) & 0x3) << 22) | (((pllp) & 0x3) << 16) | \
    (((plln) & 0x1ff) << 6) | (((pllm) & 0x1f) << 0))
 
-#ifdef STM32_F746
-#define CLOCK_EXT 1
-#define PLLSRC PLLSRC_HSE
-#define HPRE 0
-#define PLLM 25
-#define PLLN 240
-#else
-#ifdef STM32_F429
-#define CLOCK_EXT 1
-#define PLLSRC PLLSRC_HSE
-#define HPRE 0
-#define PLLM 4
-#define PLLN 120
-#else
-#define CLOCK_EXT 1
-#define PLLSRC PLLSRC_HSE
-#define HPRE 0
-#define PLLM 4
-#define PLLN 120
-#endif
-#endif
-
-#define PLLCFGR_VAL PLLCFGR(0, 5, PLLSRC, 0, PLLN, PLLM)
-
 #define RCC_CFGR_SW_HSI 0
 #define RCC_CFGR_SW_HSE 1
 #define RCC_CFGR_SW_PLL 2
@@ -114,66 +91,58 @@ typedef struct {
    (((ppre2) & 0x7) << 13) | (((ppre1) & 0x7) << 10) | \
    (((hpre) & 0xf) << 4) | ((src) & 0x3))
 
-#define CFGR_VAL CFGR(0, 4, 5, HPRE, RCC_CFGR_SW_PLL)
-
-void clock_init_hs(void)
+void clock_init_lcd(void)
 {
-  RCC->cfgr = CFGR(0, 4, 5, HPRE, RCC_CFGR_SW_HSI);
-  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_HSI)
-    asm volatile ("nop");
-
-#if CLOCK_EXT
-  RCC->cr |= RCC_CR_HSEBYP;
-#else
-  RCC->cr &= ~RCC_CR_HSEBYP;
-#endif
-
-  RCC->cr &= ~RCC_CR_PLLON;
-  while ((RCC->cr & RCC_CR_PLLRDY))
-    ;
-
-#if CLOCK_EXT
-  RCC->cr |= RCC_CR_HSEON;
-  while ((RCC->cr & RCC_CR_HSERDY) == 0)
-    asm volatile ("nop");
-#else
-  RCC->cr |= RCC_CR_HSION;
-  while ((RCC->cr & RCC_CR_HSIRDY) == 0)
-    asm volatile ("nop");
-#endif
-
-  RCC->pllcfgr = PLLCFGR_VAL;
-
-  RCC->cr |= RCC_CR_PLLON;
-  while ((RCC->cr & RCC_CR_PLLRDY) == 0)
-    ;
-
-#ifdef STM32_LCD
   RCC->pllsaicfgr = (2 << 28) | (4 << 24) | (50 << 6);
 
   RCC->cr |= RCC_CR_PLLSAION;
   while ((RCC->cr & RCC_CR_PLLSAIRDY) == 0)
     ;
-#endif
 
-  unsigned int l = *FLASH_ACR;
-  l &= ~0xf;
-  l |= 5;
-  *FLASH_ACR = l;
+  RCC->dckcfgr1 = (2 << 16);
+}
 
-  RCC->cfgr = CFGR_VAL;
-  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
+void clock_init_hs(const struct pll_params_t *p)
+{
+  unsigned int pllsrc;
+
+  RCC->cr |= RCC_CR_HSION;
+  while ((RCC->cr & RCC_CR_HSIRDY) == 0)
     asm volatile ("nop");
 
-#ifdef STM32_LCD
-  RCC->dckcfgr1 = (2 << 16);
-#endif
-#if 0
-#ifndef STM32_F429
-  RCC->dckcfgr1 = (0 << 16) | (3 << 8);
-  RCC->dckcfgr2 = (0 << 2); /* USART2 HSI */
-#endif
-#endif
+  RCC->cfgr = CFGR(0, 0, 0, 0, RCC_CFGR_SW_HSI);
+  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_HSI)
+    asm volatile ("nop");
+
+  if (p->src == RCC_A_CLK_HSE)
+    RCC->cr |= RCC_CR_HSEBYP;
+  else
+    RCC->cr &= ~RCC_CR_HSEBYP;
+
+  RCC->cr &= ~RCC_CR_PLLON;
+  while ((RCC->cr & RCC_CR_PLLRDY))
+    ;
+
+  if (p->src == RCC_A_CLK_HSI)
+    pllsrc = PLLSRC_HSI;
+  else {
+    pllsrc = PLLSRC_HSE;
+    RCC->cr |= RCC_CR_HSEON;
+    while ((RCC->cr & RCC_CR_HSERDY) == 0)
+      asm volatile ("nop");
+  }
+
+  RCC->pllcfgr = PLLCFGR(p->pllr, p->pllq, pllsrc, p->pllp, p->plln, p->pllm);
+
+  RCC->cr |= RCC_CR_PLLON;
+  while ((RCC->cr & RCC_CR_PLLRDY) == 0)
+    ;
+
+  reg_set_field(FLASH_ACR, 4, 0, p->acr);
+
+  RCC->cfgr = CFGR(p->rtcpre, p->ppre2, p->ppre1, p->hpre, RCC_CFGR_SW_PLL);
+  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
+    asm volatile ("nop");
 }
 
 #define RCC_BDCR_LSEON BIT(0)
@@ -193,10 +162,11 @@ void clock_init_ls()
   reg_set_field(&RCC->bdcr, 2, 8, 1);
 }
 
-void clock_init(void)
+void clock_init(struct pll_params_t *p)
 {
-#if 1
-  clock_init_hs();
+  clock_init_hs(p);
+#ifdef STM32_LCD
+  clock_init_lcd();
 #endif
 }
 
