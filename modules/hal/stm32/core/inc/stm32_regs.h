@@ -23,20 +23,6 @@
 #define STM32_REGS_H
 
 typedef struct {
-  unsigned int moder;
-  unsigned int otyper;
-  unsigned int ospeedr;
-  unsigned int pupdr;
-  unsigned int idr;
-  unsigned int odr;
-  unsigned int bsrr;
-  unsigned int lckr;
-  unsigned int afrl;
-  unsigned int afrh;
-  unsigned int brr;
-} stm32_gpio_t;
-
-typedef struct {
   unsigned int sr;
   unsigned int dr;
   unsigned int brr;

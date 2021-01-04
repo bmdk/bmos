@@ -42,6 +42,7 @@
 #include "shell.h"
 #include "stm32_flash.h"
 #include "stm32_hal.h"
+#include "stm32_hal_gpio.h"
 #include "stm32_regs.h"
 #include "xtime.h"
 #include "xslog.h"

@@ -25,16 +25,6 @@
 #include "stm32_hal_gpio.h"
 #include "stm32_regs.h"
 
-#if STM32_L4R || STM32_L4XX
-#define GPIO_BASE 0x48000000
-#elif STM32_H7XX
-#define GPIO_BASE 0x58020000
-#else
-#define GPIO_BASE 0x40020000
-#endif
-
-#define STM32_GPIO(i) (volatile stm32_gpio_t *)(GPIO_BASE + (0x400 * i))
-
 static void stm32_gpio_mode(volatile stm32_gpio_t *gpio, unsigned int pin,
                             unsigned int mode)
 {

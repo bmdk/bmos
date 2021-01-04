@@ -44,4 +44,29 @@
 #define GPIO_ATTR_STM32_SPEED(attr) (((attr) >> 2) & 0x3)
 #define GPIO_ATTR_STM32_TYPE(attr) ((attr) & 0x3)
 
+typedef struct {
+  unsigned int moder;
+  unsigned int otyper;
+  unsigned int ospeedr;
+  unsigned int pupdr;
+  unsigned int idr;
+  unsigned int odr;
+  unsigned int bsrr;
+  unsigned int lckr;
+  unsigned int afrl;
+  unsigned int afrh;
+  unsigned int brr;
+} stm32_gpio_t;
+
+#if STM32_L4R || STM32_L4XX
+#define GPIO_BASE 0x48000000
+#elif STM32_H7XX
+#define GPIO_BASE 0x58020000
+#else
+#define GPIO_BASE 0x40020000
+#endif
+
+#define STM32_GPIO(port) ((volatile stm32_gpio_t *)(GPIO_BASE + \
+                                                    (0x400 * (port))))
+
 #endif
