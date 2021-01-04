@@ -31,6 +31,7 @@
 #include "io.h"
 #include "shell.h"
 #include "stm32_can.h"
+#include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_lcd.h"
@@ -173,13 +174,11 @@ void pin_init()
   enable_apb2(14);
 
 #if 1
-  EXTI->pr = 0xffffffff;
-
-  SYSCFG->exticr[2] = (8 << 12); /* EXT13 PI11 */
-  EXTI->rtsr = 0;
-  EXTI->ftsr |= BIT(11);
-  EXTI->emr |= BIT(11);
-  EXTI->imr |= BIT(11);
+  /* BUTTON PI11 */
+  stm32_exti_irq_set_edge_rising(11, 1);
+  stm32_exti_irq_enable(11, 1);
+  stm32_exti_ev_enable(11, 1);
+  stm32_syscfg_set_exti(8, 11);
 #endif
 
 #if 1
