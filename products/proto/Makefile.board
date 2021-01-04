@@ -303,6 +303,7 @@ FILES.l4r += stm32_rcc_b.o
 FILES.l4r += stm32_board_l4r.o
 FILES.l4r += stm32_wdog.o
 FILES.l4r += stm32_pwr_lxxx.o
+FILES.l4r += stm32_exti_lxxx.o
 
 FILES += $(FILES.$(PROG))
 

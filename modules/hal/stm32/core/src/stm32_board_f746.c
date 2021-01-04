@@ -39,11 +39,6 @@
 #include "stm32_rcc_a.h"
 #include "stm32_regs.h"
 
-void clear_button_int()
-{
-  EXTI->pr = BIT(11);
-}
-
 #define LCD_X 480
 #define LCD_Y 272
 

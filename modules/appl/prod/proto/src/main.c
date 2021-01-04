@@ -40,6 +40,7 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
+#include "stm32_exti.h"
 #include "stm32_flash.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
@@ -73,22 +74,16 @@ void blink()
 }
 
 #if STM32_H7XX || STM32_F767 || STM32_L4XX
-void stm32_exti_irq_ack(unsigned int n);
+#define BUTTON_EXTI 13
+#else
+#define BUTTON_EXTI 11
+#endif
 
 void button_int(void *data)
 {
-  stm32_exti_irq_ack(13);
+  stm32_exti_irq_ack(BUTTON_EXTI);
   debug_puts("X\n");
 }
-#else
-void clear_button_int();
-
-void button_int(void *data)
-{
-  xputs("X\n");
-  clear_button_int();
-}
-#endif
 
 static void polled_shell(void)
 {
