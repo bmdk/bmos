@@ -188,8 +188,10 @@ FILES.h7xx += hd44780.o
 
 FILES.h735dk += stm32_lcd.o
 FILES.h735dk += stm32_board_h735dk.o
+FILES.h735dk += lwip.o
 
 FILES.h743nucleo += stm32_board_h743nucleo.o
+FILES.h743nucleo += lwip.o
 
 FILES.fxxx += stm32_pwr_fxxx.o
 FILES.fxxx += stm32_exti_fxxx.o
@@ -207,6 +209,7 @@ FILES.f746 += stm32_hal_rtc.o
 FILES.f746 += stm32_board_f746.o
 FILES.f746 += stm32_eth.o
 FILES.f746 += stm32_lcd.o
+FILES.f746 += lwip.o
 FILES.f746 += $(FILES.fxxx)
 
 FILES.f767 += stm32_usart_b.o
@@ -214,6 +217,7 @@ FILES.f767 += stm32_rcc_a.o
 FILES.f767 += stm32_hal_rtc.o
 FILES.f767 += stm32_eth.o
 FILES.f767 += stm32_board_f767.o
+FILES.f767 += lwip.o
 FILES.f767 += $(FILES.fxxx)
 
 
