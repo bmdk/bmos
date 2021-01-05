@@ -45,6 +45,10 @@
 #include "xslog.h"
 #include "xtime.h"
 
+#if STM32_F746 || STM32_H735DK
+#define LCD_DEMO 1
+#endif
+
 static int led_state = 0;
 static xtime_ms_t last_blink = 0;
 
@@ -177,7 +181,7 @@ bmos_queue_t *syspool;
 
 extern uart_t debug_uart_2;
 
-#if STM32_H735DK
+#if LCD_DEMO
 void set_lcd(unsigned int start, unsigned int width, unsigned int height);
 
 void lcd_task(void *arg)
@@ -230,7 +234,7 @@ int main()
 
   io_set_output(shell_info.txq[0], 0);
 
-#if STM32_H735DK
+#if LCD_DEMO
   task_init(lcd_task, NULL, "lcd", 2, 0, 512);
 #endif
 
