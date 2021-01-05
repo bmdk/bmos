@@ -210,9 +210,8 @@ int main()
 
   xslog(LOG_INFO, "starting");
 
-#if STM32_H7XX || STM32_L4XX || STM32_F767
+  /* register EXTI15_10 for button ext interrupt */
   irq_register("ext", button_int, 0, 40);
-#endif
 
   task_init(blink_task, NULL, "blink", 2, 0, 1024);
 
