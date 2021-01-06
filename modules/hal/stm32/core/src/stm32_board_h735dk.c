@@ -195,6 +195,10 @@ static void pin_init()
   gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));
   gpio_init_attr(GPIO(2, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));
 
+  /* FDCAN1 */
+  gpio_init_attr(GPIO(7, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+  gpio_init_attr(GPIO(7, 14), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+
   /* LCD backlight */
   gpio_init(GPIO(6, 15), GPIO_OUTPUT);
   gpio_set(GPIO(6, 15), 1);
@@ -266,7 +270,7 @@ void hal_board_init()
   clock_init_ls();
 
   /* FDCAN */
-  set_fdcansel(FDCANSEL_PLL1_Q_CK);
+  set_fdcansel(FDCANSEL_HSE_CK);
   enable_apb1(40);
 
 #if APPL

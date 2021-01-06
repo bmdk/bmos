@@ -47,7 +47,7 @@ STACK_END.h743nucleo = 0x20020000
 XCFLAGS.h743nucleo += -mcpu=cortex-m7
 XCFLAGS.h743nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
 
-XCFLAGS.h745nucleo += -DSTM32_H7XX
+XCFLAGS.h745nucleo += -DSTM32_H7XX -DSTM32_H745N
 STACK_END.h745nucleo = 0x20020000
 XCFLAGS.h745nucleo += -mcpu=cortex-m7
 XCFLAGS.h745nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
@@ -159,7 +159,6 @@ VPATH += $(addsuffix /src, $(addprefix $(ROOT)/modules/, $(MODULES)))
 FILES += main.o
 FILES += start.o
 FILES += stm32_hal_gpio.o
-FILES += stm32_can.o
 FILES += shell.o
 FILES += cortexm.o
 FILES += xtime.o
@@ -202,12 +201,14 @@ FILES.h7xx += hd44780.o
 FILES.h735dk += stm32_lcd.o
 FILES.h735dk += stm32_board_h735dk.o
 FILES.h735dk += lwip.o
+FILES.h735dk += stm32_fdcan.o
 
 FILES.h743nucleo += stm32_board_h743nucleo.o
 FILES.h743nucleo += lwip.o
 
 FILES.h745nucleo += stm32_board_h745nucleo.o
 FILES.h745nucleo += lwip.o
+FILES.h745nucleo += stm32_fdcan.o
 
 FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f4xx += stm32_pwr_f4xx.o
@@ -307,6 +308,7 @@ FILES.g4xx += stm32_rcc_b.o
 FILES.g4xx += stm32_usart_b.o
 FILES.g4xx += stm32_wdog.o
 FILES.g4xx += xmodem.o
+FILES.g4xx += stm32_fdcan.o
 
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o

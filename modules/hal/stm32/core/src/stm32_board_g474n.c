@@ -79,6 +79,12 @@ void pin_init()
   /* DMA 2 */
   enable_ahb1(1);
 
+  /* FDCAN */
+  enable_apb1(25);
+
+  gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);
   stm32_exti_ev_enable(13, 1);
