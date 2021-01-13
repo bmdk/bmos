@@ -28,24 +28,39 @@
 
 static unsigned char nleds;
 static const gpio_handle_t *led;
+static const unsigned char *led_flags;
 
 void led_set(unsigned int n, unsigned int v)
 {
+  unsigned int inv;
+
   if (n >= nleds || !led)
     return;
 
-  gpio_set(led[n], v);
+  if (led_flags && (led_flags[n] & LED_FLAG_INV))
+    inv = 1;
+  else
+    inv = 0;
+
+  gpio_set(led[n], v ^ inv);
 }
 
-void led_init(const gpio_handle_t *led_list, unsigned int _nleds)
+void led_init_flags(const gpio_handle_t *led_list,
+                    const unsigned char *flags, unsigned int _nleds)
 {
   unsigned int i;
 
   nleds = _nleds;
   led = led_list;
+  led_flags = flags;
 
   for (i = 0; i < nleds; i++)
     gpio_init(led[i], GPIO_OUTPUT);
+}
+
+void led_init(const gpio_handle_t *led_list, unsigned int _nleds)
+{
+  led_init_flags(led_list, 0, _nleds);
 }
 
 void delay(unsigned int count)

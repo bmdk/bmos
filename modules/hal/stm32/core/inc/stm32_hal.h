@@ -34,6 +34,13 @@ void debug_uart_init(void *base, unsigned int baud,
 void clock_init(void);
 void led_init(const gpio_handle_t *led_list, unsigned int _nleds);
 
+#define LED_FLAG_INV BIT(0)
+
+typedef unsigned char led_flag_t;
+
+void led_init_flags(const gpio_handle_t *led_list,
+                    const led_flag_t *led_flags, unsigned int _nleds);
+
 void enable_ahb1(unsigned int dev);
 void enable_ahb2(unsigned int dev);
 void enable_ahb3(unsigned int dev);
