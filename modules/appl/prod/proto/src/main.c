@@ -66,8 +66,13 @@ void blink()
 
 #if STM32_H7XX || STM32_F767 || STM32_L4XX
 #define BUTTON_EXTI 13
+#define BUTTON_IRQ 40
+#elif STM32_F411BP
+#define BUTTON_EXTI 0
+#define BUTTON_IRQ 6
 #else
 #define BUTTON_EXTI 11
+#define BUTTON_IRQ 40
 #endif
 
 void button_int(void *data)
@@ -214,8 +219,7 @@ int main()
 
   xslog(LOG_INFO, "starting");
 
-  /* register EXTI15_10 for button ext interrupt */
-  irq_register("ext", button_int, 0, 40);
+  irq_register("ext", button_int, 0, BUTTON_IRQ);
 
   task_init(blink_task, NULL, "blink", 2, 0, 1024);
 

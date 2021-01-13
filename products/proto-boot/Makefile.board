@@ -44,6 +44,9 @@ STACK_END.h743nucleo = 0x20020000
 XCFLAGS.l4r += -DSTM32_L4R
 STACK_END.l4r = 0x200A0000
 
+XCFLAGS.f411bp += -DSTM32_F411
+STACK_END.f411bp = 0x20020000
+
 XCFLAGS.f429 += -DSTM32_F429 -DSTM32_LCD
 STACK_END.f429 = 0x20030000
 
@@ -149,6 +152,11 @@ FILES.h735dk += $(FILES.h7xx)
 
 FILES.fxxx += stm32_pwr_fxxx.o
 FILES.fxxx += stm32_exti_fxxx.o
+
+FILES.f411bp += stm32_usart_a.o
+FILES.f411bp += stm32_rcc_a.o
+FILES.f411bp += stm32_board_f411bp.o
+FILES.f411bp += $(FILES.fxxx)
 
 FILES.f429 += stm32_usart_a.o
 FILES.f429 += stm32_rcc_a.o

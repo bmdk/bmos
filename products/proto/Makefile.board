@@ -52,6 +52,11 @@ XCFLAGS.l4r += -DSTM32_L4R
 XCFLAGS.l4r += -mcpu=cortex-m4
 STACK_END.l4r = 0x200A0000
 
+XCFLAGS.f411bp += -DSTM32_F411
+XCFLAGS.f411bp += -DSTM32_F411BP
+XCFLAGS.f411bp += -mcpu=cortex-m4
+STACK_END.f411bp = 0x20020000
+
 XCFLAGS.f429 += -DSTM32_F429 -DSTM32_LCD
 XCFLAGS.f429 += -mcpu=cortex-m4
 STACK_END.f429 = 0x20030000
@@ -195,6 +200,13 @@ FILES.h743nucleo += lwip.o
 
 FILES.fxxx += stm32_pwr_fxxx.o
 FILES.fxxx += stm32_exti_fxxx.o
+
+FILES.f411bp += stm32_hal_rtc.o
+FILES.f411bp += stm32_usart_a.o
+FILES.f411bp += stm32_rcc_a.o
+FILES.f411bp += stm32_board_f411bp.o
+FILES.f411bp += stm32_hal_dma.o
+FILES.f411bp += $(FILES.fxxx)
 
 FILES.f429 += stm32_usart_a.o
 FILES.f429 += stm32_rcc_a.o

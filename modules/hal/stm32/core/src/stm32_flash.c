@@ -27,7 +27,7 @@
 #include "shell.h"
 #include "xslog.h"
 
-#if STM32_F767 || STM32_F746 || STM32_F429
+#if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411
 typedef struct {
   unsigned int acr;
   unsigned int keyr;
@@ -59,7 +59,7 @@ typedef struct {
 #define FLASH_CR_PER BIT(1)
 #define FLASH_CR_PG BIT(0)
 
-#if STM32_F767 || STM32_F746 || STM32_F429
+#if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411
 #define FLASH_CR_PSIZE(page) (((page) & 0x3) << 8)
 #define FLASH_CR_PNB(page) (((page) & 0x1f) << 3)
 #else
@@ -78,7 +78,7 @@ typedef struct {
 
 #if STM32_L4XX || STM32_L4R
 #define FLASH ((volatile stm32_flash_t *)0x40022000)
-#elif STM32_F767 || STM32_F746 || STM32_F429
+#elif STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411
 #define FLASH ((volatile stm32_flash_t *)0x40023C00)
 #else
 #error CHECK FLASH BASE
@@ -159,7 +159,7 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
     return -1;
 #endif
 
-#if STM32_F767 || STM32_F746 || STM32_F429
+#if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411
   len >>= 2;
   FLASH->cr = FLASH_CR_PSIZE(2);
   FLASH->cr |= FLASH_CR_PG;
@@ -172,7 +172,7 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
   a = (unsigned int *)addr;
 
   for (i = 0; i < len; i++) {
-#if STM32_F767 || STM32_F746 || STM32_F429
+#if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411
     *a++ = *d++;
     asm volatile ("dsb");
 #else
