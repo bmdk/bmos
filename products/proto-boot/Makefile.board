@@ -41,6 +41,9 @@ STACK_END.h735dk = 0x20020000
 XCFLAGS.h743nucleo += -DSTM32_H7XX
 STACK_END.h743nucleo = 0x20020000
 
+XCFLAGS.h745nucleo += -DSTM32_H7XX
+STACK_END.h745nucleo = 0x20020000
+
 XCFLAGS.l4r += -DSTM32_L4R
 STACK_END.l4r = 0x200A0000
 
@@ -130,7 +133,7 @@ FILES += crc_ccitt16.o
 FILES += xmodem.o
 FILES += stm32_timer.o
 FILES += xslog_simple.o
-ifeq ($(findstring $(PROG), h743nucleo h735dk),)
+ifeq ($(findstring $(PROG), h743nucleo h745nucleo h735dk),)
 FILES += stm32_flash.o
 endif
 
@@ -146,6 +149,9 @@ FILES.h7xx += stm32_pwr_h7xx.o
 
 FILES.h743nucleo += stm32_board_h743nucleo.o
 FILES.h743nucleo += $(FILES.h7xx)
+
+FILES.h745nucleo += stm32_board_h745nucleo.o
+FILES.h745nucleo += $(FILES.h7xx)
 
 FILES.h735dk += stm32_board_h735dk.o
 FILES.h735dk += $(FILES.h7xx)

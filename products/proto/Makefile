@@ -27,6 +27,7 @@ PROG += f746
 PROG += f767
 PROG += h735dk
 PROG += h743nucleo
+PROG += h745nucleo
 PROG += l432
 PROG += l452
 PROG += l496

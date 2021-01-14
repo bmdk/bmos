@@ -47,6 +47,10 @@ STACK_END.h743nucleo = 0x20020000
 XCFLAGS.h743nucleo += -mcpu=cortex-m7
 XCFLAGS.h743nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
 
+XCFLAGS.h745nucleo += -DSTM32_H7XX
+STACK_END.h745nucleo = 0x20020000
+XCFLAGS.h745nucleo += -mcpu=cortex-m7
+XCFLAGS.h745nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
 
 XCFLAGS.l4r += -DSTM32_L4R
 XCFLAGS.l4r += -mcpu=cortex-m4
@@ -113,7 +117,7 @@ XLDFLAGS += -specs=nano.specs
 else
 XLDFLAGS += -nostdlib
 endif
-ifeq ($(findstring $(PROG), h743nucleo h735dk),)
+ifeq ($(findstring $(PROG), h743nucleo h745nucleo h735dk),)
 XLDFLAGS += -T appl.ld
 else
 XLDFLAGS += -T appl-h7xx.ld
@@ -198,6 +202,9 @@ FILES.h735dk += lwip.o
 FILES.h743nucleo += stm32_board_h743nucleo.o
 FILES.h743nucleo += lwip.o
 
+FILES.h745nucleo += stm32_board_h745nucleo.o
+FILES.h745nucleo += lwip.o
+
 FILES.fxxx += stm32_pwr_fxxx.o
 FILES.fxxx += stm32_exti_fxxx.o
 
@@ -279,6 +286,7 @@ FILES.f746 += $(FILES.lwip)
 
 FILES.h735dk += $(FILES.h7xx)
 FILES.h743nucleo += $(FILES.h7xx)
+FILES.h745nucleo += $(FILES.h7xx)
 
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
