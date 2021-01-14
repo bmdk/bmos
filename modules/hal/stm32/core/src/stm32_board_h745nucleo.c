@@ -170,6 +170,10 @@ void hal_board_init()
   stm32_exti_ev_enable(13, 1);
 #endif
 
+#if 0
   /* problems with virtual com port on USART3 so use USART2 FTM */
   debug_uart_init((void *)USART2_BASE, 115200, APB2_CLOCK, 0);
+#else
+  debug_uart_init((void *)USART3_BASE, 115200, APB2_CLOCK, 0);
+#endif
 }

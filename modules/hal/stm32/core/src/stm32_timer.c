@@ -94,6 +94,8 @@ unsigned int hal_time_us(void)
 #define TIM2_DIV 2
 #elif STM32_L4XX
 #define TIM2_DIV 1
+#elif STM32_G4XX
+#define TIM2_DIV 1
 #else
 #define TIM2_DIV 1
 #endif

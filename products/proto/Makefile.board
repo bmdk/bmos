@@ -91,6 +91,10 @@ XCFLAGS.l496 += -mcpu=cortex-m4
 STACK_END.l496 = 0x20040000
 XCFLAGS.l496 += -DWS2811
 
+XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474N
+XCFLAGS.g474n += -mcpu=cortex-m4
+STACK_END.g474n = 0x20020000
+
 XCFLAGS += $(XCFLAGS.$(PROG))
 STACK_END = $(STACK_END.$(PROG))
 
@@ -288,6 +292,16 @@ FILES.h735dk += $(FILES.h7xx)
 FILES.h743nucleo += $(FILES.h7xx)
 FILES.h745nucleo += $(FILES.h7xx)
 
+FILES.g4xx += crc_ccitt16.o
+FILES.g4xx += stm32_exti_lxxx.o
+FILES.g4xx += stm32_flash.o
+FILES.g4xx += stm32_hal_bdma.o
+FILES.g4xx += stm32_pwr_lxxx.o
+FILES.g4xx += stm32_rcc_b.o
+FILES.g4xx += stm32_usart_b.o
+FILES.g4xx += stm32_wdog.o
+FILES.g4xx += xmodem.o
+
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
 FILES.l4xx += stm32_flash.o
@@ -328,6 +342,10 @@ FILES.l4r += stm32_board_l4r.o
 FILES.l4r += stm32_wdog.o
 FILES.l4r += stm32_pwr_lxxx.o
 FILES.l4r += stm32_exti_lxxx.o
+
+FILES.g474n += $(FILES.g4xx)
+FILES.g474n += stm32_hal_rtc.o
+FILES.g474n += stm32_board_g474n.o
 
 FILES += $(FILES.$(PROG))
 

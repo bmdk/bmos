@@ -58,7 +58,7 @@ typedef struct {
   unsigned int brr;
 } stm32_gpio_t;
 
-#if STM32_L4R || STM32_L4XX
+#if STM32_L4R || STM32_L4XX || STM32_G4XX
 #define GPIO_BASE 0x48000000
 #elif STM32_H7XX
 #define GPIO_BASE 0x58020000

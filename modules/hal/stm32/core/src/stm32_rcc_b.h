@@ -19,25 +19,43 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef STM32_HAL_BOARD_H
-#define STM32_HAL_BOARD_H
+#ifndef STM32_RCC_C_H
+#define STM32_RCC_C_H
 
-#if STM32_F746
-#define CLOCK 120000000
-#elif STM32_F767
-#define CLOCK 120000000
-#elif STM32_F429
-#define CLOCK 120000000
-#elif STM32_L4XX
-#define CLOCK 80000000
-#elif STM32_L4R
-#define CLOCK 80000000
-#elif STM32_G4XX
-#define CLOCK 80000000
-#elif STM32_H7XX
-#define CLOCK 400000000
-#else
-#define CLOCK 120000000
-#endif
+struct pll_params_t {
+  /* PLLCFGR */
+  unsigned char flags;
+  unsigned char pllsrc;
+  unsigned char pllm;
+  unsigned char plln;
+  unsigned char pllp;
+  unsigned char pllq;
+  unsigned char pllr;
+  /* FLASH_ACR */
+  unsigned char acr;
+};
+
+#define PLL_FLAG_PLLREN BIT(0)
+#define PLL_FLAG_PLLQEN BIT(1)
+#define PLL_FLAG_PLLPEN BIT(2)
+#define PLL_FLAG_BYPASS BIT(3)
+
+#define RCC_PLLCFGR_PLLSRC_NONE 0
+#define RCC_PLLCFGR_PLLSRC_MSI 1
+#define RCC_PLLCFGR_PLLSRC_HSI16 2
+#define RCC_PLLCFGR_PLLSRC_HSE 3
+
+#define PLLR_DIV_2 0
+#define PLLR_DIV_4 1
+#define PLLR_DIV_6 2
+#define PLLR_DIV_8 3
+
+#define PLLQ_DIV_2 0
+#define PLLQ_DIV_4 1
+#define PLLQ_DIV_6 2
+#define PLLQ_DIV_8 3
+
+#define PLLP_DIV_7 0
+#define PLLP_DIV_17 1
 
 #endif

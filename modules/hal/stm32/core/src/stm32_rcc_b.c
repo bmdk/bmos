@@ -23,6 +23,7 @@
 #include "hal_common.h"
 #include "stm32_hal.h"
 #include "stm32_regs.h"
+#include "stm32_rcc_b.h"
 
 typedef struct {
   unsigned int cr;
@@ -79,6 +80,8 @@ typedef struct {
 #define RCC_CR_HSION BIT(8)
 
 #define RCC_PLLCFGR_PLLREN BIT(24)
+#define RCC_PLLCFGR_PLLQEN BIT(20)
+#define RCC_PLLCFGR_PLLPEN BIT(16)
 
 #define RCC_PLLCFGR_PLLSRC_NONE 0
 #define RCC_PLLCFGR_PLLSRC_MSI 1
@@ -90,15 +93,17 @@ typedef struct {
 #define RCC_CFGR_SW_HSE 2
 #define RCC_CFGR_SW_PLL 3
 
-#define PLLCFGR(pllr, pllren, pllq, pllqen, plln, pllm, src) \
-  ((((pllr) & 0x3) << 25) | (((pllren) & 0x1) << 24) | \
-   (((pllq) & 0x3) << 21) | (((pllqen) & 0x1) << 20) | \
-   (((plln) & 0x7f) << 8) | (((pllm) & 0x7) << 4) | ((src) & 0x3))
+#if STM32_L4XX || STM32_L4R
+#define DEFAULT_CLOCK RCC_CFGR_SW_MSI
+#elif STM32_G4XX
+#define DEFAULT_CLOCK RCC_CFGR_SW_HSI16
+#else
+#error Define default clock
+#endif
 
-/* 80Mhz clock from 8Mhz external source */
-#define PLLCFGR_HSE_VAL PLLCFGR(0, 1, 0, 0, 40, 1, RCC_PLLCFGR_PLLSRC_HSE)
-/* 80Mhz clock from 4Mhz internal msi */
-#define PLLCFGR_MSI_VAL PLLCFGR(0, 1, 0, 0, 40, 0, RCC_PLLCFGR_PLLSRC_MSI)
+#define PLLCFGR(pllr, pllq, plln, pllm, src) \
+  ((((pllr) & 0x3) << 25) | (((pllq) & 0x3) << 21) | \
+   (((plln) & 0x7f) << 8) | ((((pllm) - 1) & 0x7) << 4) | ((src) & 0x3))
 
 #define CFGR(ppre2, ppre1, hpre, src) \
   ((((ppre2) & 0x7) << 11) | (((ppre1) & 0x7) << 8) | \
@@ -106,39 +111,51 @@ typedef struct {
 
 #define CFGR_HIGH_VAL CFGR(0, 0, 0, RCC_CFGR_SW_PLL)
 
-#define CFGR_LOW_VAL CFGR(0, 0, 0, RCC_CFGR_SW_MSI)
+#define CFGR_LOW_VAL CFGR(0, 0, 0, DEFAULT_CLOCK)
 
-#define CLK_TYPE_EXT_8MHZ 0
-#define CLK_TYPE_EXT_8MHZ_OSC 1
-#define CLK_TYPE_INT_4MHZ 2
-
-void clock_init_high(int type)
+static void _clock_init(const struct pll_params_t *p)
 {
-  if (type == CLK_TYPE_EXT_8MHZ_OSC) {
-    RCC->cr |= RCC_CR_HSEON;
+  unsigned int pllcfgr;
+
+  led_set(0, 0);
+
+  if (p->pllsrc == RCC_PLLCFGR_PLLSRC_HSE) {
+    unsigned int flags = RCC_CR_HSEON;
+
+    if (p->flags & PLL_FLAG_BYPASS)
+      flags |= RCC_CR_HSEBYP;
+
+    RCC->cr |= flags;
     while ((RCC->cr & RCC_CR_HSERDY) == 0)
       ;
-  } else if (type == CLK_TYPE_EXT_8MHZ)
-    RCC->cr |= RCC_CR_HSEBYP;
+  }
 
   RCC->cfgr = CFGR_LOW_VAL;
-  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_MSI)
+  while (((RCC->cfgr >> 2) & 0x3) != DEFAULT_CLOCK)
     asm volatile ("nop");
 
   RCC->cr &= ~RCC_CR_PLLON;
   while (RCC->cr & RCC_CR_PLLRDY)
     ;
 
-  if (type == CLK_TYPE_INT_4MHZ)
-    RCC->pllcfgr = PLLCFGR_MSI_VAL;
-  else
-    RCC->pllcfgr = PLLCFGR_HSE_VAL;
+  pllcfgr = PLLCFGR(p->pllr, p->pllq, p->plln, p->pllm, p->pllsrc);
+
+  if (p->flags & PLL_FLAG_PLLREN)
+    pllcfgr |= RCC_PLLCFGR_PLLREN;
+
+  if (p->flags & PLL_FLAG_PLLQEN)
+    pllcfgr |= RCC_PLLCFGR_PLLQEN;
+
+  if (p->flags & PLL_FLAG_PLLPEN)
+    pllcfgr |= RCC_PLLCFGR_PLLPEN;
+
+  RCC->pllcfgr = pllcfgr;
 
   RCC->cr |= RCC_CR_PLLON;
   while ((RCC->cr & RCC_CR_PLLRDY) == 0)
     ;
 
-  reg_set_field(FLASH_ACR, 4, 0, 4);
+  reg_set_field(FLASH_ACR, 4, 0, p->acr);
 
   RCC->cfgr = CFGR_HIGH_VAL;
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
@@ -148,7 +165,7 @@ void clock_init_high(int type)
 void clock_init_low(void)
 {
   RCC->cfgr = CFGR_LOW_VAL;
-  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_MSI)
+  while (((RCC->cfgr >> 2) & 0x3) != DEFAULT_CLOCK)
     asm volatile ("nop");
 
   RCC->cr &= ~RCC_CR_PLLON;
@@ -174,9 +191,9 @@ void clock_init_ls()
   reg_set_field(&RCC->bdcr, 2, 8, 1);
 }
 
-void clock_init(void)
+void clock_init(const struct pll_params_t *pll_params)
 {
-  clock_init_high(CLK_TYPE_INT_4MHZ);
+  _clock_init(pll_params);
 }
 
 void enable_ahb1(unsigned int dev)

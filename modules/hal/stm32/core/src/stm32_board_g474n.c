@@ -1,4 +1,4 @@
-/* Copyright (c) 2019 Brian Thomas Murphy
+/* Copyright (c) 2019-2021 Brian Thomas Murphy
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -45,22 +45,20 @@ void pin_init()
   enable_ahb2(1); /* GPIOB */
   enable_ahb2(2); /* GPIOC */
 
-  gpio_init(GPIO(0, 0), GPIO_OUTPUT);
-
   gpio_init_attr(GPIO(2, 13),
                  GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
 
   /* LPUART1 */
   enable_apb1(32);
   gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
-                                             GPIO_SPEED_LOW, 8, GPIO_ALT));
+                                             GPIO_SPEED_LOW, 12, GPIO_ALT));
   gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
-                                             GPIO_SPEED_LOW, 8, GPIO_ALT));
+                                             GPIO_SPEED_LOW, 12, GPIO_ALT));
 
   /* USART1 */
   enable_apb2(14);
-  gpio_init_attr(GPIO(0, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 10),
+  gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
+  gpio_init_attr(GPIO(2, 5),
                  GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
                                  GPIO_ALT));
 
@@ -99,15 +97,19 @@ void pin_init()
 #define APB1_CLOCK 80000000
 
 #if BMOS
-uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
+#if 1
+uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 91, STM32_UART_LP };
+#else
+uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37, 0 };
+#endif
 #endif
 
-static const gpio_handle_t leds[] = { GPIO(1, 13) };
+static const gpio_handle_t leds[] = { GPIO(0, 5) };
 
 static const struct pll_params_t pll_params = {
   .flags  = PLL_FLAG_PLLREN,
-  .pllsrc = RCC_PLLCFGR_PLLSRC_MSI,
-  .pllm   = 1,
+  .pllsrc = RCC_PLLCFGR_PLLSRC_HSE,
+  .pllm   = 6,
   .plln   = 40,
   .pllr   = PLLR_DIV_2,
   .acr    = 4
@@ -116,14 +118,16 @@ static const struct pll_params_t pll_params = {
 void hal_board_init()
 {
   pin_init();
+  led_init(leds, ARRSIZ(leds));
+  led_set(0, 1);
   clock_init(&pll_params);
   backup_domain_protect(0);
   clock_init_ls();
-  led_init(leds, ARRSIZ(leds));
 
+#if 0
+  debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
+#endif
 #if 1
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);
-#else
-  debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 #endif
 }

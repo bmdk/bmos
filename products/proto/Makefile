@@ -32,6 +32,7 @@ PROG += l432
 PROG += l452
 PROG += l496
 PROG += l4r
+PROG += g474n
 
 PROG_TRG = $(addprefix board-, $(PROG))
 

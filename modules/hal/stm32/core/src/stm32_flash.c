@@ -76,7 +76,7 @@ typedef struct {
 #define FLASH_KEYR_KEY1 0x45670123
 #define FLASH_KEYR_KEY2 0xcdef89ab
 
-#if STM32_L4XX || STM32_L4R
+#if STM32_L4XX || STM32_L4R || STM32_G4XX
 #define FLASH ((volatile stm32_flash_t *)0x40022000)
 #elif STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411
 #define FLASH ((volatile stm32_flash_t *)0x40023C00)
