@@ -185,6 +185,10 @@ void clock_init_low(void)
   while ((RCC->cr & RCC_CR_PLLRDY))
     ;
 
+  RCC->cr &= ~RCC_CR_HSEON;
+  while (RCC->cr & RCC_CR_HSERDY)
+    ;
+
   reg_set_field(FLASH_ACR, 4, 0, 0);
 }
 
