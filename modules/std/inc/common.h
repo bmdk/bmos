@@ -24,7 +24,7 @@
 
 #define BIT(_x_) (1U << (_x_))
 
-#define ARRSIZ(arr) sizeof(arr) / sizeof(arr[0])
+#define ARRSIZ(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #define SWAP32(_x_) ((((unsigned int)(_x_) << 24) & 0xff000000U) | \
                      (((unsigned int)(_x_) <<  8) & 0x00ff0000U) | \
