@@ -43,7 +43,6 @@
 #include "stm32_flash.h"
 #include "stm32_hal.h"
 #include "stm32_regs.h"
-#include "xmodem.h"
 #include "xtime.h"
 #include "xslog.h"
 
