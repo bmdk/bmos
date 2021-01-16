@@ -25,6 +25,11 @@
 #if STM32_H7XX
 #define TIM1_BASE ((void *)0x40010000)
 #define TIM2_BASE ((void *)0x40000000)
+#define TIM3_BASE ((void *)0x40000400)
+#define TIM4_BASE ((void *)0x40000800)
+#define TIM5_BASE ((void *)0x40000c00)
+#define TIM6_BASE ((void *)0x40001000)
+#define TIM7_BASE ((void *)0x40001400)
 #else
 #define TIM1_BASE ((void *)0x40012C00)
 #define TIM2_BASE ((void *)0x40000000)
@@ -32,5 +37,11 @@
 
 void timer_init(void *base, unsigned int presc);
 unsigned int timer_get(void *base);
+
+void timer_init_dma(void *base, unsigned int presc, unsigned int max,
+                    const unsigned int *compare, unsigned int compare_len,
+                    int update_en);
+
+void timer_stop(void *base);
 
 #endif

@@ -19,8 +19,11 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdlib.h>
+
 #include "common.h"
 #include "hal_time.h"
+#include "hal_common.h"
 #include "io.h"
 #include "shell.h"
 #include "stm32_hal_board.h"
@@ -49,6 +52,8 @@ typedef struct {
 #define CR1_CEN BIT(0)
 
 #define EGR_UG BIT(0)
+
+#define BDTR_MOE BIT(15);
 
 static void timer_presc(void *base, unsigned int presc)
 {
@@ -109,51 +114,6 @@ void hal_time_init(void)
   timer_init(TIM2_BASE, timer_calc_div());
 }
 
-void timer1_init(void *base, unsigned int presc)
-{
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
-
-  t->cnt = 0;
-  t->arr = (3831 - 1);
-  t->smcr = 0;
-  t->psc = presc - 1;
-
-  t->ccr[3] = 3831 / 2;
-  t->ccmr[1] = (6 << 12);
-  t->egr = EGR_UG;
-  t->ccer |= BIT(12);
-  t->cr1 = CR1_CEN;
-}
-
-void timer_note(void *base, unsigned int hz)
-{
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
-  unsigned int per;
-
-  if (hz == 0) {
-    t->bdtr = 0;
-    return;
-  }
-
-  t->bdtr |= BIT(15);
-
-  per = (1000000 + hz / 2) / hz;
-
-  t->arr = (per - 1);
-  t->ccr[3] = per / 2;
-}
-
-unsigned int notes[] = {
-  262,
-  294,
-  330,
-  349,
-  392,
-  440,
-  493,
-  523
-};
-
 unsigned int timer_get(void *base)
 {
   volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
@@ -161,35 +121,158 @@ unsigned int timer_get(void *base)
   return t->cnt;
 }
 
-#if 0
+int timer_init_compare(void *base, unsigned int presc, unsigned int max,
+                       const unsigned int *compare, unsigned int compare_len)
+{
+  unsigned int i;
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+
+  if (compare_len > 4)
+    return -1;
+
+  t->cr1 &= ~CR1_CEN;
+  t->cnt = 0;
+  t->arr = max;
+  t->smcr = 0;
+  t->psc = presc - 1;
+  t->egr = 0;
+
+  for (i = 0; i < compare_len; i++)
+    t->ccr[i] = compare[i];
+
+  return 0;
+}
+
+void timer_set_compare(void *base, unsigned int num, unsigned int v)
+{
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+
+  if (num >= 4)
+    return;
+
+  t->ccr[num] = v;
+}
+
+#define TIMER_MODE_PWM 6
+
+int timer_mode(void *base, int output, unsigned int mode)
+{
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  unsigned int reg = 0;
+
+  if (output > 4)
+    return -1;
+
+  if (output >= 2) {
+    reg = 1;
+    output -= 2;
+  }
+
+  reg_set_field(&t->ccmr[reg], 3, 8 * output + 4, mode);
+
+  return 0;
+}
+
+int timer_output_en(void *base, int en)
+{
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+
+  if (en)
+    t->bdtr |= BIT(15);
+  else
+    t->bdtr &= ~BIT(15);
+
+  return 0;
+}
+
+void timer_init_pwm(void *base, unsigned int presc, unsigned int max,
+                    const unsigned int *compare, unsigned int compare_len)
+{
+  unsigned int ccer_val = 0, i;
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+
+  if (timer_init_compare(base, presc, max, compare, compare_len) < 0)
+    return;
+
+  for (i = 0; i < compare_len; i++) {
+    ccer_val |= BIT(4 * i);
+    timer_mode(base, i, TIMER_MODE_PWM);
+  }
+
+  t->ccer = ccer_val;
+  t->bdtr |= BDTR_MOE;
+  t->cr1 |= CR1_CEN;
+}
+
+void timer_init_dma(void *base, unsigned int presc, unsigned int max,
+                    const unsigned int *compare, unsigned int compare_len,
+                    int update_en)
+{
+  unsigned int ccer_val = 0, dier_val = 0, i;
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+
+  if (timer_init_compare(base, presc, max, compare, compare_len) < 0)
+    return;
+
+  t->cnt = max - 1;
+
+  for (i = 0; i < compare_len; i++) {
+    ccer_val |= BIT(4 * i);
+    dier_val |= BIT(9 + i);
+  }
+
+  if (update_en)
+    dier_val |= BIT(8);
+
+  t->ccer = ccer_val;
+  t->dier = dier_val;
+  t->cr1 |= CR1_CEN;
+}
+
+void timer_enable(void *base)
+{
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+
+  t->cr1 |= CR1_CEN;
+}
+
+void timer_stop(void *base)
+{
+  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+
+  t->ccer = 0;
+  t->dier = 0;
+  t->cr1 &= ~CR1_CEN;
+}
+
+#if STM32_H7XX
+#define TIM_BASE TIM3_BASE
+#else
+#define TIM_BASE TIM1_BASE
+#endif
 int cmd_timer(int argc, char *argv[])
 {
+  unsigned int compare[] = { 10000, 20000, 30000 };
+
   if (argc < 2)
     return -1;
 
   switch (argv[1][0]) {
   case 'i':
-    timer_init(TIM2_BASE, 200);
+    timer_init_pwm(TIM_BASE, 1, 65535, compare, ARRSIZ(compare));
+    break;
+  case 'c':
+    if (argc < 3)
+      return -1;
+    timer_set_compare(TIM_BASE, 2, atoi(argv[2]));
+    break;
+  case 's':
+    timer_stop(TIM_BASE);
     break;
   default:
   case 'g':
-    xprintf("%u\n", timer_get(TIM2_BASE));
+    xprintf("%u\n", timer_get(TIM_BASE));
     break;
-  case 'x':
-    timer1_init(TIM1_BASE, 80);
-    break;
-  case 'y':
-    xprintf("%u\n", timer_get(TIM1_BASE));
-    break;
-#if 0
-  case 'p':
-    for (unsigned int i = 0; i < ARRSIZ(notes); i++) {
-      timer_note(TIM1_BASE, notes[i]);
-      task_delay(300);
-    }
-    timer_note(TIM1_BASE, 0);
-    break;
-#endif
   }
 
   return 0;
