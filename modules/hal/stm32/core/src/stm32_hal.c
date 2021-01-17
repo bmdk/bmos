@@ -95,6 +95,9 @@ int cmd_devid(int argc, char *argv[])
   case 0x419:
     idstr = "F42x/43x";
     break;
+  case 0x431:
+    idstr = "F411";
+    break;
   case 0x435:
     idstr = "L43x/44x";
     break;
