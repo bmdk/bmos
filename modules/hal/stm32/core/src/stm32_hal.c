@@ -102,7 +102,7 @@ int cmd_devid(int argc, char *argv[])
     idstr = "L43x/44x";
     break;
   case 0x450:
-    idstr = "H743/753/750";
+    idstr = "H743/45/47/53/55/57/50";
     break;
   case 0x451:
     idstr = "F76x/77x";
