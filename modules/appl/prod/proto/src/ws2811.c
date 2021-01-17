@@ -25,18 +25,65 @@
 #include "common.h"
 #include "fast_log.h"
 #include "hal_int.h"
+#if STM32_F411BP
+#include "stm32_hal_dma.h"
+#else
 #include "stm32_hal_bdma.h"
+#endif
 #include "stm32_hal_gpio.h"
 #include "stm32_timer.h"
 
-#define STM32_GPIO_ADDR_SET_CLEAR(port) (unsigned int)(&STM32_GPIO(port)->bsrr)
-#define GPIO_ADDR STM32_GPIO_ADDR_SET_CLEAR(0)
+#if STM32_F411BP
+#define WSBIT 0
+#define WSIRQ 57
+#define WSGPIO 1
+#else
+#define WSBIT 0
+#define WSIRQ 12
+#define WSGPIO 0
+#endif
 
-static unsigned char one = 0xff;
+#define STM32_GPIO_ADDR_SET_CLEAR(port) (unsigned int)(&STM32_GPIO(port)->bsrr)
+#define GPIO_ADDR STM32_GPIO_ADDR_SET_CLEAR(WSGPIO)
+
+static unsigned char one = BIT(WSBIT);
 
 #define PIXELS 250
 static unsigned char buf[24 * PIXELS];
 
+#if STM32_F411BP
+static void ws2811_tx()
+{
+  unsigned int compare[2] = { 32, 66 };
+
+  FAST_LOG('W', "ws2811 tx start\n", 0, 0);
+
+  timer_stop(TIM1_BASE);
+
+#define DMANUM 1
+  stm32_dma_set_chan(DMANUM, 5, 6); /* TIM1 UP */
+  stm32_dma_set_chan(DMANUM, 1, 6); /* TIM1 CH1 */
+  stm32_dma_set_chan(DMANUM, 2, 6); /* TIM1 CH2 */
+
+  stm32_dma_trans(DMANUM, 5, &one, (void *)(GPIO_ADDR), 24 * PIXELS,
+                  DMA_CR_DIR_P2M | DMA_CR_PL(0) | \
+                  DMA_CR_MSIZ(0) | DMA_CR_PSIZ(0));
+
+  stm32_dma_trans(DMANUM, 1, buf, (void *)(GPIO_ADDR + 2), 24 * PIXELS,
+                  DMA_CR_DIR_P2M | DMA_CR_PL(0) | DMA_CR_MSIZ(0) | \
+                  DMA_CR_PSIZ(0) | DMA_CR_PINC | DMA_CR_TCIE);
+
+  stm32_dma_trans(DMANUM, 2, &one, (void *)(GPIO_ADDR + 2), 24 * PIXELS,
+                  DMA_CR_DIR_P2M | DMA_CR_PL(0) | \
+                  DMA_CR_MSIZ(0) | DMA_CR_PSIZ(0));
+
+  stm32_dma_en(DMANUM, 5, 1);
+  stm32_dma_en(DMANUM, 1, 1);
+  stm32_dma_en(DMANUM, 2, 1);
+
+  timer_init_dma(TIM1_BASE, 1, 119, compare, ARRSIZ(compare), 1);
+}
+#else
 static void ws2811_tx()
 {
   unsigned int compare[2] = { 27, 55 };
@@ -64,6 +111,7 @@ static void ws2811_tx()
 
   timer_init_dma(TIM1_BASE, 1, 99, compare, ARRSIZ(compare), 1);
 }
+#endif
 
 #define MASK 0x01010101
 
@@ -132,31 +180,38 @@ unsigned int scale(unsigned int v, unsigned int s)
 
 void irq_ws2811(void *data)
 {
+#if STM32_F411BP
+  stm32_dma_irq_ack(1, 1, DMA_IER_TCIF);
+#else
   stm32_bdma_irq_ack(BDMA1_BASE, 1, IER_TCIF);
+#endif
   FAST_LOG('W', "irq_ws2811\n", 0, 0);
 }
 
 void task_led(void *arg)
 {
+#if 0
   unsigned int col[] = { 0x808080, 0xff0000 };
   unsigned int k = 0, l = 0, last_k = -1;
+#endif
 
-  irq_register("ws2811", irq_ws2811, 0, 12);
+  irq_register("ws2811", irq_ws2811, 0, WSIRQ);
 
   for (;;) {
     unsigned int i, j, o;
 
     for (j = 0; j < 256; j++) {
 
+      for (i = 0; i < PIXELS; i++) {
+        o = i + j;
+        enc_col(i, scale(wheel(o & 255), 10), WSBIT);
+      }
+
+#if 0
       l++;
       if (l >= 64) {
         k++;
         l = 0;
-      }
-
-      for (i = 0; i < PIXELS; i++) {
-        o = i + j;
-        enc_col(i, scale(wheel(o & 255), 10), 0);
       }
 
       if (last_k != k) {
@@ -166,6 +221,7 @@ void task_led(void *arg)
         }
         last_k = k;
       }
+#endif
 
       ws2811_tx();
       task_delay(50);

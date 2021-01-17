@@ -78,6 +78,8 @@ void pin_init()
   stm32_exti_irq_enable(0, 1);
   stm32_exti_ev_enable(0, 1);
   stm32_syscfg_set_exti(0, 0);
+
+  gpio_init(GPIO(1, 0), GPIO_OUTPUT);
 }
 
 #define USART1_BASE (void *)0x40011000

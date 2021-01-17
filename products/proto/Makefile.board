@@ -60,6 +60,7 @@ XCFLAGS.f411bp += -DSTM32_F411
 XCFLAGS.f411bp += -DSTM32_F411BP
 XCFLAGS.f411bp += -mcpu=cortex-m4
 STACK_END.f411bp = 0x20020000
+XCFLAGS.f411bp += -DWS2811
 
 XCFLAGS.f429 += -DSTM32_F429 -DSTM32_LCD
 XCFLAGS.f429 += -mcpu=cortex-m4
@@ -221,6 +222,7 @@ FILES.f411bp += stm32_usart_a.o
 FILES.f411bp += stm32_rcc_a.o
 FILES.f411bp += stm32_board_f411bp.o
 FILES.f411bp += stm32_hal_dma.o
+FILES.f411bp += ws2811.o
 FILES.f411bp += $(FILES.f411bp-usb)
 FILES.f411bp += $(FILES.f4xx)
 FILES.f411bp += $(FILES.fxxx)

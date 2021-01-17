@@ -31,8 +31,13 @@
 #define TIM6_BASE ((void *)0x40001000)
 #define TIM7_BASE ((void *)0x40001400)
 #else
+#if STM32_F411
+#define TIM1_BASE ((void *)0x40010000)
+#else
 #define TIM1_BASE ((void *)0x40012C00)
+#endif
 #define TIM2_BASE ((void *)0x40000000)
+#define TIM3_BASE ((void *)0x40000400)
 #endif
 
 void timer_init(void *base, unsigned int presc);
