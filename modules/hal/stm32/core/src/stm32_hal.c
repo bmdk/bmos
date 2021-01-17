@@ -107,14 +107,23 @@ int cmd_devid(int argc, char *argv[])
   case 0x451:
     idstr = "F76x/77x";
     break;
+  case 0x461:
+    idstr = "L496/4A6";
+    break;
   case 0x462:
     idstr = "L45x/46x";
     break;
   case 0x464:
     idstr = "L41x/42x";
     break;
-  case 0x461:
-    idstr = "L496/4A6";
+  case 0x468:
+    idstr = "G4 Cat 2";
+    break;
+  case 0x469:
+    idstr = "G4 Cat 3";
+    break;
+  case 0x479:
+    idstr = "G4 Cat 4";
     break;
   case 0x483:
     idstr = "H72x/H73x";
