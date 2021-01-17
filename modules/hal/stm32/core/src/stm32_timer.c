@@ -281,4 +281,3 @@ int cmd_timer(int argc, char *argv[])
 }
 
 SHELL_CMD(timer, cmd_timer);
-#endif
