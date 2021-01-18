@@ -92,8 +92,8 @@ void pin_init()
 
 #define SPI1_BASE (void *)0x40013000
 
-#define APB2_CLOCK 80000000
-#define APB1_CLOCK 80000000
+#define APB2_CLOCK 170000000
+#define APB1_CLOCK 170000000
 
 #if BMOS
 #if 1
@@ -109,7 +109,7 @@ static const struct pll_params_t pll_params = {
   .flags  = PLL_FLAG_PLLREN,
   .pllsrc = RCC_PLLCFGR_PLLSRC_HSE,
   .pllm   = 6,
-  .plln   = 40,
+  .plln   = 85,
   .pllr   = PLLR_DIV_2,
   .acr    = 4
 };

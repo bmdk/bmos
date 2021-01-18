@@ -35,7 +35,7 @@
 #elif STM32_L4R
 #define CLOCK 80000000
 #elif STM32_G4XX
-#define CLOCK 80000000
+#define CLOCK 170000000
 #elif STM32_H7XX
 #define CLOCK 400000000
 #else
