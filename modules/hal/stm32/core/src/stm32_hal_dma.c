@@ -67,6 +67,24 @@ void stm32_dma_set_chan(unsigned int num, unsigned int chan, unsigned int devid)
   reg_set_field(&c->cr, 3, 25, devid);
 }
 
+void stm32_dma_irq_ack(unsigned int num, unsigned int chan, unsigned int flags)
+{
+  volatile stm32_dma_t *d = num2addr(num);
+  unsigned int i = 0, ofs = 0;
+
+  if (chan >= 4) {
+    i = 1;
+    chan -= 4;
+  }
+
+  if (chan >= 2) {
+    ofs = 16;
+    chan -= 2;
+  }
+
+  reg_set_field(&d->ifcr[i], 6, ofs + 6 * chan, flags);
+}
+
 void stm32_dma_en(unsigned int num, unsigned int chan, int en)
 {
   volatile stm32_dma_t *d = num2addr(num);
@@ -119,7 +137,7 @@ void stm32_dma_trans(unsigned int num, unsigned int chan,
   c->mar[0] = (unsigned int)dst;
   c->ndtr = n;
 
-  c->cr = flags;
+  reg_set_field(&c->cr, 25, 0, flags);
 }
 
 void stm32_dma_memcpy(unsigned int num, void *src, void *dst, unsigned int n)
@@ -137,10 +155,12 @@ void stm32_dma_chan_dump(unsigned int num)
 
   for (i = 0; i < DMA_CHANNELS; i++) {
     volatile stm32_dma_chan_t *c = &d->chan[i];
-    xprintf("%d P: %08x M: %08x, %08x N: %d\n", i,
-            c->par, c->mar[0], c->mar[1], c->ndtr);
+    xprintf("%d F: %08x P: %08x M: %08x, %08x N: %d\n", i,
+            c->cr, c->par, c->mar[0], c->mar[1], c->ndtr);
   }
 }
+
+#define DMANUM 1
 
 int cmd_dma(int argc, char *argv[])
 {
@@ -157,7 +177,7 @@ int cmd_dma(int argc, char *argv[])
     chan = atoi(argv[2]);
     devid = atoi(argv[3]);
 
-    stm32_dma_set_chan(1, chan, devid);
+    stm32_dma_set_chan(DMANUM, chan, devid);
     break;
   case 'm':
     if (argc < 5)
@@ -167,15 +187,35 @@ int cmd_dma(int argc, char *argv[])
     n = strtoul(argv[4], 0, 0);
 
     xprintf("copy src: %08x dst: %08x cnt: %d\n", src, dst, n);
-    stm32_dma_memcpy(1, (void *)src, (void *)dst, n);
+    stm32_dma_memcpy(DMANUM, (void *)src, (void *)dst, n);
+    break;
+  case 'p':
+    if (argc < 5)
+      return -1;
+    src = strtoul(argv[2], 0, 16);
+    dst = strtoul(argv[3], 0, 16);
+    n = strtoul(argv[4], 0, 0);
+
+    stm32_dma_trans(DMANUM, 0, (void *)src, (void *)dst, n,
+        DMA_CR_PL(0) | DMA_CR_MSIZ(0) | DMA_CR_PSIZ(0));
     break;
   case 't':
     if (argc < 3)
       return -1;
-    stm32_dma_sw_trig(1, atoi(argv[2]));
+    stm32_dma_sw_trig(DMANUM, atoi(argv[2]));
+    break;
+  case 'e':
+    if (argc < 3)
+      return -1;
+    stm32_dma_en(DMANUM, atoi(argv[2]), 1);
+    break;
+  case 's':
+    if (argc < 3)
+      return -1;
+    stm32_dma_en(DMANUM, atoi(argv[2]), 0);
     break;
   case 'd':
-    stm32_dma_chan_dump(1);
+    stm32_dma_chan_dump(DMANUM);
     break;
   }
 

@@ -19,8 +19,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef STM32_HAL_BDMA_H
-#define STM32_HAL_BDMA_H
+#ifndef STM32_HAL_DMA_H
+#define STM32_HAL_DMA_H
 
 #define DMA_CHANNELS 8
 
@@ -66,5 +66,13 @@ void stm32_dma_set_chan(unsigned int num, unsigned int chan,
                         unsigned int devid);
 void stm32_dma_en(unsigned int num, unsigned int chan, int en);
 void stm32_dma_sw_trig(unsigned int num, unsigned int chan);
+
+#define DMA_IER_TCIF BIT(5)
+#define DMA_IER_HTIF BIT(4)
+#define DMA_IER_TEIF BIT(3)
+#define DMA_IER_DMEI BIT(2)
+#define DMA_IER_FEIF BIT(0)
+
+void stm32_dma_irq_ack(unsigned int num, unsigned int chan, unsigned int flags);
 
 #endif
