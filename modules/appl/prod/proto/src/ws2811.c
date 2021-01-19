@@ -202,10 +202,14 @@ void task_led(void *arg)
 
     for (j = 0; j < 256; j++) {
 
+      FAST_LOG('w', "ws2811 start\n", 0, 0);
+
       for (i = 0; i < PIXELS; i++) {
         o = i + j;
         enc_col(i, scale(wheel(o & 255), 10), WSBIT);
       }
+
+      FAST_LOG('w', "ws2811 end\n", 0, 0);
 
 #if 0
       l++;
