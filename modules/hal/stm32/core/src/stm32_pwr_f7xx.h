@@ -19,69 +19,37 @@
  * IN THE SOFTWARE.
  */
 
-#include "common.h"
-#include "stm32_exti.h"
+#ifndef STM32_PWR_FXXX
+#define STM32_PWR_FXXX
 
 typedef struct {
-  unsigned int imr;
-  unsigned int emr;
-  unsigned int rtsr;
-  unsigned int ftsr;
-  unsigned int swier;
-  unsigned int pr;
-  unsigned int pad0[2];
-} stm32_exti_t;
+  unsigned int memrmp;
+  unsigned int pmc;
+  unsigned int exticr[4];
+  unsigned int rsvd0;
+  unsigned int cbr;
+  unsigned int cmpcr;
+} stm32_syscfg_t;
 
-#define EXTI ((volatile stm32_exti_t *)(0x40013c00))
+typedef struct {
+  unsigned int cr[4];
+  unsigned int sr[2];
+  unsigned int scr;
+  unsigned int pad0;
+  struct {
+    unsigned int d;
+    unsigned int u;
+  } p[8];
+} stm32_pwr_t;
 
-void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
-{
-  if (n >= 32)
-    return;
+#define SYSCFG ((volatile stm32_syscfg_t *)(0x40013800))
+#define PWR ((volatile stm32_pwr_t *)(0x40007000))
 
-  if (en)
-    EXTI->rtsr = BIT(n);
-  else
-    EXTI->rtsr &= ~BIT(n);
-}
+#define PWR_CR1_DBP BIT(8)
 
-void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
-{
-  if (n >= 32)
-    return;
+/* choose between rmii and mii interface */
+void stm32_syscfg_eth_phy(unsigned int rmii);
 
-  if (en)
-    EXTI->ftsr = BIT(n);
-  else
-    EXTI->ftsr &= ~BIT(n);
-}
+void stm32_syscfg_set_exti(unsigned int v, unsigned int n);
 
-void stm32_exti_irq_enable(unsigned int n, int en)
-{
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->imr = BIT(n);
-  else
-    EXTI->imr &= ~BIT(n);
-}
-
-void stm32_exti_irq_ack(unsigned int n)
-{
-  if (n >= 32)
-    return;
-
-  EXTI->pr = BIT(n);
-}
-
-void stm32_exti_ev_enable(unsigned int n, int en)
-{
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->emr = BIT(n);
-  else
-    EXTI->emr &= ~BIT(n);
-}
+#endif

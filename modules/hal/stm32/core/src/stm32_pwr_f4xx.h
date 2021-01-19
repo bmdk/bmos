@@ -23,16 +23,6 @@
 #define STM32_PWR_FXXX
 
 typedef struct {
-  unsigned int imr;
-  unsigned int emr;
-  unsigned int rtsr;
-  unsigned int ftsr;
-  unsigned int swier;
-  unsigned int pr;
-  unsigned int pad0[2];
-} stm32_exti_t;
-
-typedef struct {
   unsigned int memrmp;
   unsigned int pmc;
   unsigned int exticr[4];
@@ -42,18 +32,11 @@ typedef struct {
 } stm32_syscfg_t;
 
 typedef struct {
-  unsigned int cr[4];
-  unsigned int sr[2];
-  unsigned int scr;
-  unsigned int pad0;
-  struct {
-    unsigned int d;
-    unsigned int u;
-  } p[8];
+  unsigned int cr;
+  unsigned int csr;
 } stm32_pwr_t;
 
 #define SYSCFG ((volatile stm32_syscfg_t *)(0x40013800))
-#define EXTI ((volatile stm32_exti_t *)(0x40013c00))
 #define PWR ((volatile stm32_pwr_t *)(0x40007000))
 
 #define PWR_CR1_DBP BIT(8)
@@ -62,5 +45,7 @@ typedef struct {
 void stm32_syscfg_eth_phy(unsigned int rmii);
 
 void stm32_syscfg_set_exti(unsigned int v, unsigned int n);
+
+void stm32_pwr_vos(unsigned int vos);
 
 #endif

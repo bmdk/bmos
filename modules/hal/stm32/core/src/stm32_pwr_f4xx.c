@@ -21,14 +21,14 @@
 
 #include "common.h"
 #include "hal_common.h"
-#include "stm32_pwr_fxxx.h"
+#include "stm32_pwr_f4xx.h"
 
 void backup_domain_protect(int on)
 {
   if (on)
-    PWR->cr[0] &= ~PWR_CR1_DBP;
+    PWR->cr &= ~PWR_CR1_DBP;
   else
-    PWR->cr[0] |= PWR_CR1_DBP;
+    PWR->cr |= PWR_CR1_DBP;
 }
 
 void stm32_syscfg_eth_phy(unsigned int rmii)
@@ -50,4 +50,14 @@ void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
   ofs = n % 4;
 
   reg_set_field(&SYSCFG->exticr[reg], 4, ofs << 2, v);
+}
+
+#define PWR_SCR_VOSRDY BIT(14)
+
+void stm32_pwr_vos(unsigned int vos)
+{
+  reg_set_field(&PWR->cr, 2, 14, vos);
+
+  while ((PWR->csr & PWR_SCR_VOSRDY) == 0)
+    ;
 }

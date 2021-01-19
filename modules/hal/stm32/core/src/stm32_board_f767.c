@@ -30,7 +30,7 @@
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_fxxx.h"
+#include "stm32_pwr_f7xx.h"
 #include "stm32_rcc_a.h"
 #include "stm32_regs.h"
 

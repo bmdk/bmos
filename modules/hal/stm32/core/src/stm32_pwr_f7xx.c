@@ -20,68 +20,34 @@
  */
 
 #include "common.h"
-#include "stm32_exti.h"
+#include "hal_common.h"
+#include "stm32_pwr_f7xx.h"
 
-typedef struct {
-  unsigned int imr;
-  unsigned int emr;
-  unsigned int rtsr;
-  unsigned int ftsr;
-  unsigned int swier;
-  unsigned int pr;
-  unsigned int pad0[2];
-} stm32_exti_t;
-
-#define EXTI ((volatile stm32_exti_t *)(0x40013c00))
-
-void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
+void backup_domain_protect(int on)
 {
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->rtsr = BIT(n);
+  if (on)
+    PWR->cr[0] &= ~PWR_CR1_DBP;
   else
-    EXTI->rtsr &= ~BIT(n);
+    PWR->cr[0] |= PWR_CR1_DBP;
 }
 
-void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
+void stm32_syscfg_eth_phy(unsigned int rmii)
 {
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->ftsr = BIT(n);
+  if (rmii)
+    SYSCFG->pmc |= BIT(23);
   else
-    EXTI->ftsr &= ~BIT(n);
+    SYSCFG->pmc &= ~BIT(23);
 }
 
-void stm32_exti_irq_enable(unsigned int n, int en)
+void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
 {
-  if (n >= 32)
+  unsigned int reg, ofs;
+
+  if (n > 15)
     return;
 
-  if (en)
-    EXTI->imr = BIT(n);
-  else
-    EXTI->imr &= ~BIT(n);
-}
+  reg = n / 4;
+  ofs = n % 4;
 
-void stm32_exti_irq_ack(unsigned int n)
-{
-  if (n >= 32)
-    return;
-
-  EXTI->pr = BIT(n);
-}
-
-void stm32_exti_ev_enable(unsigned int n, int en)
-{
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->emr = BIT(n);
-  else
-    EXTI->emr &= ~BIT(n);
+  reg_set_field(&SYSCFG->exticr[reg], 4, ofs << 2, v);
 }

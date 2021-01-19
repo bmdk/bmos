@@ -209,7 +209,8 @@ FILES.h743nucleo += lwip.o
 FILES.h745nucleo += stm32_board_h745nucleo.o
 FILES.h745nucleo += lwip.o
 
-FILES.fxxx += stm32_pwr_fxxx.o
+FILES.f7xx += stm32_pwr_f7xx.o
+FILES.f4xx += stm32_pwr_f4xx.o
 FILES.fxxx += stm32_exti_fxxx.o
 
 FILES.f411bp += stm32_hal_rtc.o
@@ -217,6 +218,8 @@ FILES.f411bp += stm32_usart_a.o
 FILES.f411bp += stm32_rcc_a.o
 FILES.f411bp += stm32_board_f411bp.o
 FILES.f411bp += stm32_hal_dma.o
+FILES.f411bp += $(FILES.f411bp-usb)
+FILES.f411bp += $(FILES.f4xx)
 FILES.f411bp += $(FILES.fxxx)
 
 FILES.f429 += stm32_usart_a.o
@@ -224,6 +227,7 @@ FILES.f429 += stm32_rcc_a.o
 FILES.f429 += stm32_board_f429.o
 FILES.f429 += stm32_hal_spi.o
 FILES.f429 += stm32_hal_dma.o
+FILES.f429 += $(FILES.f4xx)
 FILES.f429 += $(FILES.fxxx)
 
 FILES.f746 += stm32_usart_b.o
@@ -233,6 +237,7 @@ FILES.f746 += stm32_board_f746.o
 FILES.f746 += stm32_eth.o
 FILES.f746 += stm32_lcd.o
 FILES.f746 += lwip.o
+FILES.f746 += $(FILES.f7xx)
 FILES.f746 += $(FILES.fxxx)
 
 FILES.f767 += stm32_usart_b.o
@@ -241,6 +246,7 @@ FILES.f767 += stm32_hal_rtc.o
 FILES.f767 += stm32_eth.o
 FILES.f767 += stm32_board_f767.o
 FILES.f767 += lwip.o
+FILES.f767 += $(FILES.f7xx)
 FILES.f767 += $(FILES.fxxx)
 
 

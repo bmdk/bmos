@@ -36,7 +36,7 @@
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_fxxx.h"
+#include "stm32_pwr_f4xx.h"
 #include "stm32_rcc_a.h"
 #include "stm32_regs.h"
 
@@ -111,6 +111,7 @@ static const struct pll_params_t pll_params = {
 void hal_board_init()
 {
   pin_init();
+  stm32_pwr_vos(3);
   clock_init(&pll_params);
   led_init_flags(leds, led_flags, ARRSIZ(leds));
   backup_domain_protect(0);
