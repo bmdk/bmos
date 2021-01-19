@@ -115,15 +115,9 @@ static void ws2811_tx()
 
 #define MASK 0x01010101
 
-static inline void wrint(void *a, unsigned int v, unsigned int string)
+static inline void wrint(unsigned int *a, unsigned int v, unsigned int string)
 {
-  unsigned int mask = MASK << string;
-  unsigned int val = *(unsigned int *)a;
-
-  val &= ~mask;
-  val |= v << string;
-
-  *(unsigned int *)a = val ^ mask;
+  *a = (*a & ~(MASK << string)) | ((v ^ MASK) << string);
 }
 
 void enc_col(unsigned int pix, unsigned int val, unsigned int string)
@@ -132,14 +126,11 @@ void enc_col(unsigned int pix, unsigned int val, unsigned int string)
   unsigned int idx = pix * 24;
 
   for (i = 0; i < 24; i += 4) {
-    unsigned int _val = val >> (20 - i);
+    unsigned int _val = (val >> (20 - i)) & 0xf;
     void *a = &buf[idx + i];
     unsigned int v;
 
-    v = ((((_val >> 3) & 1) << 0) +
-         (((_val >> 2) & 1) << 8) +
-         (((_val >> 1) & 1) << 16) +
-         (((_val >> 0) & 1) << 24));
+    v = ((_val >> 3) + (_val << 6) + (_val << 15) + (_val << 24)) & MASK;
 
     wrint(a, v, string);
   }
