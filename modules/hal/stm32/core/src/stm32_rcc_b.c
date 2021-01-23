@@ -198,22 +198,22 @@ void clock_init(const struct pll_params_t *pll_params)
 
 void enable_ahb1(unsigned int dev)
 {
-  RCC->ahb1enr |= (1U << dev);
+  RCC->ahb1enr |= BIT(dev);
 }
 
 void disable_ahb1(unsigned int dev)
 {
-  RCC->ahb1enr &= ~(1U << dev);
+  RCC->ahb1enr &= ~BIT(dev);
 }
 
 void enable_ahb2(unsigned int dev)
 {
-  RCC->ahb2enr |= (1U << dev);
+  RCC->ahb2enr |= BIT(dev);
 }
 
 void disable_ahb2(unsigned int dev)
 {
-  RCC->ahb2enr &= ~(1U << dev);
+  RCC->ahb2enr &= ~BIT(dev);
 }
 
 void enable_apb1(unsigned int dev)
@@ -234,10 +234,10 @@ void disable_apb1(unsigned int dev)
 
 void enable_apb2(unsigned int dev)
 {
-  RCC->apb2enr |= (1U << dev);
+  RCC->apb2enr |= BIT(dev);
 }
 
 void disable_apb2(unsigned int dev)
 {
-  RCC->apb2enr &= ~(1U << dev);
+  RCC->apb2enr &= ~BIT(dev);
 }

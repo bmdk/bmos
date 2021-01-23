@@ -325,12 +325,12 @@ void clock_init(struct pll_params_t *params)
 
 void enable_ahb1(unsigned int dev)
 {
-  RCC->ahb1enr |= (1U << dev);
+  RCC->ahb1enr |= BIT(dev);
 }
 
 void enable_ahb4(unsigned int dev)
 {
-  RCC->ahb4enr |= (1U << dev);
+  RCC->ahb4enr |= BIT(dev);
 }
 
 void enable_apb1(unsigned int dev)
@@ -364,7 +364,7 @@ void enable_apb3(unsigned int dev)
 
 void enable_apb4(unsigned int dev)
 {
-  RCC->apb4enr |= (1U << dev);
+  RCC->apb4enr |= BIT(dev);
 }
 
 void set_fdcansel(unsigned int sel)
