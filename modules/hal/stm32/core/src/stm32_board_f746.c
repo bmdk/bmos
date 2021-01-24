@@ -30,7 +30,6 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
-#include "stm32_can.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"

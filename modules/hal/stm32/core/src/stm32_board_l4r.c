@@ -24,7 +24,6 @@
 #include "hal_gpio.h"
 #include "hal_uart.h"
 #include "io.h"
-#include "stm32_can.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_pwr_lxxx.h"
