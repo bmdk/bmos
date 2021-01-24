@@ -51,16 +51,23 @@
 
 static int led_state = 0;
 static xtime_ms_t last_blink = 0;
+#define LONG_WAIT 6000
+#define SHORT_WAIT 100
+static xtime_diff_ms_t wait = LONG_WAIT;
 
 void blink()
 {
   xtime_ms_t now;
 
   now = xtime_ms();
-  if (xtime_diff_ms(now, last_blink) >= 1000) {
+  if (xtime_diff_ms(now, last_blink) >= wait) {
     led_state ^= 1;
     led_set(0, led_state);
     last_blink = now;
+    if (wait == LONG_WAIT)
+      wait = SHORT_WAIT;
+    else
+      wait = LONG_WAIT;
   }
 }
 
