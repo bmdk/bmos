@@ -70,11 +70,12 @@ unsigned long int strtoul(const char *nptr, char **endptr, int base)
       base = 10;
   } else if (base == 16 && c == '0') {
     c = *nptr++;
-    if (c != 'x')
+    c |= 0x20;
+    if (c == 'x')
+      c = *nptr++;
+    else if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')))
       goto end;
-    c = *nptr++;
   }
-
   for (;;) {
     switch (base) {
     case 16:
