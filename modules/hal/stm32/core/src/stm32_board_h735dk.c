@@ -245,6 +245,7 @@ uart_t debug_uart_2 =
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(2, 2), GPIO(2, 3) };
+static const led_flag_t led_flags[] = { LED_FLAG_INV, LED_FLAG_INV };
 
 static struct pll_params_t clock_params = {
   .pllsrc = 0,
@@ -258,7 +259,7 @@ static struct pll_params_t clock_params = {
 void hal_board_init()
 {
   pin_init();
-  led_init(leds, ARRSIZ(leds));
+  led_init_flags(leds, led_flags, ARRSIZ(leds));
   stm32_pwr_power(PWR_CR3_SDEN);
   clock_init(&clock_params);
   backup_domain_protect(0);
