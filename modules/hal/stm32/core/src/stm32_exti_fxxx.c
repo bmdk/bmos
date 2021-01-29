@@ -20,6 +20,7 @@
  */
 
 #include "common.h"
+#include "hal_common.h"
 #include "stm32_exti.h"
 
 typedef struct {
@@ -36,35 +37,17 @@ typedef struct {
 
 void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
 {
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->rtsr |= BIT(n);
-  else
-    EXTI->rtsr &= ~BIT(n);
+  bit_en(&EXTI->rtsr, n, en);
 }
 
 void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
 {
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->ftsr |= BIT(n);
-  else
-    EXTI->ftsr &= ~BIT(n);
+  bit_en(&EXTI->ftsr, n, en);
 }
 
 void stm32_exti_irq_enable(unsigned int n, int en)
 {
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->imr |= BIT(n);
-  else
-    EXTI->imr &= ~BIT(n);
+  bit_en(&EXTI->imr, n, en);
 }
 
 void stm32_exti_irq_ack(unsigned int n)
@@ -77,11 +60,5 @@ void stm32_exti_irq_ack(unsigned int n)
 
 void stm32_exti_ev_enable(unsigned int n, int en)
 {
-  if (n >= 32)
-    return;
-
-  if (en)
-    EXTI->emr |= BIT(n);
-  else
-    EXTI->emr &= ~BIT(n);
+  bit_en(&EXTI->emr, n, en);
 }

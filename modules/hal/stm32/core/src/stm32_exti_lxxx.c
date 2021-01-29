@@ -20,6 +20,7 @@
  */
 
 #include "common.h"
+#include "hal_common.h"
 #include "stm32_pwr_lxxx.h"
 
 void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
@@ -31,10 +32,7 @@ void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
   if (reg > 1)
     return;
 
-  if (en)
-    EXTI->r[reg].rtsr |= BIT(n);
-  else
-    EXTI->r[reg].rtsr &= ~BIT(n);
+  bit_en(&EXTI->r[reg].rtsr, n, en);
 }
 
 void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
@@ -46,10 +44,7 @@ void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
   if (reg > 1)
     return;
 
-  if (en)
-    EXTI->r[reg].ftsr |= BIT(n);
-  else
-    EXTI->r[reg].ftsr &= ~BIT(n);
+  bit_en(&EXTI->r[reg].ftsr, n, en);
 }
 
 void stm32_exti_irq_enable(unsigned int n, int en)
@@ -61,10 +56,7 @@ void stm32_exti_irq_enable(unsigned int n, int en)
   if (reg > 1)
     return;
 
-  if (en)
-    EXTI->r[reg].imr |= BIT(n);
-  else
-    EXTI->r[reg].imr &= ~BIT(n);
+  bit_en(&EXTI->r[reg].imr, n, en);
 }
 
 void stm32_exti_irq_ack(unsigned int n)
@@ -88,8 +80,5 @@ void stm32_exti_ev_enable(unsigned int n, int en)
   if (reg > 1)
     return;
 
-  if (en)
-    EXTI->r[reg].emr |= BIT(n);
-  else
-    EXTI->r[reg].emr &= ~BIT(n);
+  bit_en(&EXTI->r[reg].emr, n, en);
 }

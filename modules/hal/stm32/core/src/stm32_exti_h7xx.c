@@ -20,6 +20,7 @@
  */
 
 #include "common.h"
+#include "hal_common.h"
 
 typedef struct {
   struct {
@@ -53,10 +54,7 @@ void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
   if (reg > 2)
     return;
 
-  if (en)
-    EXTI->r[reg].rtsr |= BIT(n);
-  else
-    EXTI->r[reg].rtsr &= ~BIT(n);
+  bit_en(&EXTI->r[reg].rtsr, n, en);
 }
 
 void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
@@ -68,10 +66,7 @@ void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
   if (reg > 2)
     return;
 
-  if (en)
-    EXTI->r[reg].ftsr |= BIT(n);
-  else
-    EXTI->r[reg].ftsr &= ~BIT(n);
+  bit_en(&EXTI->r[reg].ftsr, n, en);
 }
 
 void stm32_exti_irq_enable(unsigned int n, int en)
@@ -83,10 +78,7 @@ void stm32_exti_irq_enable(unsigned int n, int en)
   if (reg > 2)
     return;
 
-  if (en)
-    EXTI->cpu[reg].imr |= BIT(n);
-  else
-    EXTI->cpu[reg].imr &= ~BIT(n);
+  bit_en(&EXTI->cpu[reg].imr, n, en);
 }
 
 void stm32_exti_irq_ack(unsigned int n)
@@ -110,8 +102,5 @@ void stm32_exti_ev_enable(unsigned int n, int en)
   if (reg > 2)
     return;
 
-  if (en)
-    EXTI->cpu[reg].emr |= BIT(n);
-  else
-    EXTI->cpu[reg].emr &= ~BIT(n);
+  bit_en(&EXTI->cpu[reg].emr, n, en);
 }
