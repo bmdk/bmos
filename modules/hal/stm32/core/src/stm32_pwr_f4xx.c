@@ -57,7 +57,9 @@ void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
 void stm32_pwr_vos(unsigned int vos)
 {
   reg_set_field(&PWR->cr, 2, 14, vos);
+}
 
-  while ((PWR->csr & PWR_SCR_VOSRDY) == 0)
-    ;
+int stm32_pwr_vos_rdy(void)
+{
+  return (PWR->csr & PWR_SCR_VOSRDY) != 0;
 }

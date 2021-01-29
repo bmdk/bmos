@@ -45,5 +45,6 @@ typedef struct {
 void stm32_syscfg_eth_phy(unsigned int rmii);
 
 void stm32_pwr_vos(unsigned int vos);
+int stm32_pwr_vos_rdy(void);
 
 #endif
