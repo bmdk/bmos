@@ -44,8 +44,6 @@ typedef struct {
 /* choose between rmii and mii interface */
 void stm32_syscfg_eth_phy(unsigned int rmii);
 
-void stm32_syscfg_set_exti(unsigned int v, unsigned int n);
-
 void stm32_pwr_vos(unsigned int vos);
 
 #endif

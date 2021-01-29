@@ -28,4 +28,6 @@ void stm32_exti_irq_enable(unsigned int n, int en);
 void stm32_exti_irq_ack(unsigned int n);
 void stm32_exti_ev_enable(unsigned int n, int en);
 
+void stm32_syscfg_set_exti(unsigned int v, unsigned int n);
+
 #endif

@@ -65,7 +65,6 @@ typedef struct {
 
 #define PWR_CR2_IOSV BIT(9)
 
-void stm32_syscfg_set_exti(unsigned int v, unsigned int n);
 /* validate vddio2 and enable PG2-15 */
 void vddio2_en(int on);
 

@@ -22,8 +22,6 @@
 #ifndef STM32_PWR_H7XX_H
 #define STM32_PWR_H7XX_H
 
-void stm32_syscfg_set_exti(unsigned int v, unsigned int n);
-
 #define SYSCFG_ETH_PHY_MII 0
 #define SYSCFG_ETH_PHY_RMII 1
 
