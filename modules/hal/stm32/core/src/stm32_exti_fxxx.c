@@ -40,7 +40,7 @@ void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
     return;
 
   if (en)
-    EXTI->rtsr = BIT(n);
+    EXTI->rtsr |= BIT(n);
   else
     EXTI->rtsr &= ~BIT(n);
 }
@@ -51,7 +51,7 @@ void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
     return;
 
   if (en)
-    EXTI->ftsr = BIT(n);
+    EXTI->ftsr |= BIT(n);
   else
     EXTI->ftsr &= ~BIT(n);
 }
@@ -62,7 +62,7 @@ void stm32_exti_irq_enable(unsigned int n, int en)
     return;
 
   if (en)
-    EXTI->imr = BIT(n);
+    EXTI->imr |= BIT(n);
   else
     EXTI->imr &= ~BIT(n);
 }
@@ -81,7 +81,7 @@ void stm32_exti_ev_enable(unsigned int n, int en)
     return;
 
   if (en)
-    EXTI->emr = BIT(n);
+    EXTI->emr |= BIT(n);
   else
     EXTI->emr &= ~BIT(n);
 }
