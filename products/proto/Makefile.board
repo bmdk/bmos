@@ -202,6 +202,7 @@ FILES.h735dk += stm32_lcd.o
 FILES.h735dk += stm32_board_h735dk.o
 FILES.h735dk += lwip.o
 FILES.h735dk += stm32_fdcan.o
+FILES.h735dk += fdcan.o
 
 FILES.h743nucleo += stm32_board_h743nucleo.o
 FILES.h743nucleo += lwip.o
@@ -209,6 +210,7 @@ FILES.h743nucleo += lwip.o
 FILES.h745nucleo += stm32_board_h745nucleo.o
 FILES.h745nucleo += lwip.o
 FILES.h745nucleo += stm32_fdcan.o
+FILES.h745nucleo += fdcan.o
 
 FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f4xx += stm32_pwr_f4xx.o
@@ -354,6 +356,7 @@ FILES.l4r += stm32_exti_lxxx.o
 FILES.g474n += $(FILES.g4xx)
 FILES.g474n += stm32_hal_rtc.o
 FILES.g474n += stm32_board_g474n.o
+FILES.g474n += fdcan.o
 
 FILES += $(FILES.$(PROG))
 

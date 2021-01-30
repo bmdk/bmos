@@ -202,6 +202,7 @@ void lcd_task(void *arg)
 
 void task_net();
 void task_led();
+void task_can();
 
 int main()
 {
@@ -248,6 +249,10 @@ int main()
 
 #if WS2811
   task_init(task_led, NULL, "lcd", 4, 0, 1024);
+#endif
+
+#if STM32_G4XX || STM32_H735DK || STM32_H745N
+  task_init(task_can, NULL, "can", 4, 0, 1024);
 #endif
 
   syspool = op_msg_pool_create("sys", QUEUE_TYPE_TASK, 10, 64);
