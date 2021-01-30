@@ -7,9 +7,17 @@
 #endif
 
 typedef struct {
+  unsigned short prediv;
+  unsigned short ts1;
+  unsigned short ts2;
+  unsigned short sjw;
+} can_params_t;
+
+typedef struct {
   const char *name;
   void *base;
   unsigned char irq;
+  can_params_t params;
   unsigned char tx_irq;
   unsigned int flags;
   const char *pool_name;
@@ -30,13 +38,14 @@ typedef struct {
 } candev_t;
 
 typedef struct {
-  unsigned short id;
+  unsigned int id;
   unsigned char data[8];
   unsigned char len;
 } can_t;
 
 #if BMOS
-bmos_queue_t *can_open(candev_t *c, unsigned int *id, unsigned int id_len,
+bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
+                       unsigned int id_len,
                        bmos_queue_t *rxq, unsigned int op);
 #endif
 
