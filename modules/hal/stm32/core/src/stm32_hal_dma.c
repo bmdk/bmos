@@ -197,7 +197,7 @@ int cmd_dma(int argc, char *argv[])
     n = strtoul(argv[4], 0, 0);
 
     stm32_dma_trans(DMANUM, 0, (void *)src, (void *)dst, n,
-        DMA_CR_PL(0) | DMA_CR_MSIZ(0) | DMA_CR_PSIZ(0));
+                    DMA_CR_PL(0) | DMA_CR_MSIZ(0) | DMA_CR_PSIZ(0));
     break;
   case 't':
     if (argc < 3)
