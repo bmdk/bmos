@@ -74,7 +74,7 @@ void pin_init()
   gpio_init_attr(GPIO(0, 0), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
                                              0, 0, GPIO_INPUT));
 
-  /* BUTTON PI11 */
+  /* BUTTON PA0 */
   stm32_exti_irq_set_edge_falling(0, 1);
   stm32_exti_irq_enable(0, 1);
   stm32_exti_ev_enable(0, 1);
@@ -90,7 +90,7 @@ uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 static const gpio_handle_t leds[] = { GPIO(2, 13) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV };
 
-/* 8MHz crystal input
+/* 25MHz crystal input
    100MHz CPU clock
    50MHz AHB1
    25MHz AHB2
