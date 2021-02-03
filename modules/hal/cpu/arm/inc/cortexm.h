@@ -42,13 +42,14 @@ typedef struct {
   unsigned int aircr;
   unsigned int scr;
   unsigned int ccr;
-  unsigned int shp[3];
+  unsigned int shpr[3];
   unsigned int shcsr;
   unsigned int cfsr;
   unsigned int hfsr;
-  unsigned int pad[2];
+  unsigned int pad[1];
+  unsigned int mmfar;
   unsigned int bfar;
-  unsigned int asfr;
+  unsigned int afsr;
 } scb_t;
 
 typedef struct {

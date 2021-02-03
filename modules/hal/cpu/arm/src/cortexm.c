@@ -44,7 +44,7 @@
 #define CFSR_BFAR_PRECISERR BIT(1 + 8)
 #define CFSR_BFAR_IBUSERR BIT(0 + 8)
 
-#define CFSR_MMARVALID BIT(7)
+#define CFSR_MMAR_VALID BIT(7)
 #define CFSR_MLSPERR BIT(5)
 #define CFSR_MSTKERR BIT(4)
 #define CFSR_MUNSTKERR BIT(3)
@@ -88,10 +88,10 @@ void hal_cpu_init()
 
 #if 1
   /* set exception priorities */
-  SCB->shp[0] = 0x00000000;
-  SCB->shp[1] = 0x00000000;
+  SCB->shpr[0] = 0x00000000;
+  SCB->shpr[1] = 0x00000000;
   /* systick has highest priority, pendsv has lowest priority */
-  SCB->shp[2] = 0x00ff0000;
+  SCB->shpr[2] = 0x00ff0000;
 #endif
 
   for (i = 0; i < 8; i++)
@@ -118,23 +118,25 @@ static void _exception_handler(sw_stack_frame_t *xsf, unsigned int exc_return)
   sf = (stack_frame_t *)(xsf + 1);
 
   if (e == 3) {
-    unsigned int hsfr = SCB->hfsr;
+    unsigned int hfsr = SCB->hfsr;
 
     name = "hard fault";
     debug_printf("Exception(%d) - %s\n", e, name);
 
-    if (hsfr & HSFR_FORCED) {
+    if (hfsr & HSFR_FORCED) {
       unsigned int cfsr = SCB->cfsr;
       if (cfsr & CFSR_UNDEFINSTR)
         debug_puts(" Undefined instruction.\n");
       if (cfsr & CFSR_UNALIGNED)
         debug_printf(" Unaligned access.\n");
+      if (cfsr & CFSR_MMAR_VALID)
+        debug_printf(" fault address(mm): %08x\n", SCB->mmfar);
       if (cfsr & CFSR_BFAR_PRECISERR)
         debug_printf(" Bus error\n");
       if (cfsr & CFSR_BFAR_VALID)
-        debug_printf(" fault address: %08x\n", SCB->bfar);
+        debug_printf(" fault address(bus): %08x\n", SCB->bfar);
       debug_printf(" cfsr: %08x\n", cfsr);
-    } else if (hsfr & HSFR_VECTTBL)
+    } else if (hfsr & HSFR_VECTTBL)
       debug_puts(" Vector table error\n");
   } else
     debug_printf("Exception(%d) - %s\n", e, "unknown");
