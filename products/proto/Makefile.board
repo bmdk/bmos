@@ -96,6 +96,10 @@ XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474N
 XCFLAGS.g474n += -mcpu=cortex-m4
 STACK_END.g474n = 0x20020000
 
+XCFLAGS.g431kbn += -DSTM32_G4XX -DSTM32_G432KBN
+XCFLAGS.g431kbn += -mcpu=cortex-m4
+STACK_END.g431kbn = 0x20008000
+
 XCFLAGS += $(XCFLAGS.$(PROG))
 STACK_END = $(STACK_END.$(PROG))
 
@@ -359,6 +363,11 @@ FILES.g474n += $(FILES.g4xx)
 FILES.g474n += stm32_hal_rtc.o
 FILES.g474n += stm32_board_g474n.o
 FILES.g474n += fdcan.o
+
+FILES.g431kbn += $(FILES.g4xx)
+FILES.g431kbn += stm32_hal_rtc.o
+FILES.g431kbn += stm32_board_g431kbn.o
+FILES.g431kbn += fdcan.o
 
 FILES += $(FILES.$(PROG))
 
