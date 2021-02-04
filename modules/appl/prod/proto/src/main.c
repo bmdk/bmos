@@ -255,7 +255,8 @@ int main()
   task_init(task_can, NULL, "can", 4, 0, 1024);
 #endif
 
-  syspool = op_msg_pool_create("sys", QUEUE_TYPE_TASK, 10, 64);
+  syspool = op_msg_pool_create("sys", QUEUE_TYPE_TASK, SYSPOOL_COUNT,
+                               SYSPOOL_SIZE);
 
   systick_init();
 
