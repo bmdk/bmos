@@ -28,6 +28,7 @@
 #include "xslog.h"
 
 #if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411
+#define CONFIG_FLASH_OPTR 0
 typedef struct {
   unsigned int acr;
   unsigned int keyr;
@@ -38,6 +39,7 @@ typedef struct {
   unsigned int flash_optcr1;
 } stm32_flash_t;
 #else
+#define CONFIG_FLASH_OPTR 1
 typedef struct {
   unsigned int acr;
   unsigned int pdkeyr;
@@ -46,6 +48,7 @@ typedef struct {
   unsigned int sr;
   unsigned int cr;
   unsigned int eccr;
+  unsigned int pad0;
   unsigned int optr;
   unsigned int pcrop1sr;
   unsigned int pcrop1er;
@@ -55,6 +58,7 @@ typedef struct {
 #endif
 
 #define FLASH_CR_LOCK BIT(31)
+#define FLASH_CR_OPTSTRT BIT(17)
 #define FLASH_CR_STRT BIT(16)
 #define FLASH_CR_PER BIT(1)
 #define FLASH_CR_PG BIT(0)
@@ -75,6 +79,9 @@ typedef struct {
 
 #define FLASH_KEYR_KEY1 0x45670123
 #define FLASH_KEYR_KEY2 0xcdef89ab
+
+#define FLASH_OPTKEYR_KEY1 0x08192a3b
+#define FLASH_OPTKEYR_KEY2 0x4c5d6e7f
 
 #if STM32_L4XX || STM32_L4R || STM32_G4XX
 #define FLASH ((volatile stm32_flash_t *)0x40022000)
@@ -194,3 +201,63 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
 
   return 0;
 }
+
+#if CONFIG_FLASH_OPTR
+#include <stdlib.h>
+
+#include "shell.h"
+#include "io.h"
+
+static void flash_opt_unlock()
+{
+  flash_unlock();
+
+  FLASH->optkeyr = FLASH_OPTKEYR_KEY1;
+  FLASH->optkeyr = FLASH_OPTKEYR_KEY2;
+}
+
+void flash_optr_setbit(unsigned int bit, unsigned int en)
+{
+  unsigned int optr = FLASH->optr;
+  unsigned int mask;
+
+  if (bit > 31)
+    return;
+
+  while (FLASH->sr & FLASH_SR_BSY)
+    ;
+
+  flash_opt_unlock();
+
+  mask = BIT(bit);
+
+  if (en)
+    optr |= mask;
+  else
+    optr &= ~mask;
+
+  FLASH->optr = optr;
+
+  FLASH->cr |= FLASH_CR_OPTSTRT;
+
+  while (FLASH->sr & FLASH_SR_BSY)
+    ;
+}
+
+static int flash_cmd(int argc, char *argv[])
+{
+  unsigned int bit;
+
+  if (argc < 2)
+    return -1;
+
+  bit = atoi(argv[1]);
+
+  flash_optr_setbit(bit, 1);
+
+  return 0;
+}
+
+SHELL_CMD(flash, flash_cmd);
+
+#endif
