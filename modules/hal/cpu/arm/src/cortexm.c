@@ -102,11 +102,17 @@ void hal_cpu_init()
     NVIC->ip[i] = 0xffffffff;
 }
 
+#define SYSTICK_CTRL_ENABLE BIT(0)
+#define SYSTICK_CTRL_TICKINT BIT(1)
+/* Clock source 0 - AHB / 8, 1 - AHB */
+#define SYSTICK_CTRL_CLKSOURCE BIT(2)
+
 void systick_init()
 {
   SYSTICK->load = CLOCK / 1000 - 1;
   SYSTICK->val = 0;
-  SYSTICK->ctrl = (1 << 2) | (1 << 1) | (1 << 0);
+  SYSTICK->ctrl = SYSTICK_CTRL_CLKSOURCE | SYSTICK_CTRL_TICKINT |
+                  SYSTICK_CTRL_ENABLE;
 }
 
 static void _exception_handler(sw_stack_frame_t *xsf, unsigned int exc_return)
