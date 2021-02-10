@@ -159,10 +159,13 @@ class stm32_ser:
         self.send_cmd(CMD_GET_ID)
         return self.get_resp()
 
-    def write_data(self, data):
+    def _write_data(self, data):
         xor = calc_xor(data)
         data += bytes((xor,))
         self.write(data)
+
+    def write_data(self, data):
+        self._write_data(data)
         self.get_ack()
 
     def cmd_go(self, addr):
@@ -250,8 +253,13 @@ class stm32_ser:
         for i in range(0, size):
             wdata += struct.pack(">H", page_list[i])
 
-        self.write_data(wdata)
+        self._write_data(wdata)
 
+        for i in range(0, 8):
+            try:
+                self.get_ack()
+            except:
+                pass
 
 def usage(name):
     sys.stderr.write("syntax: %s [-b <base address>] "
