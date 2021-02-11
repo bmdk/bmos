@@ -44,7 +44,7 @@ typedef struct {
 
 #ifdef STM32_H7XX
 #define DMA_LIST (void *)0x40020000, (void *)0x40020400
-#elif STM32_F429 || STM32_F411
+#elif STM32_F429 || STM32_F411 || STM32_F401
 #define DMA_LIST (void *)0x40026000, (void *)0x40026400
 #else
 #error Define dmamux for this platform

@@ -100,7 +100,7 @@ static int cmd_xmodem(int argc, char *argv[])
   flash_erase(1, 1);
 #elif STM32_L4R
   flash_erase(8, 8);
-#elif STM32_F429 || STM32_F411
+#elif STM32_F429 || STM32_F411 || STM32_F401
   flash_erase(2, 4);
 #elif STM32_F767 || STM32_F746
   flash_erase(1, 4);

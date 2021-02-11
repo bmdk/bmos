@@ -21,6 +21,7 @@
 export BUILD_DIR = build
 export ROOT ?= $(shell pwd)/../..
 
+PROG += f401bp
 PROG += f411bp
 PROG += f429
 PROG += f746
