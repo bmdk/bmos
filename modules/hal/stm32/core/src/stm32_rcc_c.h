@@ -1,6 +1,11 @@
 #ifndef STM32_RCC_C_H
 #define STM32_RCC_C_H
 
+#define RCC_C_CLK_HSI 0
+#define RCC_C_CLK_CSI 1
+#define RCC_C_CLK_HSE_OSC 2
+#define RCC_C_CLK_HSE 3
+
 struct pll_params_t {
   /* PLLCKSELR */
   unsigned char pllsrc;

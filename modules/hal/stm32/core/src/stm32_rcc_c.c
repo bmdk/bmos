@@ -218,6 +218,8 @@ static void _clock_pll_presc(unsigned int num, unsigned int div)
 
 static void pll1_set(struct pll_params_t *params)
 {
+  unsigned int src;
+
   RCC->cr |= RCC_CR_CSION;
   while ((RCC->cr & RCC_CR_CSIRDY) == 0)
     ;
@@ -230,8 +232,14 @@ static void pll1_set(struct pll_params_t *params)
   while ((RCC->cr & RCC_CR_PLL1RDY) != 0)
     ;
 
-  /* PLL source is HSE */
-  _clock_pll_src(CLOCK_PLL_SRC_HSE);
+  if (params->pllsrc == RCC_C_CLK_CSI)
+    src = CLOCK_PLL_SRC_CSI;
+  else if (params->pllsrc == RCC_C_CLK_HSI)
+    src = CLOCK_PLL_SRC_HSI;
+  else
+    src = CLOCK_PLL_SRC_HSE;
+
+  _clock_pll_src(src);
   _clock_pll_presc(0, params->divm1);
 
   reg_set_field(&RCC->pll1divr, 9, 0, params->divn1 - 1);
@@ -273,15 +281,26 @@ static void _clock_init(struct pll_params_t *params)
   /* disable pll1,2,3 */
   RCC->cr &= ~(RCC_CR_PLL1ON | RCC_CR_PLL2ON | RCC_CR_PLL3ON);
   /* Turn on high speed external clock */
-  RCC->cr |= RCC_CR_HSEBYP | RCC_CR_HSEON;
-  while ((RCC->cr & RCC_CR_HSERDY) == 0)
-    ;
 
-#if 0
-  RCC->cr |= RCC_CR_CSION;
-  while ((RCC->cr & RCC_CR_CSIRDY) == 0)
-    ;
-#endif
+  if (params->pllsrc == RCC_C_CLK_CSI) {
+    RCC->cr |= RCC_CR_CSION;
+    while ((RCC->cr & RCC_CR_CSIRDY) == 0)
+      ;
+  } else if (params->pllsrc == RCC_C_CLK_HSI) {
+    RCC->cr |= RCC_CR_HSION;
+    while ((RCC->cr & RCC_CR_HSIRDY) == 0)
+      ;
+  } else {
+    if (params->pllsrc == RCC_C_CLK_HSE_OSC)
+      RCC->cr &= ~RCC_CR_HSEBYP;
+    else if (params->pllsrc == RCC_C_CLK_HSE)
+      RCC->cr |= RCC_CR_HSEBYP;
+
+    RCC->cr |= RCC_CR_HSEON;
+
+    while ((RCC->cr & RCC_CR_HSERDY) == 0)
+      ;
+  }
 
   reg_set_field(&RCC->d1cfgr, 4, RCC_D1CFGR_D1CPRE_OFS, RCC_DIV4_1);
   reg_set_field(&RCC->d1cfgr, 4, RCC_D1CFGR_HPRE_OFS, RCC_DIV4_2);
@@ -310,11 +329,6 @@ static void _clock_init(struct pll_params_t *params)
 
   pll1_set(params);
   pll3_set(5, 10, 1);
-
-  /* turn off hsi */
-  RCC->cr &= ~RCC_CR_HSION;
-  while ((RCC->cr & RCC_CR_HSIRDY))
-    ;
 }
 
 void clock_init(struct pll_params_t *params)

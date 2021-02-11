@@ -252,7 +252,7 @@ static const gpio_handle_t leds[] = { GPIO(2, 2), GPIO(2, 3) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV, LED_FLAG_INV };
 
 static struct pll_params_t clock_params = {
-  .pllsrc = 0,
+  .pllsrc = RCC_C_CLK_HSE,
   .divm1  = 5,
   .divn1  = 80,
   .divp1  = 1,

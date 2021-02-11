@@ -149,7 +149,7 @@ uart_t debug_uart_2 =
 static const gpio_handle_t leds[] = { GPIO(1, 0), GPIO(4, 1), GPIO(1, 14) };
 
 static struct pll_params_t clock_params = {
-  .pllsrc = 0,
+  .pllsrc = RCC_C_CLK_HSE,
   .divm1  = 2,
   .divn1  = 100,
   .divp1  = 1,
