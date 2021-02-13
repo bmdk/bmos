@@ -25,7 +25,7 @@
 #include "common.h"
 #include "fast_log.h"
 #include "hal_int.h"
-#if STM32_F411BP
+#if STM32_F411BP || STM32_F401BP
 #include "stm32_hal_dma.h"
 #else
 #include "stm32_hal_bdma.h"
@@ -33,7 +33,7 @@
 #include "stm32_hal_gpio.h"
 #include "stm32_timer.h"
 
-#if STM32_F411BP
+#if STM32_F411BP || STM32_F401BP
 #define WSBIT 0
 #define WSIRQ 57
 #define WSGPIO 1
@@ -48,13 +48,17 @@
 
 static unsigned char one = BIT(WSBIT);
 
-#define PIXELS 250
+#define PIXELS 256
 static unsigned char buf[24 * PIXELS];
 
-#if STM32_F411BP
+#if STM32_F411BP || STM32_F401BP
 static void ws2811_tx()
 {
+#if STM32_F411BP
   unsigned int compare[2] = { 32, 66 };
+#elif STM32_F401BP
+  unsigned int compare[2] = { 28, 58 };
+#endif
 
   FAST_LOG('W', "ws2811 tx start\n", 0, 0);
 
@@ -81,7 +85,13 @@ static void ws2811_tx()
   stm32_dma_en(DMANUM, 1, 1);
   stm32_dma_en(DMANUM, 2, 1);
 
-  timer_init_dma(TIM1_BASE, 1, 119, compare, ARRSIZ(compare), 1);
+#if STM32_F411BP
+#define TIMER_CNT 120
+#elif STM32_F401BP
+#define TIMER_CNT 105
+#endif
+
+  timer_init_dma(TIM1_BASE, 1, TIMER_CNT - 1, compare, ARRSIZ(compare), 1);
 }
 #else
 static void ws2811_tx()
@@ -171,7 +181,7 @@ unsigned int scale(unsigned int v, unsigned int s)
 
 void irq_ws2811(void *data)
 {
-#if STM32_F411BP
+#if STM32_F411BP || STM32_F401BP
   stm32_dma_irq_ack(1, 1, DMA_IER_TCIF);
 #else
   stm32_bdma_irq_ack(BDMA1_BASE, 1, IER_TCIF);
