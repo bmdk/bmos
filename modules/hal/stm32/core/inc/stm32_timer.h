@@ -31,7 +31,7 @@
 #define TIM6_BASE ((void *)0x40001000)
 #define TIM7_BASE ((void *)0x40001400)
 #else
-#if STM32_F411
+#if STM32_F411 || STM32_F401
 #define TIM1_BASE ((void *)0x40010000)
 #else
 #define TIM1_BASE ((void *)0x40012C00)
