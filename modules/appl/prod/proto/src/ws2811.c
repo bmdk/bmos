@@ -25,13 +25,24 @@
 #include "common.h"
 #include "fast_log.h"
 #include "hal_int.h"
+#include "stm32_hal_board.h"
+#include "stm32_hal_gpio.h"
+#include "stm32_timer.h"
+
 #if STM32_F411BP || STM32_F401BP
 #include "stm32_hal_dma.h"
 #else
 #include "stm32_hal_bdma.h"
 #endif
-#include "stm32_hal_gpio.h"
-#include "stm32_timer.h"
+
+#define WSPERIOD_NS 1250
+#define TIMER_CLOCK CLOCK
+
+/* Number of clocks in 1250 ns - the nominal one bit period for WS281X */
+#define WSCLOCKS ((TIMER_CLOCK / 1000) * WSPERIOD_NS + 1000000 / 2) / 1000000
+
+#define WCPCCLOCKS(period_ns) \
+  (WSCLOCKS * (period_ns) + WSPERIOD_NS / 2) / WSPERIOD_NS
 
 #if STM32_F411BP || STM32_F401BP
 #define WSBIT 0
@@ -47,6 +58,7 @@
 #define GPIO_ADDR STM32_GPIO_ADDR_SET_CLEAR(WSGPIO)
 
 static unsigned char one = BIT(WSBIT);
+static const unsigned int compare[2] = { WCPCCLOCKS(350), WCPCCLOCKS(700) };
 
 #define PIXELS 256
 static unsigned char buf[24 * PIXELS];
@@ -54,12 +66,6 @@ static unsigned char buf[24 * PIXELS];
 #if STM32_F411BP || STM32_F401BP
 static void ws2811_tx()
 {
-#if STM32_F411BP
-  unsigned int compare[2] = { 32, 66 };
-#elif STM32_F401BP
-  unsigned int compare[2] = { 28, 58 };
-#endif
-
   FAST_LOG('W', "ws2811 tx start\n", 0, 0);
 
   timer_stop(TIM1_BASE);
@@ -85,19 +91,11 @@ static void ws2811_tx()
   stm32_dma_en(DMANUM, 1, 1);
   stm32_dma_en(DMANUM, 2, 1);
 
-#if STM32_F411BP
-#define TIMER_CNT 120
-#elif STM32_F401BP
-#define TIMER_CNT 105
-#endif
-
-  timer_init_dma(TIM1_BASE, 1, TIMER_CNT - 1, compare, ARRSIZ(compare), 1);
+  timer_init_dma(TIM1_BASE, 1, WSCLOCKS - 1, compare, ARRSIZ(compare), 1);
 }
 #else
 static void ws2811_tx()
 {
-  unsigned int compare[2] = { 27, 55 };
-
   FAST_LOG('W', "ws2811 tx start\n", 0, 0);
 
   timer_stop(TIM1_BASE);
@@ -119,7 +117,7 @@ static void ws2811_tx()
   stm32_bdma_en(BDMA1_BASE, 1, 1);
   stm32_bdma_en(BDMA1_BASE, 2, 1);
 
-  timer_init_dma(TIM1_BASE, 1, 99, compare, ARRSIZ(compare), 1);
+  timer_init_dma(TIM1_BASE, 1, WSCLOCKS - 1, compare, ARRSIZ(compare), 1);
 }
 #endif
 
