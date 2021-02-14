@@ -178,6 +178,8 @@ MODULES += hal/stm32/core
 MODULES += os/bmos
 MODULES += std
 
+MODULES += lib/graph/fb
+
 MODULES += prot/net/lwip/core
 MODULES += prot/net/lwip/core_ipv4
 MODULES += prot/net/lwip/netif
@@ -297,6 +299,7 @@ FILES.f401bp += stm32_rcc_a.o
 FILES.f401bp += stm32_board_f401bp.o
 FILES.f401bp += stm32_hal_dma.o
 FILES.f401bp += ws2811.o
+FILES.f401bp += fb.o
 FILES.f401bp += $(FILES.tusb)
 FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
