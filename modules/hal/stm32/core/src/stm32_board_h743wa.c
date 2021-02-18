@@ -78,7 +78,7 @@ static void pin_init()
 
 #define USART2_BASE 0x40004400
 #define USART3_BASE 0x40004800
-#define APB2_CLOCK 100000000
+#define APB2_CLOCK 120000000
 #if BMOS
 #if 0
 uart_t debug_uart = { "debugser", (void *)USART2_BASE, APB2_CLOCK, 38 };
@@ -96,8 +96,8 @@ static const gpio_handle_t leds[] = { GPIO(4, 3) };
 #if 1
 static struct pll_params_t clock_params = {
   .pllsrc = RCC_C_CLK_HSE_OSC,
-  .divm1  = 2,
-  .divn1  = 64,
+  .divm1  = 5,
+  .divn1  = 192,
   .divp1  = 2,
   .divq1  = 2,
   .divr1  = 2
