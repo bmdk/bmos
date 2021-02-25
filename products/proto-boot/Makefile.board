@@ -59,6 +59,9 @@ STACK_END.f401bp = 0x20018000
 XCFLAGS.f429 += -DSTM32_F429 -DSTM32_LCD
 STACK_END.f429 = 0x20030000
 
+XCFLAGS.f469d += -DSTM32_F469D -DSTM32_F4XX
+STACK_END.f469d = 0x20030000
+
 XCFLAGS.f746 += -DSTM32_F746 -DSTM32_LCD
 STACK_END.f746 = 0x20050000
 
@@ -195,6 +198,12 @@ FILES.f429 += stm32_board_f429.o
 FILES.f429 += stm32_hal_spi.o
 FILES.f429 += $(FILES.f4xx)
 FILES.f429 += $(FILES.fxxx)
+
+FILES.f469d += stm32_usart_a.o
+FILES.f469d += stm32_rcc_a.o
+FILES.f469d += stm32_board_f469d.o
+FILES.f469d += $(FILES.f4xx)
+FILES.f469d += $(FILES.fxxx)
 
 FILES.f746 += stm32_usart_b.o
 FILES.f746 += stm32_rcc_a.o

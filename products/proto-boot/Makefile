@@ -30,6 +30,7 @@ PROG += h735dk
 PROG += l4r
 PROG += f767
 PROG += f429
+PROG += f469d
 PROG += f746
 PROG += l432
 PROG += l452
