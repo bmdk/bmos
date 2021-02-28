@@ -28,6 +28,14 @@
 #include "xslog.h"
 
 #if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411 || STM32_F401
+#define FLASH_TYPE1 1
+#elif STM32_L4XX || STM32_L4R || STM32_G4XX
+#define FLASH_TYPE2 1
+#else
+#error CHECK FLASH BASE AND TYPE
+#endif
+
+#if FLASH_TYPE1
 #define CONFIG_FLASH_OPTR 0
 typedef struct {
   unsigned int acr;
@@ -63,10 +71,10 @@ typedef struct {
 #define FLASH_CR_PER BIT(1)
 #define FLASH_CR_PG BIT(0)
 
-#if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411 || STM32_F401
+#if FLASH_TYPE1
 #define FLASH_CR_PSIZE(page) (((page) & 0x3) << 8)
 #define FLASH_CR_PNB(page) (((page) & 0x1f) << 3)
-#else
+#elif FLASH_TYPE2
 #define FLASH_CR_OPTLOCK BIT(30)
 #define FLASH_CR_PNB(page) (((page) & 0xff) << 3)
 #define FLASH_CR_MER1 BIT(2)
@@ -83,12 +91,10 @@ typedef struct {
 #define FLASH_OPTKEYR_KEY1 0x08192a3b
 #define FLASH_OPTKEYR_KEY2 0x4c5d6e7f
 
-#if STM32_L4XX || STM32_L4R || STM32_G4XX
-#define FLASH ((volatile stm32_flash_t *)0x40022000)
-#elif STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411 || STM32_F401
+#if FLASH_TYPE1
 #define FLASH ((volatile stm32_flash_t *)0x40023C00)
-#else
-#error CHECK FLASH BASE
+#elif FLASH_TYPE2
+#define FLASH ((volatile stm32_flash_t *)0x40022000)
 #endif
 
 static void flash_unlock()
@@ -166,7 +172,7 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
     return -1;
 #endif
 
-#if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411 || STM32_F401
+#if FLASH_TYPE1
   len >>= 2;
   FLASH->cr = FLASH_CR_PSIZE(2);
   FLASH->cr |= FLASH_CR_PG;
@@ -179,7 +185,7 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
   a = (unsigned int *)addr;
 
   for (i = 0; i < len; i++) {
-#if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411 || STM32_F401
+#if FLASH_TYPE1
     *a++ = *d++;
     asm volatile ("dsb");
 #else
