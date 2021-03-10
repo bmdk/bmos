@@ -56,6 +56,12 @@ STACK_END.f411bp = 0x20020000
 XCFLAGS.f401bp += -DSTM32_F401
 STACK_END.f401bp = 0x20018000
 
+XCFLAGS.f407deb += -DSTM32_F407 -DSTM32_F4XX
+STACK_END.f407deb = 0x20020000
+
+XCFLAGS.f407debm += -DSTM32_F407 -DSTM32_F4XX
+STACK_END.f407debm = 0x20020000
+
 XCFLAGS.f429 += -DSTM32_F429 -DSTM32_LCD
 STACK_END.f429 = 0x20030000
 
@@ -191,6 +197,18 @@ FILES.f401bp += stm32_rcc_a.o
 FILES.f401bp += stm32_board_f401bp.o
 FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
+
+FILES.f407deb += stm32_usart_a.o
+FILES.f407deb += stm32_rcc_a.o
+FILES.f407deb += stm32_board_f407deb.o
+FILES.f407deb += $(FILES.f4xx)
+FILES.f407deb += $(FILES.fxxx)
+
+FILES.f407debm += stm32_usart_a.o
+FILES.f407debm += stm32_rcc_a.o
+FILES.f407debm += stm32_board_f407debm.o
+FILES.f407debm += $(FILES.f4xx)
+FILES.f407debm += $(FILES.fxxx)
 
 FILES.f429 += stm32_usart_a.o
 FILES.f429 += stm32_rcc_a.o

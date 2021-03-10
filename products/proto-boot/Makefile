@@ -23,6 +23,8 @@ export ROOT ?= $(shell pwd)/../..
 
 PROG += f411bp
 PROG += f401bp
+PROG += f407deb
+PROG += f407debm
 PROG += h743wa
 PROG += h743nucleo
 PROG += h745nucleo
