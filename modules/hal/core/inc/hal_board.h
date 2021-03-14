@@ -27,6 +27,8 @@ void hal_board_init(void);
 
 #if ARCH_STM32
 #include "stm32_hal_board.h"
+#elif ARCH_PICO
+#include "pico_hal_board.h"
 #else
 #error need an architecture
 #endif
