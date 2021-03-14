@@ -184,7 +184,17 @@ void exception_handler()
   register sw_stack_frame_t *xsf;
   unsigned int exc_return;
 
-  asm volatile ("push {r4-r11};"
+  asm volatile (
+#if __ARM_ARCH_6M__
+                "push {r4-r7};\n"
+                "mov r4, r8;\n"
+                "mov r5, r9;\n"
+                "mov r6, r10;\n"
+                "mov r7, r11;\n"
+                "push {r4-r7};\n"
+#else
+                "push {r4-r11};\n"
+#endif
                 "mov %0, sp;\n"
                 "mov %1, r14;\n"
                 : "=r" (xsf), "=r" (exc_return));
