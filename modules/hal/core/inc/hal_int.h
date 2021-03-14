@@ -6,7 +6,7 @@
 void irq_enable(unsigned int n, int en);
 void irq_ack(unsigned int n);
 void irq_set_pri(unsigned int n, unsigned int pri);
-void irq_set_pending(unsigned int n, int en);
+void irq_set_pending(unsigned int n);
 
 typedef void irq_handler_t (void *);
 

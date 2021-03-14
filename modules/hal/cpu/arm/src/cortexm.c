@@ -238,17 +238,14 @@ void irq_enable(unsigned int n, int en)
     NVIC->iser[reg] &= ~BIT(bit);
 }
 
-void irq_set_pending(unsigned int n, int en)
+void irq_set_pending(unsigned int n)
 {
   unsigned int bit, reg;
 
   reg = n / 32;
   bit = n % 32;
 
-  if (en)
-    NVIC->ispr[reg] |= BIT(bit);
-  else
-    NVIC->ispr[reg] &= ~BIT(bit);
+  NVIC->ispr[reg] |= BIT(bit);
 }
 
 void irq_ack(unsigned int n)

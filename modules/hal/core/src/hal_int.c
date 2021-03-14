@@ -49,7 +49,7 @@ int cmd_irqp(int argc, char *argv[])
   if (argc > 1)
     n = atoi(argv[1]);
 
-  irq_set_pending(n, 1);
+  irq_set_pending(n);
 
   return 0;
 }
