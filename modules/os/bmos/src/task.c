@@ -73,7 +73,7 @@ void task_start(void)
 {
   bmos_task_t *t;
 
-  t = task_init(idle_task, NULL, "idle", 0, 0, 1024);
+  t = task_init(idle_task, NULL, "idle", 0, 0, 64);
 
   set_psp((unsigned char *)t->sp + sizeof(sw_stack_frame_t));
 
