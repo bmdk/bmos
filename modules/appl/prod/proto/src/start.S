@@ -59,11 +59,41 @@ pendsv_handler:
       cpsid i
 
       mrs r0, psp
+#if __ARM_ARCH_6M__
+      mov r1, sp
+      mov sp, r0
+
+      push {r4-r7}
+      mov r4, r8
+      mov r5, r9
+      mov r6, r10
+      mov r7, r11
+      push {r4-r7}
+
+      mov r0, sp
+      mov sp, r1
+#else
       stmdb r0!, {r4-r11}
+#endif
 
       bl _pendsv_handler
 
+#if __ARM_ARCH_6M__
+      mov r1, sp
+      mov sp, r0
+
+      pop {r4-r7}
+      mov r8, r4
+      mov r9, r5
+      mov r10, r6
+      mov r11, r7
+      pop {r4-r7}
+
+      mov r0, sp
+      mov sp, r1
+#else
       ldmfd r0!, {r4-r11}
+#endif
       msr psp, r0
 
       ldr r0, =0xfffffffd
