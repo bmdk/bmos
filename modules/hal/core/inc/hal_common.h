@@ -61,4 +61,7 @@ static inline void bit_en(volatile unsigned int *reg, unsigned int n, int en)
   else
     *reg &= ~BIT(n);
 }
+
+int bl_enter(void);
+
 #endif

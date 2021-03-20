@@ -192,22 +192,31 @@ void boot()
   app();
 }
 
-void try_boot()
+WEAK int bl_enter(void)
 {
-  call *app = APP_ENTRY(APP_BASE);
   int c;
   xtime_ms_t start = hal_time_us();
-
-  if (!app_entry_valid(app))
-    return;
 
   xputs("\nPress return to enter bootloader\n");
 
   while (hal_time_us() - start < 1500000) {
     c = debug_getc();
     if (c == '\r')
-      return;
+      return 1;
   }
+
+  return 0;
+}
+
+void try_boot()
+{
+  call *app = APP_ENTRY(APP_BASE);
+
+  if (!app_entry_valid(app))
+    return;
+
+  if (bl_enter())
+    return;
 
   interrupt_disable();
   app();
