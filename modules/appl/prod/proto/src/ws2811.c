@@ -68,7 +68,7 @@
 static unsigned char one = BIT(WSBIT);
 static const unsigned int compare[2] = { WCPCCLOCKS(350), WCPCCLOCKS(700) };
 
-#define PIXELS 256
+#define PIXELS 300
 static unsigned char buf[24 * PIXELS];
 
 #if WS2811_USE_DMA
