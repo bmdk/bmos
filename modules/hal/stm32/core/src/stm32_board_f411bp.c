@@ -68,8 +68,6 @@ void pin_init()
   enable_apb1(28); /* PWR */
 
   /* KEY */
-  gpio_init(GPIO(0, 0), GPIO_INPUT);
-
   gpio_init_attr(GPIO(0, 0), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
                                              0, 0, GPIO_INPUT));
 
