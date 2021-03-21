@@ -36,4 +36,6 @@
 
 #define ALIGN(_num_, _n_) (((_num_) + (1U << (_n_)) - 1) & ~((1U << (_n_)) - 1))
 
+#define WEAK __attribute__((__weak__))
+
 #endif
