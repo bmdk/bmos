@@ -53,6 +53,14 @@ void pin_init()
   gpio_init_attr(GPIO(0, 10), GPIO_ATTR_STM32(0, \
                                               GPIO_SPEED_HIG, 7, GPIO_ALT));
 
+  /* USB */
+  enable_ahb2(7);
+
+  gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, \
+                                              GPIO_SPEED_VHI, 10, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, \
+                                              GPIO_SPEED_VHI, 10, GPIO_ALT));
+
   /* TIM1 */
   enable_apb2(0);
 

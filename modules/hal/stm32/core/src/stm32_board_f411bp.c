@@ -58,6 +58,14 @@ void pin_init()
   gpio_init_attr(GPIO(0, 10), GPIO_ATTR_STM32(0, \
                                               GPIO_SPEED_HIG, 7, GPIO_ALT));
 
+  /* USB */
+  enable_ahb2(7);
+
+  gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, \
+                                              GPIO_SPEED_VHI, 10, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, \
+                                              GPIO_SPEED_VHI, 10, GPIO_ALT));
+
   /* TIM1 */
   enable_apb2(0);
 
@@ -86,7 +94,10 @@ void pin_init()
 }
 
 #define USART1_BASE (void *)0x40011000
-#define APB2_CLOCK 100000000
+#define USART2_BASE (void *)0x40004400
+#define APB1_CLOCK 48000000
+#define APB2_CLOCK 96000000
+
 #if BMOS
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 #endif
@@ -95,17 +106,17 @@ static const gpio_handle_t leds[] = { GPIO(2, 13) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV };
 
 /* 25MHz crystal input
-   100MHz CPU clock
-   50MHz AHB1
-   25MHz AHB2
+   96Hz CPU clock
+   48MHz APB1
+   96MHz APB2
  */
 static const struct pll_params_t pll_params = {
   .src   = RCC_A_CLK_HSE_OSC,
   .pllr  = 0,
   .pllp  = RCC_A_PLLP_2,
-  .pllq  = 5,
-  .plln  = 160,
-  .pllm  = 20,
+  .pllq  = 4,
+  .plln  = 192,
+  .pllm  = 25,
   .hpre  = 0,
   .ppre1 = RCC_A_PPRE_2,
   .ppre2 = RCC_A_PPRE_1,

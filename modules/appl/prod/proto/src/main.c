@@ -210,6 +210,7 @@ void lcd_task(void *arg)
 void task_net();
 void task_led();
 void task_can();
+void tusb_cdc_init();
 
 int main()
 {
@@ -245,6 +246,10 @@ int main()
   task_init(shell_task, &shell_info, "shell", 2, 0, 4096);
 
   io_set_output(shell_info.txq[0], 0);
+
+#if STM32_F411BP || STM32_F401BP
+  tusb_cdc_init();
+#endif
 
 #if LCD_DEMO
   task_init(lcd_task, NULL, "lcd", 2, 0, 512);

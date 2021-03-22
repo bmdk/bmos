@@ -6,6 +6,8 @@
 
 #define __ISB() asm volatile ("isb")
 #define __DSB() asm volatile ("dsb")
+
+#undef __WFI
 #define __WFI() asm volatile ("wfi")
 
 static inline void set_psp(void *psp)

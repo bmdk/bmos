@@ -42,6 +42,7 @@ XCFLAGS.h735dk += -mcpu=cortex-m7
 XCFLAGS.h735dk += -DCONFIG_LWIP -DLWIP_DEBUG
 
 XCFLAGS.h743wa += -DSTM32_H7XX
+XCFLAGS.h743wa += -DSTM32_H743WA
 STACK_END.h743wa = 0x20020000
 XCFLAGS.h743wa += -mcpu=cortex-m7
 
@@ -63,13 +64,17 @@ XCFLAGS.f411bp += -DSTM32_F411
 XCFLAGS.f411bp += -DSTM32_F411BP
 XCFLAGS.f411bp += -mcpu=cortex-m4
 STACK_END.f411bp = 0x20020000
-XCFLAGS.f411bp += -DWS2811
+#XCFLAGS.f411bp += -DWS2811
+XCFLAGS.f411bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
+XCFLAGS.f411bp += -DSTM32F411xE
 
 XCFLAGS.f401bp += -DSTM32_F401
 XCFLAGS.f401bp += -DSTM32_F401BP
 XCFLAGS.f401bp += -mcpu=cortex-m4
 STACK_END.f401bp = 0x20018000
 XCFLAGS.f401bp += -DWS2811
+XCFLAGS.f401bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
+XCFLAGS.f401bp += -DSTM32F401xC
 
 XCFLAGS.f407deb += -DSTM32_F407
 XCFLAGS.f407deb += -DSTM32_F4XX
@@ -178,6 +183,11 @@ MODULES += prot/net/lwip/httpd
 
 MODULES += prot/net/lwip/apps/test
 
+MODULES += prot/usb/tusb/if
+MODULES += prot/usb/tusb/tusb
+MODULES += hal/cmsis
+MODULES += hal/cmsis_st/f4
+
 ifneq ($(CONFIG_NEWLIB), y)
 MODULES += lib/libc_min
 endif
@@ -254,7 +264,18 @@ FILES.f411bp += stm32_rcc_a.o
 FILES.f411bp += stm32_board_f411bp.o
 FILES.f411bp += stm32_hal_dma.o
 FILES.f411bp += ws2811.o
-FILES.f411bp += $(FILES.f411bp-usb)
+
+FILES.tusb += stm32_usbd.o
+FILES.tusb += tusb_cdc.o
+FILES.tusb += cdc_device.o
+FILES.tusb += dcd_synopsys.o
+FILES.tusb += tusb.o
+FILES.tusb += tusb_fifo.o
+FILES.tusb += usb_descriptors.o
+FILES.tusb += usbd.o
+FILES.tusb += usbd_control.o
+
+FILES.f411bp += $(FILES.tusb)
 FILES.f411bp += $(FILES.f4xx)
 FILES.f411bp += $(FILES.fxxx)
 
@@ -264,6 +285,7 @@ FILES.f401bp += stm32_rcc_a.o
 FILES.f401bp += stm32_board_f401bp.o
 FILES.f401bp += stm32_hal_dma.o
 FILES.f401bp += ws2811.o
+FILES.f401bp += $(FILES.tusb)
 FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
 

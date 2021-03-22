@@ -67,12 +67,14 @@ typedef void (*osal_task_func_t)( void * );
 // OSAL Porting API
 //--------------------------------------------------------------------+
 
+#if 0
 //------------- Semaphore -------------//
 static inline osal_semaphore_t osal_semaphore_create(osal_semaphore_def_t* semdef);
 static inline bool osal_semaphore_post(osal_semaphore_t sem_hdl, bool in_isr);
 static inline bool osal_semaphore_wait(osal_semaphore_t sem_hdl, uint32_t msec);
 
 static inline void osal_semaphore_reset(osal_semaphore_t sem_hdl); // TODO removed
+#endif
 
 //------------- Mutex -------------//
 static inline osal_mutex_t osal_mutex_create(osal_mutex_def_t* mdef);
