@@ -11,6 +11,8 @@ bmos_task_t *task_init(task_fun_t *tf, void *ta,
                        const char *name, unsigned int prio,
                        void *stack, unsigned int stack_size);
 
+#define TLS_IND_STDOUT 0
+
 void *task_get_tls(unsigned int n);
 void task_set_tls(unsigned int n, void *data);
 bmos_task_t *task_get_current(void);

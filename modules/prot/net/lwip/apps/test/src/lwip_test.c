@@ -161,7 +161,7 @@ int lwip_test_init()
 
   shell_tx = queue_create("ethshtx", QUEUE_TYPE_DRIVER);
 
-  task_set_tls(0, shell_tx);
+  task_set_tls(TLS_IND_STDOUT, shell_tx);
 
   return 0;
 

@@ -57,7 +57,7 @@ static void _xputs(const char *str)
   int len = strlen(str);
   bmos_queue_t *oq;
 
-  oq = (bmos_queue_t *)task_get_tls(0);
+  oq = (bmos_queue_t *)task_get_tls(TLS_IND_STDOUT);
   if (!oq)
     oq = outq;
 
