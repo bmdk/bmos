@@ -20,6 +20,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "common.h"
@@ -65,6 +66,10 @@ typedef struct {
 
 #define RTC_ISR_INIT BIT(7)
 #define RTC_ISR_INITF BIT(6)
+
+#define RTC_CR_BKP BIT(18)
+#define RTC_CR_SUB1H BIT(17)
+#define RTC_CR_ADD1H BIT(16)
 
 static inline unsigned int reg_get_field(
   unsigned int val, unsigned int width, unsigned int pos)
@@ -122,49 +127,94 @@ void rtc_get_time(rtc_time_t *t)
   t->pm = (tr >> 22) & 1;
 }
 
-int cmd_rtc(int argc, char *argv[])
+static int sub_cmd_rtc_set(int argc, char *argv[])
 {
+  int count;
   unsigned int secs, mins, hours, year, month, day, dayno;
   rtc_time_t t;
 
+  if (argc == 0)
+    return -1;
+
+  memset(&t, 0, sizeof(t));
+
+  count = sscanf(argv[0], "%2d:%2d:%2d",
+                 &hours, &mins, &secs);
+  if (count < 3)
+    return -1;
+  t.hours = (unsigned char)hours;
+  t.mins = (unsigned char)mins;
+  t.secs = (unsigned char)secs;
+
   if (argc > 1) {
-    int count;
+    count = sscanf(argv[1], "%d", &dayno);
+    if (count < 1)
+      return -1;
+    t.dayno = (unsigned char)dayno;
+  }
 
-    memset(&t, 0, sizeof(t));
-
-    count = sscanf(argv[1], "%2d:%2d:%2d",
-                   &hours, &mins, &secs);
+  if (argc > 2) {
+    count = sscanf(argv[2], "%2d-%2d-%2d",
+                   &day, &month, &year);
     if (count < 3)
       return -1;
-    t.hours = (unsigned char)hours;
-    t.mins = (unsigned char)mins;
-    t.secs = (unsigned char)secs;
-
-    if (argc > 2) {
-      count = sscanf(argv[2], "%d", &dayno);
-      if (count < 1)
-        return -1;
-      t.dayno = (unsigned char)dayno;
-    }
-
-    if (argc > 3) {
-      count = sscanf(argv[3], "%2d-%2d-%2d",
-                     &day, &month, &year);
-      if (count < 3)
-        return -1;
-      t.day = (unsigned char)day;
-      t.month = (unsigned char)month;
-      t.year = (unsigned char)year;
-    }
-
-    rtc_set_time(&t);
-    return 0;
+    t.day = (unsigned char)day;
+    t.month = (unsigned char)month;
+    t.year = (unsigned char)year;
   }
+
+  rtc_set_time(&t);
+
+  return 0;
+}
+
+static int sub_cmd_rtc_get(int argc, char *argv[])
+{
+  rtc_time_t t;
 
   rtc_get_time(&t);
 
   xprintf("%02d:%02d:%02d%s %s %02d-%02d-%02d\n", t.hours, t.mins, t.secs,
           t.pm ? " PM" : "", dayname[t.dayno], t.day, t.month, t.year);
+
+  return 0;
+}
+
+static int sub_cmd_rtc_set_dst(int argc, char *argv[])
+{
+  int en = 0;
+
+  if (argc >= 1)
+    en = atoi(argv[0]);
+
+  RTC->wpr = 0xca;
+  RTC->wpr = 0x53;
+
+  if (en)
+    RTC->cr |= RTC_CR_ADD1H;
+  else
+    RTC->cr |= RTC_CR_SUB1H;
+
+  RTC->cr |= RTC_CR_BKP;
+
+  return 0;
+}
+
+int cmd_rtc(int argc, char *argv[])
+{
+  char cmd = 't';
+
+  if (argc > 1)
+    cmd = argv[1][0];
+
+  switch (cmd) {
+  case 's':
+    return sub_cmd_rtc_set(argc - 2, argv + 2);
+  case 't':
+    return sub_cmd_rtc_get(argc - 2, argv + 2);
+  case 'd':
+    return sub_cmd_rtc_set_dst(argc - 2, argv + 2);
+  }
 
   return 0;
 }
