@@ -44,19 +44,19 @@ typedef struct {
 
 void pin_init()
 {
-  enable_ahb1(0); /* GPIOA */
-  enable_ahb1(1); /* GPIOB */
-  enable_ahb1(2); /* GPIOC */
-  enable_ahb1(3); /* GPIOD */
-  enable_ahb1(5); /* GPIOF */
-  enable_ahb1(6); /* GPIOG */
+  enable_ahb1(0);  /* GPIOA */
+  enable_ahb1(1);  /* GPIOB */
+  enable_ahb1(2);  /* GPIOC */
+  enable_ahb1(3);  /* GPIOD */
+  enable_ahb1(5);  /* GPIOF */
+  enable_ahb1(6);  /* GPIOG */
   enable_ahb1(10); /* GPIOK */
 
   /* USART 3 */
   enable_apb1(18);
 
   gpio_init_attr(GPIO(1, 10), GPIO_ATTR_STM32(0, \
-                                             GPIO_SPEED_VHI, 7, GPIO_ALT));
+                                              GPIO_SPEED_VHI, 7, GPIO_ALT));
   gpio_init_attr(GPIO(1, 11), GPIO_ATTR_STM32(0, \
                                               GPIO_SPEED_VHI, 7, GPIO_ALT));
 
@@ -82,8 +82,8 @@ void pin_init()
 uart_t debug_uart = { "debugser", USART3_BASE, APB1_CLOCK, 39 };
 #endif
 
-static const gpio_handle_t leds[] = { GPIO(6, 6), GPIO(3, 4),
-                                      GPIO(3, 5), GPIO(10, 3)};
+static const gpio_handle_t leds[] = { GPIO(6, 6), GPIO(3,  4),
+                                      GPIO(3, 5), GPIO(10, 3) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV, LED_FLAG_INV,
                                         LED_FLAG_INV, LED_FLAG_INV };
 
