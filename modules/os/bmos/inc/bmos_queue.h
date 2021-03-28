@@ -18,4 +18,6 @@ bmos_queue_t *queue_lookup(const char *name);
 
 const char *queue_get_name(bmos_queue_t *queue);
 
+unsigned int queue_get_count(bmos_queue_t *queue);
+
 #endif

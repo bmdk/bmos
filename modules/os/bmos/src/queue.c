@@ -267,3 +267,31 @@ const char * queue_get_name(bmos_queue_t *queue)
 {
   return queue->name;
 }
+
+static unsigned int queue_count_task(bmos_queue_t *queue)
+{
+  return sem_count(queue->type_data.task.sem);
+}
+
+static unsigned int queue_count_driver(bmos_queue_t *queue)
+{
+  unsigned int saved, count;
+
+  saved = interrupt_disable();
+  count = queue->type_data.driver.count;
+  interrupt_enable(saved);
+
+  return count;
+}
+
+unsigned int queue_get_count(bmos_queue_t *queue)
+{
+  unsigned int count;
+
+  if (queue->type == QUEUE_TYPE_TASK)
+    count = queue_count_task(queue);
+  else     /* QUEUE_TYPE_DRIVER */
+    count = queue_count_driver(queue);
+
+  return count;
+}

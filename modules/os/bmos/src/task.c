@@ -323,6 +323,19 @@ bmos_sem_t *sem_create(const char *name, unsigned int count)
   return s;
 }
 
+unsigned int sem_count(bmos_sem_t *s)
+{
+  unsigned int saved, count;
+
+  saved = interrupt_disable();
+
+  count = s->count;
+
+  interrupt_enable(saved);
+
+  return count;
+}
+
 static void _waiters_add(bmos_task_list_t *waiters, bmos_task_t *t, int tms)
 {
   if (!waiters->first) {
