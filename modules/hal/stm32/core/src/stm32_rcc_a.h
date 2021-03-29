@@ -22,7 +22,7 @@ struct pll_params_t {
   unsigned char pllr;
   unsigned char pllq;
   unsigned char pllp;
-  unsigned char plln;
+  unsigned short plln;
   unsigned char pllm;
   /* CFGR */
   unsigned char rtcpre;
