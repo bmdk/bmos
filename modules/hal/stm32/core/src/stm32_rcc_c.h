@@ -30,6 +30,12 @@ struct pll_params_t {
 #define FDCANSEL_PLL1_Q_CK 1
 #define FDCANSEL_PLL2_Q_CK 2
 
+#define USB_DISABLE_CK 0
+#define USB_PLL1_Q_CK 1
+#define USB_PLL3_Q_CK 2
+#define USB_HSI48_CK 3
+
 void set_fdcansel(unsigned int sel);
+void set_usbsel(unsigned int sel);
 
 #endif
