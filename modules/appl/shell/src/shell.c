@@ -162,8 +162,8 @@ int strsplit(char **argv, int max_argc, char *cmdline)
       while (c == ' ' || c == '\t')
         c = *++cmdline;
       p = cmdline;
-    }
-    cmdline++;
+    } else
+      cmdline++;
   }
 
   if (strlen(p) > 0)
