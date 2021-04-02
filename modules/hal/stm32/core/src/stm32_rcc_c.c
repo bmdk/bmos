@@ -342,6 +342,11 @@ void enable_ahb1(unsigned int dev)
   RCC->ahb1enr |= BIT(dev);
 }
 
+void enable_ahb2(unsigned int dev)
+{
+  RCC->ahb2enr |= BIT(dev);
+}
+
 void enable_ahb4(unsigned int dev)
 {
   RCC->ahb4enr |= BIT(dev);
