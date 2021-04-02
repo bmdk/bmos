@@ -135,8 +135,14 @@ static int cmd_xmodem(int argc, char *argv[])
     }
   }
 
+  start = xtime_ms();
   /* make sure we flush the last character */
-  debug_putc(0);
+  while (!debug_ser_tx_done()) {
+    if ((xtime_ms() - start) > 2000) {
+      xprintf("TIMEOUT waiting for tx done\n");
+      break;
+    }
+  }
 
   if (err == 0)
     boot();
