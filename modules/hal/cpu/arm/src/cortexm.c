@@ -184,6 +184,7 @@ void exception_handler()
   register sw_stack_frame_t *xsf;
   unsigned int exc_return;
 
+/* *INDENT-OFF* */
   asm volatile (
 #if __ARM_ARCH_6M__
                 "push {r4-r7};\n"
@@ -198,6 +199,7 @@ void exception_handler()
                 "mov %0, sp;\n"
                 "mov %1, r14;\n"
                 : "=r" (xsf), "=r" (exc_return));
+/* *INDENT-ON* */
 
 #if 0
   debug_printf("exc_return: %08x\n", exc_return);
