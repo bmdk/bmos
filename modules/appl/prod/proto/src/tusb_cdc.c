@@ -77,7 +77,7 @@ static void cdc_shell_put(void *arg)
 
     data = BMOS_OP_MSG_GET_DATA(m);
 
-    for(;;) {
+    for (;;) {
       int l;
 
       l = (int)tud_cdc_write(data, len);
