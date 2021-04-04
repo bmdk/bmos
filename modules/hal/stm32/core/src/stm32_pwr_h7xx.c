@@ -107,6 +107,25 @@ void stm32_pwr_power(unsigned int val)
   reg_set_field(&PWR->cr3, 6, 0, val);
 }
 
+#define PWR_CR3_USB33DEN BIT(24)
+#define PWR_CR3_USBREGEN BIT(25)
+
+void stm32_pwr_usbvdetect(int en)
+{
+  if (en)
+    PWR->cr3 |= PWR_CR3_USB33DEN;
+  else
+    PWR->cr3 &= ~PWR_CR3_USB33DEN;
+}
+
+void stm32_pwr_usbreg(int en)
+{
+  if (en)
+    PWR->cr3 |= PWR_CR3_USBREGEN;
+  else
+    PWR->cr3 &= ~PWR_CR3_USBREGEN;
+}
+
 #define PWR_D3CR_VOSRDY BIT(13)
 
 void stm32_pwr_vos(unsigned int vos)

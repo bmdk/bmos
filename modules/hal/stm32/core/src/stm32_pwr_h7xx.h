@@ -40,5 +40,7 @@ void stm32_pwr_wkup_en(unsigned int n, int en);
 
 void stm32_pwr_power(unsigned int val);
 void stm32_pwr_vos(unsigned int vos);
+void stm32_pwr_usbvdetect(int en);
+void stm32_pwr_usbreg(int en);
 
 #endif
