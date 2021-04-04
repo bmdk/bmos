@@ -28,7 +28,7 @@
 #include "xslog.h"
 
 #if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411 || STM32_F401 || \
-    STM32_F4XX
+  STM32_F4XX
 #define FLASH_TYPE1 1
 #elif STM32_L4XX || STM32_L4R || STM32_G4XX
 #define FLASH_TYPE2 1
