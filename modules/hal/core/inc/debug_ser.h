@@ -25,5 +25,6 @@
 void debug_ser_init(void);
 void debug_putc(int ch);
 int debug_getc(void);
+int debug_ser_tx_done(void);
 
 #endif

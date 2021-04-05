@@ -34,8 +34,14 @@
 #define UART_SR_ORE BIT(3)
 #define UART_SR_RXNE BIT(5)
 #define UART_SR_TXE BIT(7)
+#define UART_SR_TC BIT(6)
 
 static volatile stm32_usart_a_t *duart;
+
+static int usart_tx_done(volatile stm32_usart_a_t *usart)
+{
+  return usart->sr & UART_SR_TC;
+}
 
 static void usart_putc(volatile stm32_usart_a_t *usart, int ch)
 {
@@ -61,6 +67,11 @@ void debug_putc(int ch)
 int debug_getc(void)
 {
   return usart_xgetc(duart);
+}
+
+int debug_ser_tx_done(void)
+{
+  return usart_tx_done(duart);
 }
 
 #define USART_RE BIT(2)     /* RX enable */
