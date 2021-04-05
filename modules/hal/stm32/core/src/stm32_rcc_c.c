@@ -396,6 +396,11 @@ void set_usbsel(unsigned int sel)
   reg_set_field(&RCC->d2ccip2r, 2, 20, sel);
 }
 
+void set_usart234578sel(unsigned int sel)
+{
+  reg_set_field(&RCC->d2ccip2r, 3, 0, sel);
+}
+
 #define RCC_BDCR_LSEON BIT(0)
 #define RCC_BDCR_LSERDY BIT(1)
 #define RCC_BDCR_RTCEN BIT(15)

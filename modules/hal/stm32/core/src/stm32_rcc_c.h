@@ -35,7 +35,15 @@ struct pll_params_t {
 #define USB_PLL3_Q_CK 2
 #define USB_HSI48_CK 3
 
+#define USART234578SEL_RCC_PCLK1 0
+#define USART234578SEL_PLL2_Q_CK 1
+#define USART234578SEL_PLL3_Q_CK 2
+#define USART234578SEL_HSI_KER_CK 3
+#define USART234578SEL_CSI_KER_CK 4
+#define USART234578SEL_LSE_CK 5
+
 void set_fdcansel(unsigned int sel);
 void set_usbsel(unsigned int sel);
+void set_usart234578sel(unsigned int sel);
 
 #endif
