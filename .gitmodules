@@ -4,3 +4,6 @@
 [submodule "external/tinyusb"]
 	path = external/tinyusb
 	url = https://github.com/hathach/tinyusb.git
+[submodule "external/cmsis_5"]
+	path = external/cmsis_5
+	url = https://github.com/ARM-software/CMSIS_5.git
