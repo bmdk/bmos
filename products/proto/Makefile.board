@@ -185,7 +185,6 @@ MODULES += prot/net/lwip/apps/test
 
 MODULES += prot/usb/tusb/if
 MODULES += prot/usb/tusb/tusb
-MODULES += hal/cmsis_st/f4
 
 ifneq ($(CONFIG_NEWLIB), y)
 MODULES += lib/libc_min
@@ -194,7 +193,11 @@ endif
 XCFLAGS += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
 
 # cmsis
-XCFLAGS += -I$(ROOT)/external/cmsis_5/CMSIS/Core/Include
+XCFLAGS.cmsis += -I$(ROOT)/external/cmsis_5/CMSIS/Core/Include
+XCFLAGS.cmsisf4 += -I$(ROOT)/external/st/cmsis_device_f4/Include
+
+XCFLAGS.f401bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
+XCFLAGS.f411bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
 
 VPATH += $(addsuffix /src, $(addprefix $(ROOT)/modules/, $(MODULES)))
 
