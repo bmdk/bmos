@@ -1,10 +1,13 @@
 ROOT ?= ../..
-TOOLCHAIN_ROOT = /usr/local/compilers/arm/gcc-arm-none-eabi-8-2018-q4-major/bin
 SDK_PATH = $(ROOT)/external/pico-sdk
 
-XCC = $(TOOLCHAIN_ROOT)/arm-none-eabi-gcc
-XLD = $(TOOLCHAIN_ROOT)/arm-none-eabi-gcc
-XOBJCOPY = $(TOOLCHAIN_ROOT)/arm-none-eabi-objcopy
+ifneq ($(TOOLCHAIN_ROOT),)
+TOOLCHAIN_PFX = $(TOOLCHAIN_ROOT)/
+endif
+
+XCC = $(TOOLCHAIN_ROOT)arm-none-eabi-gcc
+XLD = $(TOOLCHAIN_ROOT)arm-none-eabi-gcc
+XOBJCOPY = $(TOOLCHAIN_ROOT)arm-none-eabi-objcopy
 
 BUILD_DIR = build
 
