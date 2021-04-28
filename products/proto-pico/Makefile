@@ -251,7 +251,7 @@ LOBJS += xtime.o
 
 BUILD_LOBJS = $(addprefix $(BUILD_DIR)/,$(LOBJS))
 
-all: app.elf app.uf2
+all: $(BUILD_DIR)/app.elf $(BUILD_DIR)/app.uf2
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
@@ -283,16 +283,15 @@ $(BUILD_DIR)/boot_stage2.raw.S: $(BUILD_DIR)/boot_stage2.raw
 $(BUILD_LOBJS): | $(BUILD_DIR)
 $(BUILD_APP_OBJS): | $(BUILD_DIR)
 
-app.elf: $(BUILD_APP_OBJS) $(BUILD_LOBJS) $(BUILD_DIR)/boot_stage2.raw.o
+$(BUILD_DIR)/app.elf: $(BUILD_APP_OBJS) $(BUILD_LOBJS) $(BUILD_DIR)/boot_stage2.raw.o
 	$(XLD) $(XCFLAGS) $(XLDFLAGS) -o $@ $^ -lm
 
 ELF2UF2_PATH = $(SDK_PATH)/tools/elf2uf2
 $(BUILD_DIR)/elf2uf2: $(ELF2UF2_PATH)/main.cpp
 	g++ -o $@ -O2 -I $(ELF2UF2_PATH) -I $(SDK_PATH)/src/common/boot_uf2/include $(ELF2UF2_PATH)/main.cpp
 
-%.uf2: %.elf $(BUILD_DIR)/elf2uf2
+$(BUILD_DIR)/%.uf2: $(BUILD_DIR)/%.elf $(BUILD_DIR)/elf2uf2
 	$(BUILD_DIR)/elf2uf2 $< $@
 
 clean:
-	rm -f *.elf *.uf2
 	rm -fR $(BUILD_DIR)
