@@ -10,3 +10,13 @@ There is a simple bootloader with xmodem download over the serial port. The seri
 configured by default is the ST-Link virtual serial port.
 
 A simple main with a blink application and a shell is also included.
+
+To initialize external modules run:
+
+    git submodules update --init
+
+Ensure you have installed an arm-none-eabi toolchain and that it is in your PATH or set the path to the toolchain with
+
+    TOOLCHAIN_ROOT=<path to toolchain> make
+
+Run make at the top level to build everything. Results are available under each product in the build directory.
