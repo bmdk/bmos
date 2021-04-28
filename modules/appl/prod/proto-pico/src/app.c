@@ -14,6 +14,7 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
+#include "xtime.h"
 
 #include "bmos_task.h"
 #include "bmos_queue.h"
@@ -24,11 +25,38 @@ bmos_queue_t *syspool;
 
 #define DEBUG_UART uart0
 
+static int led_state = 0;
+static xtime_ms_t last_blink = 0;
+#define LONG_WAIT 6000
+#define SHORT_WAIT 100
+static xtime_diff_ms_t wait = LONG_WAIT;
+
+#define LED_PIN 25
+
+static void led_set(int num, int v)
+{
+  gpio_put(LED_PIN, v);
+}
+
+void blink()
+{
+  xtime_ms_t now;
+
+  now = xtime_ms();
+  if (xtime_diff_ms(now, last_blink) >= wait) {
+    led_state ^= 1;
+    led_set(0, led_state);
+    last_blink = now;
+    if (wait == LONG_WAIT)
+      wait = SHORT_WAIT;
+    else
+      wait = LONG_WAIT;
+  }
+}
+
 void systick_hook(void)
 {
-#if 0
   blink();
-#endif
 }
 
 unsigned int hal_time_us()
@@ -57,38 +85,10 @@ static void polled_shell(void)
   }
 }
 
-#define LED_PIN 25
-
-static void blink_task(void *arg)
-{
-  for (;;) {
-    task_delay(1000);
-    gpio_put(LED_PIN, 0);
-    task_delay(1000);
-    gpio_put(LED_PIN, 1);
-  }
-}
-
-#if 0
-static void shell_task(void *arg)
-{
-  polled_shell();
-}
-#endif
-
 static void debug_uart_init()
 {
-#if 0
-  uart_init(DEBUG_UART, 115200);
-#endif
-
   gpio_set_function(0, GPIO_FUNC_UART);
   gpio_set_function(1, GPIO_FUNC_UART);
-
-#if 0
-  gpio_set_function(4, GPIO_FUNC_UART);
-  gpio_set_function(5, GPIO_FUNC_UART);
-#endif
 }
 
 uart_t debug_uart = { "debugser", (void *)0, 0 /* CLOCK */, 20 };
@@ -225,7 +225,8 @@ static void cdc_shell_put(void *arg)
   }
 }
 
-int main() {
+int main()
+{
     debug_uart_init();
 
     gpio_init(LED_PIN);
@@ -234,7 +235,6 @@ int main() {
 
     interrupt_disable();
 
-    task_init(blink_task, NULL, "blink", 2, 0, 1024);
     task_init(shell_task, NULL, "shell", 2, 0, 4096);
 
     cdc_tx = queue_create("cdc_tx", QUEUE_TYPE_DRIVER);

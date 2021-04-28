@@ -244,6 +244,7 @@ LOBJS += op_msg.o
 LOBJS += misc.o
 LOBJS += pico_irq.o
 LOBJS += pico_uart.o
+LOBJS += xtime.o
 
 BUILD_LOBJS = $(addprefix $(BUILD_DIR)/,$(LOBJS))
 
