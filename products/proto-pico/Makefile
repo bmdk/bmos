@@ -1,4 +1,4 @@
-ROOT ?= /home/brian/src/bmos
+ROOT ?= ../..
 TOOLCHAIN_ROOT = /usr/local/compilers/arm/gcc-arm-none-eabi-8-2018-q4-major/bin
 SDK_PATH = $(ROOT)/external/pico-sdk
 
