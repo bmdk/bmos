@@ -45,15 +45,19 @@ enum {
 uint8_t const desc_fs_configuration[] =
 {
   TUD_CONFIG_DESCRIPTOR(1,
-                        ITF_NUM_TOTAL,                       0,
+                        ITF_NUM_TOTAL,
+                        0,
                         CONFIG_TOTAL_LEN,
                         TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP,
                         100),
 
-  TUD_CDC_DESCRIPTOR(ITF_NUM_CDC,                            4,
-                     EPNUM_CDC_NOTIF,                        8,
+  TUD_CDC_DESCRIPTOR(ITF_NUM_CDC,
+                     4,
+                     EPNUM_CDC_NOTIF,
+                     8,
                      EPNUM_CDC_OUT,
-                     EPNUM_CDC_IN,                           64),
+                     EPNUM_CDC_IN,
+                     64),
 };
 
 uint8_t const * tud_descriptor_configuration_cb(uint8_t index)

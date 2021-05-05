@@ -18,7 +18,8 @@ void irq_remove_handler(uint num, pico_irq_handler_t handler)
 {
 }
 
-void irq_set_enabled(uint num, bool enabled) {
+void irq_set_enabled(uint num, bool enabled)
+{
 }
 
 void irq_set_exclusive_handler(uint num, pico_irq_handler_t handler)

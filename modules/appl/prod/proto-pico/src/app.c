@@ -79,9 +79,8 @@ static void polled_shell(void)
     if (uart_is_readable(DEBUG_UART)) {
       int c = uart_getc(DEBUG_UART);
       shell_input(&sh, c);
-    } else {
+    } else
       task_delay(10);
-    }
   }
 }
 
@@ -227,34 +226,34 @@ static void cdc_shell_put(void *arg)
 
 int main()
 {
-    debug_uart_init();
+  debug_uart_init();
 
-    gpio_init(LED_PIN);
-    gpio_set_dir(LED_PIN, GPIO_OUT);
-    gpio_put(LED_PIN, 1);
+  gpio_init(LED_PIN);
+  gpio_set_dir(LED_PIN, GPIO_OUT);
+  gpio_put(LED_PIN, 1);
 
-    interrupt_disable();
+  interrupt_disable();
 
-    task_init(shell_task, NULL, "shell", 2, 0, 4096);
+  task_init(shell_task, NULL, "shell", 2, 0, 4096);
 
-    cdc_tx = queue_create("cdc_tx", QUEUE_TYPE_DRIVER);
-    (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0);
-    task_init(usb_task, NULL, "usbshell", 2, 0, 4096);
+  cdc_tx = queue_create("cdc_tx", QUEUE_TYPE_DRIVER);
+  (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0);
+  task_init(usb_task, NULL, "usbshell", 2, 0, 4096);
 
-    shell_info.rxq = queue_create("sh1rx", QUEUE_TYPE_TASK);
-    shell_info.txq[0] = uart_open(&debug_uart, 115200, shell_info.rxq,
-        OP_UART1_DATA);
-    shell_info.txop[0] = 0;
+  shell_info.rxq = queue_create("sh1rx", QUEUE_TYPE_TASK);
+  shell_info.txq[0] = uart_open(&debug_uart, 115200, shell_info.rxq,
+                                OP_UART1_DATA);
+  shell_info.txop[0] = 0;
 
-    io_set_output(shell_info.txq[0], 0);
+  io_set_output(shell_info.txq[0], 0);
 
-    syspool = op_msg_pool_create("sys", QUEUE_TYPE_TASK, SYSPOOL_COUNT,
-        SYSPOOL_SIZE);
+  syspool = op_msg_pool_create("sys", QUEUE_TYPE_TASK, SYSPOOL_COUNT,
+                               SYSPOOL_SIZE);
 
-    systick_init();
+  systick_init();
 
-    task_start();
+  task_start();
 
-    for(;;)
-      ;
+  for (;;)
+    ;
 }
