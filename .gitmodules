@@ -10,3 +10,6 @@
 [submodule "external/st/cmsis_device_f4"]
 	path = external/st/cmsis_device_f4
 	url = https://github.com/STMicroelectronics/cmsis_device_f4.git
+[submodule "external/st/cmsis_device_h7"]
+	path = external/st/cmsis_device_h7
+	url = https://github.com/STMicroelectronics/cmsis_device_h7.git

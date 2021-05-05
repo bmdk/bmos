@@ -196,9 +196,12 @@ XCFLAGS += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
 # cmsis
 XCFLAGS.cmsis += -I$(ROOT)/external/cmsis_5/CMSIS/Core/Include
 XCFLAGS.cmsisf4 += -I$(ROOT)/external/st/cmsis_device_f4/Include
+XCFLAGS.cmsish7 += -I$(ROOT)/external/st/cmsis_device_h7/Include
 
 XCFLAGS.f401bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
 XCFLAGS.f411bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
+
+XCFLAGS.h743wa += $(XCFLAGS.cmsis) $(XCFLAGS.cmsish7)
 
 VPATH += $(addsuffix /src, $(addprefix $(ROOT)/modules/, $(MODULES)))
 
