@@ -16,6 +16,7 @@ if [ "x$1" != "x" ]; then
   $UNCR $@
 else
   find . -regex ".*\.[ch]" \
+       -a ! -path "*/external/*" \
        -a ! -path "*/modules/prot/usb/tusb/tusb/*" \
        -a ! -path "*/modules/prot/net/lwip/*" \
        -a ! -path "*/modules/lib/libc_min/src/dlmalloc.c" | xargs -i $UNCR {}
