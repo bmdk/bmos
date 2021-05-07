@@ -251,7 +251,12 @@ LOBJS += xtime.o
 
 BUILD_LOBJS = $(addprefix $(BUILD_DIR)/,$(LOBJS))
 
-all: $(BUILD_DIR)/app.elf $(BUILD_DIR)/app.uf2
+PICO_UF2 ?= y
+ifeq ($(PICO_UF2),y)
+TARGET_UF2 = $(BUILD_DIR)/app.uf2
+endif
+
+all: $(BUILD_DIR)/app.elf $(TARGET_UF2)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
