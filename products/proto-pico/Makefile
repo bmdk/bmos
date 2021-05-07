@@ -5,9 +5,9 @@ ifneq ($(TOOLCHAIN_ROOT),)
 TOOLCHAIN_PFX = $(TOOLCHAIN_ROOT)/
 endif
 
-XCC = $(TOOLCHAIN_ROOT)arm-none-eabi-gcc
-XLD = $(TOOLCHAIN_ROOT)arm-none-eabi-gcc
-XOBJCOPY = $(TOOLCHAIN_ROOT)arm-none-eabi-objcopy
+XCC = $(TOOLCHAIN_PFX)arm-none-eabi-gcc
+XLD = $(TOOLCHAIN_PFX)arm-none-eabi-gcc
+XOBJCOPY = $(TOOLCHAIN_PFX)arm-none-eabi-objcopy
 
 BUILD_DIR = build
 
