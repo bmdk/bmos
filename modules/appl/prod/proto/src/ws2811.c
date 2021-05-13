@@ -189,11 +189,6 @@ void irq_ws2811(void *data)
 
 void task_led(void *arg)
 {
-#if 0
-  unsigned int col[] = { 0x808080, 0xff0000 };
-  unsigned int k = 0, l = 0, last_k = -1;
-#endif
-
   irq_register("ws2811", irq_ws2811, 0, WSIRQ);
 
   for (;;) {
@@ -209,22 +204,6 @@ void task_led(void *arg)
       }
 
       FAST_LOG('w', "ws2811 end\n", 0, 0);
-
-#if 0
-      l++;
-      if (l >= 64) {
-        k++;
-        l = 0;
-      }
-
-      if (last_k != k) {
-        for (i = 0; i < PIXELS; i++) {
-          o = (k + i) % ARRSIZ(col);
-          enc_col(i, scale(col[o], 10), 1);
-        }
-        last_k = k;
-      }
-#endif
 
       ws2811_tx();
       task_delay(50);
@@ -249,28 +228,6 @@ void task_led(void *arg)
 
       ws2811_tx();
       task_delay(2000);
-    }
-  }
-#endif
-#if 0
-  for (;;) {
-    unsigned int i, j, k;
-
-    for (j = 0; j < PIXELS; j++)
-      enc_col(j, 0);
-
-    ws2811_tx();
-    task_delay(20);
-
-    for (i = 0; i < PIXELS; i++) {
-      for (j = 0; j < PIXELS - i - 1; j++) {
-        for (k = 0; k < PIXELS - i - 1; k++)
-          enc_col(k, 0);
-        enc_col(j, scale(0xff0000, 2));
-
-        ws2811_tx();
-        task_delay(20);
-      }
     }
   }
 #endif
