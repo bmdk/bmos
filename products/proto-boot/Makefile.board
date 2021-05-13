@@ -120,14 +120,15 @@ XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
 XLDFLAGS += -Wl,--gc-sections
 XLDFLAGS += $(XCFLAGS)
 
-MODULES += std
-MODULES += appl/shell
 MODULES += appl/prod/proto-boot
+MODULES += appl/shell
+MODULES += appl/xmodem
 MODULES += appl/xslog
+MODULES += board/stm32
 MODULES += hal/core
 MODULES += hal/cpu/arm
 MODULES += hal/stm32/core
-MODULES += appl/xmodem
+MODULES += std
 
 ifneq ($(CONFIG_NEWLIB), y)
 MODULES += lib/libc_min

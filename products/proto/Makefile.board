@@ -166,16 +166,17 @@ XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
 XLDFLAGS += -Wl,--gc-sections
 XLDFLAGS += $(XCFLAGS)
 
-MODULES += std
-MODULES += appl/shell
 MODULES += appl/prod/proto
+MODULES += appl/shell
+MODULES += appl/xmodem
 MODULES += appl/xslog
+MODULES += board/stm32
 MODULES += hal/core
 MODULES += hal/cpu/arm
+MODULES += hal/misc
 MODULES += hal/stm32/core
 MODULES += os/bmos
-MODULES += appl/xmodem
-MODULES += hal/misc
+MODULES += std
 
 MODULES += prot/net/lwip/core
 MODULES += prot/net/lwip/core_ipv4
