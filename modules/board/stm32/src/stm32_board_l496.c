@@ -29,13 +29,14 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
+#include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
 #include "stm32_pwr.h"
-#include "stm32_regs.h"
 #include "stm32_pwr_lxxx.h"
-#include "stm32_exti.h"
+#include "stm32_rcc_b.h"
+#include "stm32_regs.h"
 
 void clock_init_high();
 void clock_init_low();
@@ -130,12 +131,21 @@ uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
 
 static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7), GPIO(2, 7) };
 
+static const struct pll_params_t pll_params = {
+  .flags  = PLL_FLAG_PLLREN,
+  .pllsrc = RCC_PLLCFGR_PLLSRC_MSI,
+  .pllm   = 1,
+  .plln   = 40,
+  .pllr   = PLLR_DIV_2,
+  .acr    = 4
+};
+
 void hal_board_init()
 {
   pin_init();
   vddio2_en(1);
 #if CLOCK_HS
-  clock_init();
+  clock_init(&pll_params);
 #endif
   backup_domain_protect(0);
   clock_init_ls();

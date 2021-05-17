@@ -27,6 +27,7 @@
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_pwr_lxxx.h"
+#include "stm32_rcc_b.h"
 #include "stm32_regs.h"
 
 void pin_init()
@@ -68,11 +69,20 @@ uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
 // Red, Green, Blue
 static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(2, 7), GPIO(1, 7) };
 
+static const struct pll_params_t pll_params = {
+  .flags  = PLL_FLAG_PLLREN,
+  .pllsrc = RCC_PLLCFGR_PLLSRC_MSI,
+  .pllm   = 1,
+  .plln   = 40,
+  .pllr   = PLLR_DIV_2,
+  .acr    = 4
+};
+
 void hal_board_init()
 {
   pin_init();
   vddio2_en(1);
-  clock_init();
+  clock_init(&pll_params);
   led_init(leds, ARRSIZ(leds));
 
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);

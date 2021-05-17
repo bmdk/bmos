@@ -35,6 +35,8 @@ struct pll_params_t {
   unsigned char acr;
 };
 
+void clock_init(const struct pll_params_t *pll_params);
+
 #define PLL_FLAG_PLLREN BIT(0)
 #define PLL_FLAG_PLLQEN BIT(1)
 #define PLL_FLAG_PLLPEN BIT(2)

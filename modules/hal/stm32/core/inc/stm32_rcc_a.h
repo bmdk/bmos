@@ -33,4 +33,6 @@ struct pll_params_t {
   unsigned char acr;
 };
 
+void clock_init(const struct pll_params_t *p);
+
 #endif

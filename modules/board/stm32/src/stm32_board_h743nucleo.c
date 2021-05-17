@@ -130,27 +130,6 @@ static void pin_init()
   gpio_init_attr(GPIO(6, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));
 }
 
-int cmd_lp(int argc, char *argv[])
-{
-#if 0
-  clock_init_low();
-#endif
-
-  set_low_power(1);
-  asm volatile ("wfi");
-  set_low_power(0);
-
-  clock_init();
-
-#if 0
-  clock_init_high();
-#endif
-
-  return 0;
-}
-
-SHELL_CMD(lp, cmd_lp);
-
 #define USART2_BASE 0x40004400
 #define USART3_BASE 0x40004800
 #define APB2_CLOCK 100000000

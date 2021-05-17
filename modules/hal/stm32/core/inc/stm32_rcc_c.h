@@ -26,6 +26,8 @@ struct pll_params_t {
 #endif
 };
 
+void clock_init(const struct pll_params_t *params);
+
 #define FDCANSEL_HSE_CK 0
 #define FDCANSEL_PLL1_Q_CK 1
 #define FDCANSEL_PLL2_Q_CK 2

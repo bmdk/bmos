@@ -28,14 +28,14 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
+#include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_lcd.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_h7xx.h"
-#include "stm32_exti.h"
-#include "stm32_timer.h"
-#include "stm32_lcd.h"
 #include "stm32_rcc_c.h"
+#include "stm32_timer.h"
 
 /* H7xx memory layout:
  * ITCM  0x00000000 64K
@@ -212,27 +212,6 @@ static void pin_init()
 
   lcd_pin_init();
 }
-
-int cmd_lp(int argc, char *argv[])
-{
-#if 0
-  clock_init_low();
-#endif
-
-  set_low_power(1);
-  asm volatile ("wfi");
-  set_low_power(0);
-
-  clock_init();
-
-#if 0
-  clock_init_high();
-#endif
-
-  return 0;
-}
-
-SHELL_CMD(lp, cmd_lp);
 
 #define USART2_BASE 0x40004400
 #define USART3_BASE 0x40004800

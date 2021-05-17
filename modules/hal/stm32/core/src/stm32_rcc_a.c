@@ -168,7 +168,7 @@ void clock_init_ls()
   RCC->bdcr |= RCC_BDCR_RTCEN;
 }
 
-void clock_init(struct pll_params_t *p)
+void clock_init(const struct pll_params_t *p)
 {
   clock_init_hs(p);
 #ifdef STM32_LCD

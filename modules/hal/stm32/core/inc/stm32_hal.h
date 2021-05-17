@@ -31,7 +31,6 @@ void led_set(unsigned int n, unsigned int v);
 
 void debug_uart_init(void *base, unsigned int baud,
                      unsigned int clock, unsigned int flags);
-void clock_init();
 void led_init(const gpio_handle_t *led_list, unsigned int _nleds);
 
 #define LED_FLAG_INV BIT(0)

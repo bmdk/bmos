@@ -216,7 +216,7 @@ static void _clock_pll_presc(unsigned int num, unsigned int div)
   reg_set_field(&RCC->pllckselr, 6, shift, div);
 }
 
-static void pll1_set(struct pll_params_t *params)
+static void pll1_set(const struct pll_params_t *params)
 {
   unsigned int src;
 
@@ -274,7 +274,7 @@ static void pll3_set(unsigned int mul, unsigned int div, unsigned int prediv)
     ;
 }
 
-static void _clock_init(struct pll_params_t *params)
+static void _clock_init(const struct pll_params_t *params)
 {
   unsigned int pllcfgr;
 
@@ -331,7 +331,7 @@ static void _clock_init(struct pll_params_t *params)
   pll3_set(5, 10, 1);
 }
 
-void clock_init(struct pll_params_t *params)
+void clock_init(const struct pll_params_t *params)
 {
   stm32_pwr_vos(PWR_VOS_HIG);
   _clock_init(params);
