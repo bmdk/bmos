@@ -406,13 +406,20 @@ void set_usart234578sel(unsigned int sel)
 #define RCC_BDCR_RTCEN BIT(15)
 #define RCC_BDCR_BDRST BIT(16)
 
+#define RCC_BDCR_RTCSEL_NONE 0
+#define RCC_BDCR_RTCSEL_LSE 1
+#define RCC_BDCR_RTCSEL_LSI 2
+#define RCC_BDCR_RTCSEL_HSE 3
+
 void clock_init_ls()
 {
   RCC->bdcr &= ~RCC_BDCR_BDRST;
-  RCC->bdcr |= RCC_BDCR_LSEON | RCC_BDCR_RTCEN;
+  RCC->bdcr |= RCC_BDCR_LSEON;
 
   while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
     asm volatile ("nop");
 
-  reg_set_field(&RCC->bdcr, 2, 8, 1);
+  reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
+
+  RCC->bdcr |= RCC_BDCR_RTCEN;
 }
