@@ -30,6 +30,7 @@
 #include "bmos_syspool.h"
 #include "bmos_task.h"
 #include "common.h"
+#include "cortexm.h"
 #include "debug_ser.h"
 #include "fast_log.h"
 #include "hal_board.h"
@@ -100,8 +101,6 @@ static void polled_shell(void)
       shell_input(&sh, c);
   }
 }
-
-void systick_init();
 
 #if STM32_H7XX
 #define SHELL_SRC_COUNT 2
