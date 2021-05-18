@@ -43,6 +43,7 @@
 #include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "stm32_regs.h"
+#include "xassert.h"
 #include "xslog.h"
 #include "xtime.h"
 
@@ -117,8 +118,22 @@ typedef struct {
 
 static shell_info_t shell_info;
 
-#define OP_UART1_DATA 0
-#define OP_UART2_DATA 1
+void shell_info_init(shell_info_t *info, const char *name, unsigned int dest)
+{
+  info->rxq = queue_create("sh1rx", QUEUE_TYPE_TASK);
+  info->dest = dest;
+}
+
+void shell_info_add_uart(shell_info_t *info, uart_t *u, unsigned int baud,
+                         unsigned int num, unsigned int txop)
+{
+  XASSERT(num < SHELL_SRC_COUNT);
+  XASSERT(info);
+  XASSERT(info->rxq);
+
+  shell_info.txq[num] = uart_open(u, baud, info->rxq, num);
+  shell_info.txop[num] = txop;
+}
 
 static int _xgetc(int timeout)
 {
@@ -231,16 +246,11 @@ int main()
 
   task_init(blink_task, NULL, "blink", 2, 0, 1024);
 
-  shell_info.rxq = queue_create("sh1rx", QUEUE_TYPE_TASK);
-  shell_info.txq[0] = uart_open(&debug_uart, 115200, shell_info.rxq,
-                                OP_UART1_DATA);
-  shell_info.txop[0] = 0;
+  shell_info_init(&shell_info, "sh1rx", 0);
+  shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
 #if STM32_H7XX
-  shell_info.txq[1] = uart_open(&debug_uart_2, 115200, shell_info.rxq,
-                                OP_UART2_DATA);
+  shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
 #endif
-  shell_info.txop[1] = 0;
-  shell_info.dest = OP_UART1_DATA;
 
   task_init(shell_task, &shell_info, "shell", 2, 0, 4096);
 
