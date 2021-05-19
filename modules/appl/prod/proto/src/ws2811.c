@@ -19,6 +19,13 @@
  * IN THE SOFTWARE.
  */
 
+/* This implements control of WS2811 LEDs using the STM32 timer 1 and dma.
+   It works on L4XX(BDMA) and F4XX(DMA). The naming of BDMA, DMA and MDMA
+   come from H7XX where all three types of DMA controllers are present. It
+   can control a whole bank of GPIOs simultaneously - that is 16 - bit to save
+   memory right now only the first 8 in the bank will work out of the box here.
+   I had an ambition to make a video wall at some point but that is not yet :).
+ */
 #include <string.h>
 
 #include "bmos_task.h"
@@ -52,9 +59,13 @@
 #define WCPCCLOCKS(period_ns) \
   (WSCLOCKS * (period_ns) + WSPERIOD_NS / 2) / WSPERIOD_NS
 
+/* this has nothing to do with the DMA type so it should probably be it's own
+   configuration parameter(s) in the future */
 #if WS2811_USE_DMA
+/* the bit in the bank that is used */
 #define WSBIT 0
 #define WSIRQ 57
+/* the gpio bank (B) */
 #define WSGPIO 1
 #else
 #define WSBIT 0
