@@ -217,7 +217,7 @@ void irq_ws2811(void *data)
   FAST_LOG('W', "irq_ws2811\n", 0, 0);
 }
 
-#if WS2811_DISPLAY_64X8_CLOCK
+#if WS2811_DISPLAY_32X8_CLOCK
 #include <stdio.h>
 
 #include "hal_rtc.h"
