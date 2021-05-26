@@ -125,19 +125,24 @@ static void pin_init()
 
 #define USART2_BASE 0x40004400
 #define USART3_BASE 0x40004800
-#define APB2_CLOCK 30000000
+#define APB2_CLOCK 54000000
 #if BMOS
 uart_t debug_uart = { "debugser", (void *)USART3_BASE, APB2_CLOCK, 39 };
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7) };
 
+/* OSC: 8 MHz
+   CPU: 216 MHz
+   APB1: 54 MHz (/4)
+   APB2: 108 MHz (/2)
+ */
 static const struct pll_params_t pll_params = {
   .src   = RCC_A_CLK_HSE_OSC,
   .pllr  = 0,
   .pllp  = RCC_A_PLLP_2,
-  .pllq  = 5,
-  .plln  = 120,
+  .pllq  = 9,
+  .plln  = 216,
   .pllm  = 4,
   .hpre  = 0,
   .ppre1 = RCC_A_PPRE_4,
