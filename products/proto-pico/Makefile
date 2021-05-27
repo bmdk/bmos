@@ -147,8 +147,6 @@ endef
 
 LOBJS += $(patsubst %.c,%.o,$(subst /,~,$(PICO_FILES)))
 
-TINYUSB_MODS_FULL += $(addprefix $(SDK_PATH)/src/rp2040/, $(RP2040_MODS))
-
 TUSB_ROOT = $(ROOT)/external/tinyusb
 
 XCINC += -I$(TUSB_ROOT)/src
