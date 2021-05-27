@@ -30,7 +30,7 @@
 #if STM32_F767 || STM32_F746 || STM32_F429 || STM32_F411 || STM32_F401 || \
   STM32_F4XX
 #define FLASH_TYPE1 1
-#elif STM32_L4XX || STM32_L4R || STM32_G4XX
+#elif STM32_L4XX || STM32_L4R || STM32_G4XX || STM32_WBXX
 #define FLASH_TYPE2 1
 #else
 #error CHECK FLASH BASE AND TYPE
@@ -92,7 +92,9 @@ typedef struct {
 #define FLASH_OPTKEYR_KEY1 0x08192a3b
 #define FLASH_OPTKEYR_KEY2 0x4c5d6e7f
 
-#if FLASH_TYPE1
+#if STM32_WBXX
+#define FLASH ((volatile stm32_flash_t *)0x58004000)
+#elif FLASH_TYPE1
 #define FLASH ((volatile stm32_flash_t *)0x40023C00)
 #elif FLASH_TYPE2
 #define FLASH ((volatile stm32_flash_t *)0x40022000)

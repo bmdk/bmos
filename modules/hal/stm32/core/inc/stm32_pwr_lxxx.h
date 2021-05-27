@@ -57,9 +57,14 @@ typedef struct {
   } p[8];
 } stm32_pwr_t;
 
+#if STM32_WBXX
+#define PWR ((volatile stm32_pwr_t *)(0x58000400))
+#define EXTI ((volatile stm32_exti_t *)(0x58000800))
+#else
 #define PWR ((volatile stm32_pwr_t *)(0x40007000))
-#define SYSCFG ((volatile stm32_syscfg_t *)(0x40010000))
 #define EXTI ((volatile stm32_exti_t *)(0x40010400))
+#endif
+#define SYSCFG ((volatile stm32_syscfg_t *)(0x40010000))
 
 #define PWR_CR1_DBP BIT(8)
 
@@ -67,5 +72,8 @@ typedef struct {
 
 /* validate vddio2 and enable PG2-15 */
 void vddio2_en(int on);
+
+void stm32_pwr_vos(unsigned int vos);
+int stm32_pwr_vos_rdy(void);
 
 #endif

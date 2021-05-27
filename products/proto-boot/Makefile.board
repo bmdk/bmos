@@ -90,6 +90,9 @@ STACK_END.g474n = 0x20020000
 XCFLAGS.g431kbn += -DSTM32_G431KBN -DSTM32_G4XX
 STACK_END.g431kbn = 0x20008000
 
+XCFLAGS.wb55n += -DSTM32_WB55N -DSTM32_WBXX
+STACK_END.wb55n = 0x20030000
+
 XCFLAGS += $(XCFLAGS.$(PROG))
 STACK_END = $(STACK_END.$(PROG))
 
@@ -260,6 +263,15 @@ FILES.l4r += stm32_usart_b.o
 FILES.l4r += stm32_rcc_b.o
 FILES.l4r += stm32_board_l4r.o
 FILES.l4r += stm32_pwr_lxxx.o
+
+FILES.wbxx += stm32_usart_b.o
+FILES.wbxx += stm32_rcc_b.o
+FILES.wbxx += stm32_hal_rtc.o
+FILES.wbxx += stm32_pwr_lxxx.o
+FILES.wbxx += stm32_exti_lxxx.o
+
+FILES.wb55n += $(FILES.wbxx)
+FILES.wb55n += stm32_board_wb55n.o
 
 FILES.g4xx += stm32_usart_b.o
 FILES.g4xx += stm32_rcc_b.o

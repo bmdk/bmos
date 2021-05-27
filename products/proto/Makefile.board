@@ -133,6 +133,10 @@ XCFLAGS.g431kbn += -DSTM32_G4XX -DSTM32_G432KBN
 XCFLAGS.g431kbn += -mcpu=cortex-m4
 STACK_END.g431kbn = 0x20008000
 
+XCFLAGS.wb55n += -DSTM32_WBXX -DSTM32_WB55N
+XCFLAGS.wb55n += -mcpu=cortex-m4
+STACK_END.wb55n = 0x20030000
+
 XCFLAGS += $(XCFLAGS.$(PROG))
 STACK_END = $(STACK_END.$(PROG))
 
@@ -418,6 +422,16 @@ FILES.g4xx += stm32_wdog.o
 FILES.g4xx += xmodem.o
 FILES.g4xx += stm32_fdcan.o
 
+FILES.wbxx += crc_ccitt16.o
+FILES.wbxx += stm32_exti_lxxx.o
+FILES.wbxx += stm32_flash.o
+FILES.wbxx += stm32_hal_bdma.o
+FILES.wbxx += stm32_pwr_lxxx.o
+FILES.wbxx += stm32_rcc_b.o
+FILES.wbxx += stm32_usart_b.o
+FILES.wbxx += stm32_wdog.o
+FILES.wbxx += xmodem.o
+
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
 FILES.l4xx += stm32_flash.o
@@ -470,6 +484,10 @@ FILES.g431kbn += $(FILES.g4xx)
 FILES.g431kbn += stm32_hal_rtc.o
 FILES.g431kbn += stm32_board_g431kbn.o
 FILES.g431kbn += fdcan.o
+
+FILES.wb55n += $(FILES.wbxx)
+FILES.wb55n += stm32_hal_rtc.o
+FILES.wb55n += stm32_board_wb55n.o
 
 FILES += $(FILES.$(PROG))
 

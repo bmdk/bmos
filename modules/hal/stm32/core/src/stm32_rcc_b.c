@@ -68,8 +68,18 @@ typedef struct {
   unsigned int ccipr2;
 } stm32_rcc_t;
 
-#define FLASH_ACR ((volatile unsigned int *)0x40022000)
-#define RCC ((volatile stm32_rcc_t *)0x40021000)
+#define RCC_EXTCFGR (volatile unsigned int *)(RCC_BASE + 0x108)
+
+#if STM32_WBXX
+#define RCC_BASE 0x58000000
+#define FLASH_BASE 0x58004000
+#else
+#define RCC_BASE 0x40021000
+#define FLASH_BASE 0x40022000
+#endif
+
+#define FLASH_ACR ((volatile unsigned int *)FLASH_BASE)
+#define RCC ((volatile stm32_rcc_t *)RCC_BASE)
 
 #define RCC_CR_PLLRDY BIT(25)
 #define RCC_CR_PLLON BIT(24)
@@ -88,7 +98,7 @@ typedef struct {
 #define RCC_CFGR_SW_HSE 2
 #define RCC_CFGR_SW_PLL 3
 
-#if STM32_L4XX || STM32_L4R
+#if STM32_L4XX || STM32_L4R || STM32_WBXX
 #define DEFAULT_CLOCK RCC_CFGR_SW_MSI
 #elif STM32_G4XX
 #define DEFAULT_CLOCK RCC_CFGR_SW_HSI16
@@ -104,15 +114,19 @@ typedef struct {
   ((((ppre2) & 0x7) << 11) | (((ppre1) & 0x7) << 8) | \
    (((hpre) & 0xf) << 4) | ((src) & 0x3))
 
-#define CFGR_HIGH_VAL CFGR(0, 0, 0, RCC_CFGR_SW_PLL)
+/* FIXME: use HSE directly as clock source for the moment on WBXX not PLL */
+#if STM32_WBXX
+#define HIGH_CLOCK RCC_CFGR_SW_HSE
+#else
+#define HIGH_CLOCK RCC_CFGR_SW_PLL
+#endif
+#define CFGR_HIGH_VAL CFGR(0, 0, 0, HIGH_CLOCK)
 
 #define CFGR_LOW_VAL CFGR(0, 0, 0, DEFAULT_CLOCK)
 
 static void _clock_init(const struct pll_params_t *p)
 {
   unsigned int pllcfgr;
-
-  led_set(0, 0);
 
   if (p->pllsrc == RCC_PLLCFGR_PLLSRC_HSE) {
     unsigned int flags = RCC_CR_HSEON;
@@ -152,8 +166,12 @@ static void _clock_init(const struct pll_params_t *p)
 
   reg_set_field(FLASH_ACR, 4, 0, p->acr);
 
+#ifdef STM32_WBXX
+  reg_set_field(RCC_EXTCFGR, 4, 4, 8);
+#endif
+
   RCC->cfgr = CFGR_HIGH_VAL;
-  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
+  while (((RCC->cfgr >> 2) & 0x3) != HIGH_CLOCK)
     asm volatile ("nop");
 }
 
