@@ -19,8 +19,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef STM32_RCC_C_H
-#define STM32_RCC_C_H
+#ifndef STM32_RCC_B_H
+#define STM32_RCC_B_H
 
 struct pll_params_t {
   /* PLLCFGR */
