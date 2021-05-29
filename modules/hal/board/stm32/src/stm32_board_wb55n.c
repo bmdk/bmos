@@ -110,10 +110,6 @@ void hal_board_init()
 
   led_init(leds, ARRSIZ(leds));
 
-  led_set(0, 1);
-  led_set(1, 1);
-  led_set(2, 1);
-
 #if CLOCK_HS
   stm32_pwr_vos(2);
   clock_init(&pll_params);
