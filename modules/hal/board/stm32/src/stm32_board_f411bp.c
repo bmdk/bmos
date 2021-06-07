@@ -96,10 +96,10 @@ void pin_init()
   enable_apb1(21);
 
   gpio_init_attr(GPIO(1, 8),
-                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN|GPIO_FLAG_PULL_PU,
                                  GPIO_SPEED_HIG, 4, GPIO_ALT));
   gpio_init_attr(GPIO(1, 9),
-                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN|GPIO_FLAG_PULL_PU,
                                  GPIO_SPEED_HIG, 4, GPIO_ALT));
 }
 
