@@ -282,7 +282,8 @@ FILES.f411bp += stm32_usart_a.o
 FILES.f411bp += stm32_rcc_a.o
 FILES.f411bp += stm32_board_f411bp.o
 FILES.f411bp += stm32_hal_dma.o
-FILES.f411bp += stm32_hal_i2c.o
+FILES.f411bp += stm32_hal_i2c_b.o
+FILES.f411bp += i2c_test.o
 FILES.f411bp += ws2811.o
 
 FILES.tusb += stm32_usbd.o
