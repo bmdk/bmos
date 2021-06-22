@@ -10,11 +10,14 @@
 #include "tusb.h"
 #include "xslog.h"
 
+#define MAX_RETRIES 3
+
 unsigned int SystemCoreClock = CLOCK;
 
 static bmos_sem_t *usb_wakeup;
 static shell_t cdc_sh;
 static bmos_queue_t *cdc_tx;
+static unsigned int dropped = 0;
 
 static void usb_int(void *data)
 {
@@ -67,6 +70,7 @@ static void cdc_shell_put(void *arg)
   bmos_op_msg_t *m;
   int len;
   unsigned char *data;
+  unsigned int count;
 
   for (;;) {
     m = op_msg_get(cdc_tx);
@@ -76,6 +80,8 @@ static void cdc_shell_put(void *arg)
     len = m->len;
 
     data = BMOS_OP_MSG_GET_DATA(m);
+
+    count = 0;
 
     for (;;) {
       int l;
@@ -87,6 +93,14 @@ static void cdc_shell_put(void *arg)
       if (len <= 0)
         break;
       data += l;
+
+      /* ok as long as progress is made */
+      if (l != 0)
+        count = 0;
+      else if (++count > MAX_RETRIES) {
+        dropped ++;
+        break;
+      }
 
       task_delay(1);
     }
@@ -104,3 +118,12 @@ void tusb_cdc_init()
   cdc_tx = queue_create("cdc_tx", QUEUE_TYPE_DRIVER);
   (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0);
 }
+
+static int cmd_cdc_stats(int argc, char *argv[])
+{
+  xprintf("dropped cdc packets %d\n", dropped);
+
+  return 0;
+}
+
+SHELL_CMD(cdc_stats, cmd_cdc_stats);
