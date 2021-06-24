@@ -266,9 +266,9 @@ void fb_to_ws2811disp(fb_t *fb)
   for (x = 0; x < w; x++) {
     for (y = 0; y < h; y++) {
       if (x % 2 == 0)
-        enc_col(x * h + y, data[x * h + y], WSBIT);
+        enc_col(x * h + y, data[x + y * w], WSBIT);
       else
-        enc_col(x * h + (h - 1 - y), data[x * h + y], WSBIT);
+        enc_col(x * h + (h - 1 - y), data[x + y * w], WSBIT);
     }
   }
 

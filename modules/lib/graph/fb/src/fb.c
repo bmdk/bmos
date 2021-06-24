@@ -78,7 +78,7 @@ void fb_draw(fb_t *fb, int x, int y, unsigned int col)
 
   stride = fb->stride;
 
-  base = (x * fb->height + y) * stride;
+  base = (y * fb->width + x) * stride;
 
   addr = &fb->fb[base];
 
