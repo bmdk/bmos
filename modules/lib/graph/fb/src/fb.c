@@ -1,5 +1,8 @@
+#include <common.h>
 #include <stdlib.h>
 #include <string.h>
+#include <xslog.h>
+#include <io.h>
 
 #include "fb.h"
 
@@ -17,14 +20,23 @@ fb_t *fb_init(unsigned int width, unsigned int height, unsigned int depth)
   unsigned int size, stride;
   fb_t *fb;
 
-  if (depth < 8)
+  if (depth == 1) {
+    stride = 0;
+    if ((width & 7) != 0) {
+      xslog(LOG_ERR, "invalid width for depth 1\n");
+      return 0;
+    }
+  } else if (depth < 8)
     stride = 1;
   else if (depth < 16)
     stride = 2;
   else
     stride = 4;
 
-  size = width * height * stride;
+  if (stride == 0)
+      size = width * height / 8;
+  else
+      size = width * height * stride;
 
   fb = malloc(sizeof(fb_t));
   if (fb == 0)
@@ -68,7 +80,7 @@ unsigned int fb_height(fb_t *fb)
 void fb_draw(fb_t *fb, int x, int y, unsigned int col)
 {
   void *addr;
-  unsigned int base, stride;
+  unsigned int base, stride, shift = 0;
 
   if (x < 0 || x >= fb->width)
     return;
@@ -78,11 +90,22 @@ void fb_draw(fb_t *fb, int x, int y, unsigned int col)
 
   stride = fb->stride;
 
-  base = (y * fb->width + x) * stride;
+  if (stride == 0) {
+    base = (y * fb->width + x) / 8;
+    shift = x & 7;
+  } else {
+    base = (y * fb->width + x) * stride;
+  }
 
   addr = &fb->fb[base];
 
   switch (stride) {
+  case 0:
+    if (col)
+      *(unsigned char *)addr |= BIT(shift);
+    else
+      *(unsigned char *)addr &= ~BIT(shift);
+    break;
   case 1:
     *(unsigned char *)addr = (unsigned char)col;
     break;
