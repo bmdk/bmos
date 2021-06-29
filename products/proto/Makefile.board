@@ -254,6 +254,8 @@ FILES.h7xx += stm32_hal_bdma.o
 FILES.h7xx += stm32_hal_dma.o
 FILES.h7xx += stm32_hal_dmamux.o
 FILES.h7xx += stm32_hal_i2c.o
+FILES.h7xx += font1.o
+FILES.h7xx += fb.o
 FILES.h7xx += i2c_test.o
 FILES.h7xx += hd44780.o
 
@@ -283,6 +285,8 @@ FILES.f411bp += stm32_rcc_a.o
 FILES.f411bp += stm32_board_f411bp.o
 FILES.f411bp += stm32_hal_dma.o
 FILES.f411bp += stm32_hal_i2c_b.o
+FILES.f411bp += font1.o
+FILES.f411bp += fb.o
 FILES.f411bp += i2c_test.o
 FILES.f411bp += ws2811.o
 
@@ -478,6 +482,8 @@ FILES.g474n += $(FILES.g4xx)
 FILES.g474n += stm32_hal_rtc.o
 FILES.g474n += stm32_board_g474n.o
 FILES.g474n += stm32_hal_i2c.o
+FILES.g474n += font1.o
+FILES.g474n += fb.o
 FILES.g474n += i2c_test.o
 FILES.g474n += fdcan.o
 

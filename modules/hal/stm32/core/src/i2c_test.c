@@ -23,9 +23,10 @@
 #include <stdio.h>
 #include <string.h>
 #include "common.h"
-#include "shell.h"
-#include "io.h"
+#include "fb.h"
 #include "hal_time.h"
+#include "io.h"
+#include "shell.h"
 
 #include "stm32_hal_i2c.h"
 
@@ -94,7 +95,7 @@ static int disp_data(void *data, unsigned int len)
   return len;
 }
 
-static void fill(unsigned char b)
+static void fill(unsigned char b, unsigned int count)
 {
   unsigned char data[16];
   unsigned int i, j;
@@ -102,15 +103,30 @@ static void fill(unsigned char b)
   memset(data, b, 16);
 
   for (j = 0; j < 8; j++) {
+    unsigned int c;
+
     disp_cmd(0xb0 + j);
     /* LOW COL */
     disp_cmd(0x02);
     /* HIGH COL 0 */
     disp_cmd(0x10);
 
-    for (i = 0; i < 128; i += 16)
-      disp_data(data, 16);
+    for (i = 0; i < 128; i += 16) {
+      if (count < 16)
+        c = count;
+      else
+        c = 16;
+
+      count -= c;
+
+      disp_data(data, c);
+
+      if (count == 0)
+        goto end;
+    }
   }
+end:
+  return;
 }
 
 static void disp_init()
@@ -145,6 +161,67 @@ static void disp_init()
   disp_cmd(SSD1306_DISPLAYON);
 }
 
+extern const char font1[];
+
+static fb_t *fb;
+
+void disp_char(fb_t *fb, int x, int y, char c)
+{
+  const char *b = &font1[2 + c * 8];
+  int i;
+
+  for (i = 0; i < 8; i++) {
+    unsigned ch = *(b + i);
+    unsigned int j;
+
+    for (j = 0; j < 8; j++) {
+      unsigned int v = (ch >> (8 - 1 - j)) & 1;
+
+      if (v)
+        fb_draw(fb, x + j, y + i, 1);
+    }
+  }
+}
+
+void disp_str(fb_t *fb, int x, int y, char *s, unsigned int slen)
+{
+  unsigned int k;
+
+  for (k = 0; k < slen; k++)
+    disp_char(fb, k * 8 + x, y, s[k]);
+}
+
+void fb_to_i2cdisp(fb_t *fb)
+{
+  unsigned int i, j;
+  unsigned char *data;
+  unsigned char buf[16];
+
+  data = fb_get(fb);
+
+  for (j = 0; j < 8; j++) {
+    disp_cmd(0xb0 + j);
+    /* LOW COL */
+    disp_cmd(0x02);
+    /* HIGH COL 0 */
+    disp_cmd(0x10);
+
+    for (i = 0; i < 128; i += 16) {
+      unsigned int k, l;
+      memset(buf, 0, 16);
+      for (k = 0; k < 16; k++) {
+        for (l = 0; l < 8; l++) {
+          unsigned int a, o;
+          a = ((j * 8 + l) * 128 + i + k) / 8;
+          o = k & 7;
+          buf[k] |= ((data[a] >> o) & 1) << l;
+        }
+      }
+      disp_data(buf, 16);
+    }
+  }
+}
+
 static int i2c_cmd(int argc, char *argv[])
 {
   char buf[16];
@@ -152,10 +229,18 @@ static int i2c_cmd(int argc, char *argv[])
   int err, len, i;
   unsigned char wbuf;
 
+  if (!fb)
+    fb = fb_init(128, 64, 1);
+
   switch (argv[1][0]) {
   case 'i':
     xprintf("init %p\n", I2C);
     i2c_init(I2C);
+    break;
+  case 't':
+    buf[0] = 0x5a;
+    err = i2c_write_buf(I2C, 0x3c, buf, 1);
+    xprintf("err %d\n", err);
     break;
   case 'd':
     disp_init();
@@ -210,7 +295,11 @@ static int i2c_cmd(int argc, char *argv[])
   case 'f':
     if (argc < 3)
       return -1;
-    fill(strtoul(argv[2], 0, 0));
+    if (argc > 3)
+      len = atoi(argv[3]);
+    else
+      len = 128 * 8;
+    fill(strtoul(argv[2], 0, 0), len);
     break;
   case 'c':
     if (argc < 3)
@@ -230,6 +319,11 @@ static int i2c_cmd(int argc, char *argv[])
     xprintf("dist: %d\n", (((unsigned int)buf[0] << 4) +
                            (buf[1] & 0xf)) * 1000 / 64);
 
+    break;
+  case 'q':
+    fb_clear(fb);
+    disp_str(fb, 0, 0, "HELLO BRIAN", 11);
+    fb_to_i2cdisp(fb);
     break;
   }
 
