@@ -28,6 +28,8 @@
 #include "io.h"
 #include "shell.h"
 
+#include "ssd1306_fonts.h"
+
 #include "stm32_hal_i2c.h"
 
 #if STM32_F411BP

@@ -255,6 +255,7 @@ FILES.h7xx += stm32_hal_dma.o
 FILES.h7xx += stm32_hal_dmamux.o
 FILES.h7xx += stm32_hal_i2c.o
 FILES.h7xx += font1.o
+FILES.h7xx += ssd1306_fonts.o
 FILES.h7xx += fb.o
 FILES.h7xx += i2c_test.o
 FILES.h7xx += hd44780.o
