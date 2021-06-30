@@ -221,6 +221,7 @@ void lcd_task(void *arg)
 }
 #endif
 
+void task_i2c_clock();
 void task_net();
 void task_led();
 void task_can();
@@ -262,6 +263,10 @@ int main()
 
 #if LCD_DEMO
   task_init(lcd_task, NULL, "lcd", 2, 0, 512);
+#endif
+
+#if I2C_DEMO
+  task_init(task_i2c_clock, NULL, "clk", 2, 0, 1024);
 #endif
 
 #if CONFIG_LWIP

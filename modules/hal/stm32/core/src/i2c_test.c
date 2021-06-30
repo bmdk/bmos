@@ -22,11 +22,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "bmos_task.h"
 #include "common.h"
 #include "fb.h"
 #include "hal_time.h"
 #include "io.h"
 #include "shell.h"
+#include "hal_rtc.h"
 
 #include "ssd1306_fonts.h"
 
@@ -185,6 +187,25 @@ void disp_char(fb_t *fb, int x, int y, char c)
   }
 }
 
+void disp_char_w(fb_t *fb, int x, int y, char c)
+{
+  const unsigned char *b = &comic_sans_font24x32_123[4 + c * 3 * 32];
+  unsigned int i, j, k;
+
+  for (k = 0; k < 4; k++) {
+    for (i = 0; i < 24; i++) {
+      unsigned char ch = *(b + 24 * k + i);
+      for (j = 0; j < 8; j++) {
+        unsigned int v = (ch >> j) & 1;
+
+        if (v)
+          fb_draw(fb, x + i, y + k * 8 + j, 1);
+      }
+    }
+  }
+}
+
+
 void disp_str(fb_t *fb, int x, int y, char *s, unsigned int slen)
 {
   unsigned int k;
@@ -221,6 +242,39 @@ void fb_to_i2cdisp(fb_t *fb)
       }
       disp_data(buf, 16);
     }
+  }
+}
+
+void task_i2c_clock()
+{
+  rtc_time_t t;
+  unsigned char digits[4];
+  unsigned int yo = 16;
+  unsigned int xo = 8;
+
+  fb = fb_init(128, 64, 1);
+
+  i2c_init(I2C);
+  disp_init();
+
+  for (;;) {
+    rtc_get_time(&t);
+
+    digits[0] = t.hours / 10;
+    digits[1] = t.hours % 10;
+    digits[2] = t.mins / 10;
+    digits[3] = t.mins % 10;
+
+    fb_clear(fb);
+
+    disp_char_w(fb, 0 + xo, yo, 16 + digits[0]);
+    disp_char_w(fb, 24 + xo, yo, 16 + digits[1]);
+    disp_char_w(fb, 64 + xo, yo, 16 + digits[2]);
+    disp_char_w(fb, 88 + xo, yo, 16 + digits[3]);
+
+    fb_to_i2cdisp(fb);
+
+    task_delay(2000);
   }
 }
 
@@ -324,7 +378,11 @@ static int i2c_cmd(int argc, char *argv[])
     break;
   case 'q':
     fb_clear(fb);
-    disp_str(fb, 0, 0, "HELLO BRIAN", 11);
+    //disp_str(fb, 0, 48, "HELLO BRIAN", 11);
+    disp_char_w(fb, 0, 0, 16);
+    disp_char_w(fb, 32, 0, 17);
+    disp_char_w(fb, 64, 0, 18);
+    disp_char_w(fb, 96, 0, 19);
     fb_to_i2cdisp(fb);
     break;
   }
