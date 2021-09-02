@@ -38,9 +38,6 @@
 #include "stm32_rcc_b.h"
 #include "stm32_regs.h"
 
-void clock_init_high();
-void clock_init_low();
-
 void pin_init()
 {
   enable_ahb2(0); /* GPIOA */
