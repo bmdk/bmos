@@ -95,16 +95,8 @@ void pin_init()
 #define USART3_BASE (void *)0x40004800
 #define LPUART1_BASE (void *)0x40008000
 
-#define SPI1_BASE (void *)0x40013000
-
-#define CLOCK_HS 1
-#if CLOCK_HS
 #define APB2_CLOCK 80000000
 #define APB1_CLOCK 80000000
-#else
-#define APB1_CLOCK 4000000
-#define APB2_CLOCK 4000000
-#endif
 
 #if BMOS
 uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 38 };
@@ -125,9 +117,7 @@ void hal_board_init()
 {
   pin_init();
   led_init(leds, ARRSIZ(leds));
-#if CLOCK_HS
   clock_init(&pll_params);
-#endif
   backup_domain_protect(0);
   clock_init_ls();
 
