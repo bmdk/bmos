@@ -6,6 +6,8 @@
 #include "bmos_op_msg.h"
 #endif
 
+#include "circ_buf.h"
+
 typedef struct {
   const char *name;
   void *base;
@@ -27,6 +29,7 @@ typedef struct {
   unsigned short data_len;
   unsigned short op;
 #endif
+  circ_buf_t cb;
 } uart_t;
 
 #if BMOS

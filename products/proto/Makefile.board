@@ -231,6 +231,7 @@ FILES += fast_log.o
 FILES += stm32_hal.o
 FILES += stm32_timer.o
 FILES += xslog.o
+FILES += circ_buf.o
 
 # BMOS
 FILES += reg.o

@@ -20,16 +20,18 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
+#include "circ_buf.h"
 #include "common.h"
 #include "debug_ser.h"
+#include "fast_log.h"
 #include "hal_int.h"
 #include "hal_uart.h"
 #include "io.h"
 #include "stm32_hal.h"
 #include "stm32_regs.h"
 #include "xassert.h"
-#include "fast_log.h"
 #if BMOS
 #include "bmos_op_msg.h"
 #include "bmos_msg_queue.h"
@@ -50,20 +52,28 @@ typedef struct {
   unsigned int presc;
 } stm32_usart_b_t;
 
+#define UART_ISR_RTOF BIT(11)
 #define UART_ISR_RXNE BIT(5)
 #define UART_ISR_TXE BIT(7)
 #define UART_ISR_TC BIT(6)
 #define UART_ISR_ORE BIT(3)
 
 #define USART_CR1_FIFOEN BIT(29)
+#define USART_CR1_RTOIE BIT(26)
 #define USART_CR1_TXEIE BIT(7)
 #define USART_CR1_RXNEIE BIT(5)
 #define USART_CR1_TE BIT(3)
 #define USART_CR1_RE BIT(2)
 #define USART_CR1_UE BIT(0)
 
+#define USART_CR2_RTOEN BIT(23)
+
 #define CR1_DEFAULT (USART_CR1_RXNEIE | USART_CR1_TE | \
                      USART_CR1_RE | USART_CR1_UE)
+
+#define RTO_DEFAULT 10
+#define MSGDATA_POW2 4
+#define MSGDATA_LEN (1 << MSGDATA_POW2)
 
 volatile stm32_usart_b_t *duart;
 
@@ -84,8 +94,10 @@ static int usart_xgetc(volatile stm32_usart_b_t *usart)
 {
   unsigned int isr = usart->isr;
 
-  if (isr & UART_ISR_ORE)
+  if (isr & UART_ISR_ORE) {
     usart->icr |= UART_ISR_ORE;
+    FAST_LOG('u', "rx overrun hw\n", 0, 0);
+  }
 
   if (isr & UART_ISR_RXNE)
     return (int)(usart->rdr & 0xff);
@@ -111,12 +123,19 @@ void debug_uart_init(void *base, unsigned int baud,
                      unsigned int clock, unsigned int flags)
 {
   volatile stm32_usart_b_t *usart = (volatile stm32_usart_b_t *)base;
+  unsigned int cr1;
 
   duart = usart;
 
   usart_set_baud(usart, baud, clock, flags);
 
-  duart->cr1 = CR1_DEFAULT;
+  duart->rtor = RTO_DEFAULT;
+
+  cr1 = CR1_DEFAULT;
+  if (flags & STM32_UART_LP)
+    cr1 |= USART_CR1_RTOIE;
+
+  duart->cr1 = cr1;
 }
 
 void debug_putc(int ch)
@@ -176,51 +195,93 @@ static void usart_tx(uart_t *u)
   }
 }
 
+static void sendcb(uart_t *u)
+{
+  unsigned char *msgdata;
+  int len;
+  bmos_op_msg_t *m;
+
+  FAST_LOG('u', "Get\n", 0, 0);
+  m = op_msg_get(u->pool);
+  if (!m) {
+    FAST_LOG('u', "rx overrun\n", 0, 0);
+    u->stats.overrun++;
+  } else {
+    msgdata = BMOS_OP_MSG_GET_DATA(m);
+    len = circ_buf_read(&u->cb, msgdata, MSGDATA_LEN);
+    if (len < MSGDATA_LEN)
+      len += circ_buf_read(&u->cb, msgdata + len, MSGDATA_LEN);
+    FAST_LOG('u', "cb send %d\n", len, 0);
+    op_msg_put(u->rxq, m, u->op, len);
+  }
+}
+
 static void usart_isr(void *data)
 {
   uart_t *u = (uart_t *)data;
   volatile stm32_usart_b_t *usart = u->base;
-  int c;
-  bmos_op_msg_t *m;
-  unsigned char *msgdata;
   unsigned int isr;
-
-  FAST_LOG('u', "usart isr\n", 0, 0);
 
   isr = usart->isr;
 
   if (isr & UART_ISR_ORE) {
     usart->icr |= UART_ISR_ORE;
     u->stats.hw_overrun++;
+    FAST_LOG('u', "rx overrun hw A\n", 0, 0);
   }
 
-  if ((usart->cr1 & USART_CR1_TXEIE) && (isr & UART_ISR_TXE)) {
-    FAST_LOG('u', "usart tx\n", 0, 0);
-    usart_tx(u);
+  if (isr & UART_ISR_RTOF) {
+    FAST_LOG('u', "rx timeout\n", 0, 0);
+    usart->icr |= UART_ISR_RTOF;
+
+    if (circ_buf_used(&u->cb) > 0)
+      sendcb(u);
   }
 
   if (isr & UART_ISR_RXNE) {
-    FAST_LOG('u', "usart rx\n", 0, 0);
-    for (;;) {
-      c = usart_xgetc(usart);
-      if (c < 0)
-        break;
+    if (u->flags & STM32_UART_LP) {
+      int c;
+      bmos_op_msg_t *m;
 
-      m = op_msg_get(u->pool);
-      FAST_LOG('u', "get %s %p\n", queue_get_name(u->pool), m);
-      if (!m) {
-        FAST_LOG('u', "rx overrun\n", 0, 0);
-        u->stats.overrun++;
-        continue;
+      FAST_LOG('u', "usart rx\n", 0, 0);
+      for (;;) {
+        unsigned char *msgdata;
+
+        c = usart_xgetc(usart);
+        if (c < 0)
+          break;
+
+        m = op_msg_get(u->pool);
+        FAST_LOG('u', "get %s %p\n", queue_get_name(u->pool), m);
+        if (!m) {
+          FAST_LOG('u', "rx overrun\n", 0, 0);
+          u->stats.overrun++;
+          continue;
+        }
+
+        msgdata = BMOS_OP_MSG_GET_DATA(m);
+
+        *msgdata = (unsigned char)c;
+
+        FAST_LOG('u', "put %s %p\n", queue_get_name(u->rxq), m);
+        op_msg_put(u->rxq, m, u->op, 1);
       }
+    } else {
+      unsigned char c;
+      int len;
 
-      msgdata = BMOS_OP_MSG_GET_DATA(m);
+      c = usart->rdr & 0xff;
 
-      *msgdata = (unsigned char)c;
-
-      FAST_LOG('u', "put %s %p\n", queue_get_name(u->rxq), m);
-      op_msg_put(u->rxq, m, u->op, 1);
+      len = circ_buf_write(&u->cb, &c, 1);
+      if (len == 0) {
+        sendcb(u);
+        (void)circ_buf_write(&u->cb, &c, 1);
+      }
     }
+  }
+
+  if ((usart->cr1 & USART_CR1_TXEIE) && (isr & UART_ISR_TXE)) {
+    usart_tx(u);
   }
 }
 
@@ -237,14 +298,24 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
 {
   volatile stm32_usart_b_t *usart = u->base;
   const char *pool_name = "upool", *tx_queue_name = "utx";
+  unsigned int cr1, msg_size = 1;
 
   usart_set_baud(usart, baud, u->clock, u->flags);
 
-  usart->cr1 = CR1_DEFAULT;
+  duart->rtor = RTO_DEFAULT;
+
+  cr1 = CR1_DEFAULT;
+  if ((u->flags & STM32_UART_LP) == 0) {
+    cr1 |= USART_CR1_RTOIE;
+    usart->cr2 = USART_CR2_RTOEN;
+    circ_buf_init(&u->cb, MSGDATA_POW2);
+    msg_size = MSGDATA_LEN;
+  }
+  usart->cr1 = cr1;
 
   if (u->pool_name)
     pool_name = u->pool_name;
-  u->pool = op_msg_pool_create(pool_name, QUEUE_TYPE_DRIVER, 4, 4);
+  u->pool = op_msg_pool_create(pool_name, QUEUE_TYPE_DRIVER, 4, msg_size);
   XASSERT(u->pool);
 
   if (u->tx_queue_name)
