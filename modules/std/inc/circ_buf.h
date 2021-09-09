@@ -34,4 +34,9 @@ void circ_buf_init(circ_buf_t *cb, unsigned int pow2);
 int circ_buf_write(circ_buf_t *cb, const unsigned char *data, unsigned int len);
 int circ_buf_read(circ_buf_t *cb, unsigned char *data, unsigned int len);
 
+static inline int circ_buf_used(circ_buf_t *cb)
+{
+  return cb->used;
+}
+
 #endif
