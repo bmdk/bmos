@@ -55,11 +55,24 @@ typedef struct {
 
 #define BDTR_MOE BIT(15);
 
+/* Change the timer prescaler value while preserving the timer value
+   This is useful when dynamically adjusting the master clock for power saving so the
+   timer can continue to count at the same rate even though it's input clock is changed.
+ */
 static void timer_presc(void *base, unsigned int presc)
 {
   volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  unsigned int ocnt;
 
+  t->cr1 &= ~CR1_CEN;
+  /* save the current counter value */
+  ocnt = t->cnt;
   t->psc = presc - 1;
+  /* this is needed to load the new prescaler value but it also resets the counter value */
+  t->egr = EGR_UG;
+  t->cr1 = CR1_CEN;
+  /* restore the the saved counter */
+  t->cnt = ocnt;
 }
 
 void timer_init(void *base, unsigned int presc)
