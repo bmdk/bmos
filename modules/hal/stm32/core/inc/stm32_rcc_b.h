@@ -60,4 +60,19 @@ void clock_init(const struct pll_params_t *pll_params);
 #define PLLP_DIV_7 0
 #define PLLP_DIV_17 1
 
+#define MSI_RANGE_100 0
+#define MSI_RANGE_200 1
+#define MSI_RANGE_400 2
+#define MSI_RANGE_800 3
+#define MSI_RANGE_1M  4
+#define MSI_RANGE_2M  5
+#define MSI_RANGE_4M  6
+#define MSI_RANGE_8M  7
+#define MSI_RANGE_16M 8
+#define MSI_RANGE_24M 9
+#define MSI_RANGE_32M 10
+#define MSI_RANGE_48M 11
+
+void msi_set_range(unsigned int range);
+
 #endif

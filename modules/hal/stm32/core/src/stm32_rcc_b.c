@@ -88,6 +88,23 @@ typedef struct {
 #define RCC_CR_HSEON BIT(16)
 #define RCC_CR_HSIRDY BIT(10)
 #define RCC_CR_HSION BIT(8)
+#define RCC_CR_MSIRGSEL BIT(3)
+#define RCC_CR_MSIPLLEN BIT(2)
+#define RCC_CR_MSIRDY BIT(1)
+#define RCC_CR_MSION BIT(0)
+
+void msi_set_range(unsigned int range)
+{
+  while ((RCC->cr & RCC_CR_MSIRDY) == 0)
+    ;
+
+  reg_set_field(&RCC->cr, 4, 4, range);
+
+  RCC->cr |= RCC_CR_MSIRGSEL;
+
+  while ((RCC->cr & RCC_CR_MSIRDY) == 0)
+    ;
+}
 
 #define RCC_PLLCFGR_PLLREN BIT(24)
 #define RCC_PLLCFGR_PLLQEN BIT(20)
