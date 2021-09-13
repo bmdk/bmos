@@ -24,8 +24,8 @@
 
 typedef struct {
   char *data;
-  unsigned short used;
   unsigned short len;
+  unsigned short mask;
   unsigned short next_in;
   unsigned short next_out;
 } circ_buf_t;
@@ -34,9 +34,9 @@ void circ_buf_init(circ_buf_t *cb, unsigned int pow2);
 int circ_buf_write(circ_buf_t *cb, const unsigned char *data, unsigned int len);
 int circ_buf_read(circ_buf_t *cb, unsigned char *data, unsigned int len);
 
-static inline int circ_buf_used(circ_buf_t *cb)
+static inline unsigned short circ_buf_used(circ_buf_t *cb)
 {
-  return cb->used;
+  return (cb->next_in - cb->next_out) & cb->mask;
 }
 
 #endif

@@ -29,16 +29,16 @@
 void circ_buf_init(circ_buf_t *cb, unsigned int pow2)
 {
   cb->len = 1U << pow2;
+  cb->mask = cb->len - 1;
   cb->next_in = 0;
   cb->next_out = 0;
-  cb->used = 0;
   cb->data = malloc(cb->len);
   XASSERT(cb->data);
 }
 
 int circ_buf_space(circ_buf_t *cb)
 {
-  unsigned short space = cb->len - cb->used;
+  unsigned short space = cb->mask - circ_buf_used(cb);
   unsigned short to_end = cb->len - cb->next_in;
 
   if (space < to_end)
@@ -55,8 +55,7 @@ int circ_buf_write(circ_buf_t *cb, const unsigned char *data, unsigned int len)
     len = space;
 
   memcpy(cb->data + cb->next_in, data, len);
-  cb->next_in = (cb->next_in + len) & (cb->len - 1);
-  cb->used += len;
+  cb->next_in = (cb->next_in + len) & cb->mask;
 
   return len;
 }
@@ -64,16 +63,16 @@ int circ_buf_write(circ_buf_t *cb, const unsigned char *data, unsigned int len)
 int circ_buf_read(circ_buf_t *cb, unsigned char *data, unsigned int len)
 {
   unsigned short to_end = cb->len - cb->next_out;
+  unsigned short used = circ_buf_used(cb);
 
-  if (len > cb->used)
-    len = cb->used;
+  if (len > used)
+    len = used;
 
   if (to_end < len)
     len = to_end;
 
   memcpy(data, cb->data + cb->next_out, len);
-  cb->used -= len;
-  cb->next_out = (cb->next_out + len) & (cb->len - 1);
+  cb->next_out = (cb->next_out + len) & cb->mask;
 
   return len;
 }
