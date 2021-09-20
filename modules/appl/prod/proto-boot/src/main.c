@@ -98,6 +98,8 @@ static int cmd_xmodem(int argc, char *argv[])
 
 #if STM32_H7XX
   flash_erase(1, 1);
+#elif STM32_G4XX
+  flash_erase(16, 32);
 #elif STM32_L4R
   flash_erase(8, 8);
 #elif STM32_F429 || STM32_F411 || STM32_F401 || STM32_F4XX
