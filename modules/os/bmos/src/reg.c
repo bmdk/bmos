@@ -299,13 +299,13 @@ void show_sched_info(char opt)
     return;
   }
 
-  xprintf("max(us) %d\n", sched_info.max);
-  xprintf("tot(us) %d\n", sched_info.tot);
-  xprintf("sched   %d\n", sched_info.count_sched);
-  xprintf("switch  %d\n", sched_info.count_switch);
+  xprintf("max(us) %u\n", sched_info.max);
+  xprintf("tot(us) %u\n", sched_info.tot);
+  xprintf("sched   %u\n", sched_info.count_sched);
+  xprintf("switch  %u\n", sched_info.count_switch);
   if (sched_info.count_sched > 0) {
     unsigned int ns = (sched_info.tot * 1000) / sched_info.count_sched;
-    xprintf("avg(ns) %d\n", ns);
+    xprintf("avg(ns) %u\n", ns);
   }
 }
 
