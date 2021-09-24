@@ -101,7 +101,7 @@ static void usart_set_baud(volatile stm32_usart_b_t *usart,
 
   divider = (clock + (baud / 2)) / baud;
 
-  if (flags & 1)
+  if (flags & STM32_UART_LP)
     divider <<= 8;
 
   usart->brr = divider;
