@@ -30,6 +30,7 @@
 #include "shell.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
+#include "stm32_hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_lcd.h"
 #include "stm32_pwr.h"
@@ -238,6 +239,8 @@ static struct pll_params_t clock_params = {
   .divq1  = 5,
   .divr1  = 2
 };
+
+unsigned int clock = 400000000;
 
 void hal_board_init()
 {

@@ -31,6 +31,7 @@
 #include "io.h"
 #include "shell.h"
 #include "stm32_hal.h"
+#include "stm32_hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
 #include "stm32_pwr_f4xx.h"
@@ -104,6 +105,8 @@ static const struct pll_params_t pll_params = {
   .ppre2 = RCC_A_PPRE_2,
   .acr   = 7
 };
+
+unsigned int clock = 180000000;
 
 void hal_board_init()
 {

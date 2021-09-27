@@ -22,30 +22,7 @@
 #ifndef STM32_HAL_BOARD_H
 #define STM32_HAL_BOARD_H
 
-#if STM32_F411BP
-#define CLOCK 96000000
-#elif STM32_F401BP
-#define CLOCK 84000000
-#elif STM32_H743WA
-#define CLOCK 480000000
-#elif STM32_F746
-#define CLOCK 120000000
-#elif STM32_F767
-#define CLOCK 216000000
-#elif STM32_F429
-#define CLOCK 120000000
-#elif STM32_L4XX
-#define CLOCK 80000000
-#elif STM32_L4R
-#define CLOCK 80000000
-#elif STM32_G4XX
-#define CLOCK 170000000
-#elif STM32_H7XX
-#define CLOCK 400000000
-#elif STM32_WBXX
-#define CLOCK 32000000
-#else
-#define CLOCK 120000000
-#endif
+extern unsigned int clock;
+#define CLOCK clock
 
 #endif

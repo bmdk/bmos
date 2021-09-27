@@ -12,7 +12,7 @@
 
 #define MAX_RETRIES 3
 
-unsigned int SystemCoreClock = CLOCK;
+unsigned int SystemCoreClock;
 
 static bmos_sem_t *usb_wakeup;
 static shell_t cdc_sh;
@@ -28,6 +28,7 @@ void usb_init(void);
 
 static void usb_task(void *arg)
 {
+  SystemCoreClock = CLOCK;
   usb_init();
   tusb_init();
 

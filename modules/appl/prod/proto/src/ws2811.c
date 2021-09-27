@@ -77,7 +77,7 @@
 #define GPIO_ADDR STM32_GPIO_ADDR_SET_CLEAR(WSGPIO)
 
 static unsigned char one = BIT(WSBIT);
-static const unsigned int compare[2] = { WCPCCLOCKS(350), WCPCCLOCKS(700) };
+static unsigned int compare[2];
 
 #define PIXELS 300
 static unsigned char buf[24 * PIXELS];
@@ -384,6 +384,9 @@ static void body_colseq(void)
 void task_led(void *arg)
 {
   irq_register("ws2811", irq_ws2811, 0, WSIRQ);
+
+  compare[0] = WCPCCLOCKS(350);
+  compare[1] = WCPCCLOCKS(700);
 
   for (;;) {
     if (1)

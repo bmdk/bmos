@@ -25,6 +25,7 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "stm32_hal.h"
+#include "stm32_hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_pwr_lxxx.h"
 #include "stm32_rcc_b.h"
@@ -77,6 +78,8 @@ static const struct pll_params_t pll_params = {
   .pllr   = PLLR_DIV_2,
   .acr    = 4
 };
+
+unsigned int clock = 80000000;
 
 void hal_board_init()
 {
