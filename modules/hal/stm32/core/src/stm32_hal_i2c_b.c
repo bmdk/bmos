@@ -185,7 +185,7 @@ static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
       }
     }
 
-    *buf ++ = i2c->dr;
+    *buf++ = i2c->dr;
 
     buflen--;
   }

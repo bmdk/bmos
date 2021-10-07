@@ -34,9 +34,9 @@ fb_t *fb_init(unsigned int width, unsigned int height, unsigned int depth)
     stride = 4;
 
   if (stride == 0)
-      size = width * height / 8;
+    size = width * height / 8;
   else
-      size = width * height * stride;
+    size = width * height * stride;
 
   fb = malloc(sizeof(fb_t));
   if (fb == 0)
@@ -93,9 +93,8 @@ void fb_draw(fb_t *fb, int x, int y, unsigned int col)
   if (stride == 0) {
     base = (y * fb->width + x) / 8;
     shift = x & 7;
-  } else {
+  } else
     base = (y * fb->width + x) * stride;
-  }
 
   addr = &fb->fb[base];
 

@@ -99,7 +99,7 @@ static void cdc_shell_put(void *arg)
       if (l != 0)
         count = 0;
       else if (++count > MAX_RETRIES) {
-        dropped ++;
+        dropped++;
         break;
       }
 

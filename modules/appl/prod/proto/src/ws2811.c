@@ -368,7 +368,7 @@ static void body_rainbow(void)
 }
 
 #if 1
-#define COLS 0x808080, 0xff0000 /* red + white */
+#define COLS 0x808080, 0xff0000           /* red + white */
 #else
 #define COLS 0xffd700, 0x808080, 0x008000 /* green, white and gold */
 #endif

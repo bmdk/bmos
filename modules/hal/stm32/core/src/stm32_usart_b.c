@@ -280,9 +280,8 @@ static void usart_isr(void *data)
     }
   }
 
-  if ((usart->cr1 & USART_CR1_TXEIE) && (isr & UART_ISR_TXE)) {
+  if ((usart->cr1 & USART_CR1_TXEIE) && (isr & UART_ISR_TXE))
     usart_tx(u);
-  }
 }
 
 static void _put(void *p)

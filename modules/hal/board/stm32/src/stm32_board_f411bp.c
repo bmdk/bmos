@@ -98,11 +98,11 @@ void pin_init()
 
   /* I2C1_SCL */
   gpio_init_attr(GPIO(1, 8),
-                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN|GPIO_FLAG_PULL_PU,
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN | GPIO_FLAG_PULL_PU,
                                  GPIO_SPEED_HIG, 4, GPIO_ALT));
   /* I2C1_SDA */
   gpio_init_attr(GPIO(1, 9),
-                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN|GPIO_FLAG_PULL_PU,
+                 GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN | GPIO_FLAG_PULL_PU,
                                  GPIO_SPEED_HIG, 4, GPIO_ALT));
 }
 
