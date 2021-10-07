@@ -20,7 +20,7 @@
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
     SOFTWARE.
-*/
+ */
 /*
  * ssd1306xled_font6x8 is by Neven Boyanov
  * ssd1306xled_font8x16 is by Neven Boyanov
@@ -37,6 +37,8 @@
  */
 
 #include "ssd1306_fonts.h"
+
+/* *INDENT-OFF* */
 
 /* Standard ASCII 6x8 font */
 const uint8_t ssd1306xled_font6x8 []=
@@ -1353,3 +1355,5 @@ const uint8_t free_calibri11x12_latin[] =
     0x00, 0x00, 0x00, // end of unicode tables
     // FONT REQUIRES 1219 BYTES
 };
+
+/* *INDENT-ON* */
