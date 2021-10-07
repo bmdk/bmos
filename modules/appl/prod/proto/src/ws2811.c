@@ -217,6 +217,12 @@ void irq_ws2811(void *data)
   FAST_LOG('W', "irq_ws2811\n", 0, 0);
 }
 
+static void compare_init()
+{
+  compare[0] = WCPCCLOCKS(350);
+  compare[1] = WCPCCLOCKS(700);
+}
+
 #if WS2811_DISPLAY_32X8_CLOCK
 #include <stdio.h>
 
@@ -294,6 +300,8 @@ void task_led(void *arg)
 {
   unsigned int w = 32, h = 8;
   char message[64];
+
+  compare_init();
 
   irq_register("ws2811", irq_ws2811, 0, WSIRQ);
 
@@ -383,10 +391,9 @@ static void body_colseq(void)
 
 void task_led(void *arg)
 {
-  irq_register("ws2811", irq_ws2811, 0, WSIRQ);
+  compare_init();
 
-  compare[0] = WCPCCLOCKS(350);
-  compare[1] = WCPCCLOCKS(700);
+  irq_register("ws2811", irq_ws2811, 0, WSIRQ);
 
   for (;;) {
     if (1)
