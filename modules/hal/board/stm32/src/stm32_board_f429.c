@@ -37,51 +37,14 @@
 #include "stm32_pwr_f4xx.h"
 #include "stm32_rcc_a.h"
 #include "stm32_regs.h"
+#include "stm32_lcd.h"
 
-volatile stm32_lcd_t *lcd = (stm32_lcd_t *)0x40016800;
+#define LCD_X 240
+#define LCD_Y 320
 
-#define LCD_MEM_SIZE (240 * 320)
+#define LCD_MEM_SIZE (LCD_X * LCD_Y)
 
-unsigned short framebuf[LCD_MEM_SIZE];
-
-void lcd_init()
-{
-  lcd->sscr = (9 << 16) | (1);
-  lcd->bpcr = (29 << 16) | (3);
-  lcd->awcr = ((269) << 16) | ((323));
-  lcd->twcr = ((279) << 16) | (327);
-  lcd->bccr = 0x0000ff00;
-
-  lcd->gcr = 0x00000001;
-
-  for (int i = 0; i < LCD_MEM_SIZE; i++)
-    //framebuf[i] = 0x07e0;
-    framebuf[i] = 0x003f;
-
-#if 1
-  lcd->l1pfcr = 2;
-  lcd->l1cacr = 0xff;
-  lcd->l1dccr = 0x0;
-  lcd->l1bfcr = (6 << 8) | (7);
-  lcd->l1whpcr = ((240 + 29) << 16) | (29 + 1);
-  lcd->l1wvpcr = ((320 + 3) << 16) | (3 + 1);
-  lcd->l1cfbar = (unsigned int)framebuf;
-  lcd->l1cfblr = ((240 * 2) << 16) | (240 * 2 + 3);
-  lcd->l1cfblnr = 320;
-  lcd->l1cr = 1;
-
-  lcd->srcr = 1;
-#endif
-}
-
-int cmd_lcd(int argc, char *argv[])
-{
-  lcd_init();
-
-  return 0;
-}
-
-SHELL_CMD(lcd, cmd_lcd);
+unsigned char framebuf[LCD_MEM_SIZE];
 
 typedef struct {
   gpio_handle_t gpio;
@@ -186,58 +149,6 @@ void pin_init()
                                             GPIO_SPEED_HIG, e->alt, GPIO_ALT));
   }
 }
-
-#if 0
-typedef struct {
-  unsigned int cr1;
-  unsigned int cr2;
-  unsigned int sr;
-  unsigned int dr;
-  unsigned int crcpr;
-  unsigned int rxcrcr;
-  unsigned int txcrcr;
-  unsigned int i2scfgr;
-  unsigned int i2spr;
-} stm32_spi_t;
-
-#define STM32_SPI_CR1_BIDIMODE BIT(15)
-#define STM32_SPI_CR1_BIDIOE BIT(14)
-#define STM32_SPI_CR1_DFF_16BIT BIT(11)
-#define STM32_SPI_CR1_RXONLY BIT(10)
-#define STM32_SPI_CR1_SSM BIT(9)
-#define STM32_SPI_CR1_SSI BIT(8)
-#define STM32_SPI_CR1_SPE BIT(6)
-#define STM32_SPI_CR1_BR(v) (((v) & 0x7) << 3) /* DIV 2^v */
-#define STM32_SPI_CR1_MSTR BIT(2)
-#define STM32_SPI_CR1_CPOL BIT(1)
-#define STM32_SPI_CR1_CPHA BIT(0)
-
-#define STM32_SPI_SR_TXE BIT(1)
-#define STM32_SPI_SR_RXNE BIT(0)
-
-void spi_init(void *base)
-{
-  volatile stm32_spi_t *spi = base;
-
-  spi->cr1 &= ~STM32_SPI_CR1_SPE;
-  spi->cr1 = STM32_SPI_CR1_SSM | STM32_SPI_CR1_SSI | \
-             STM32_SPI_CR1_BR(3) | STM32_SPI_CR1_MSTR;
-  spi->cr1 |= STM32_SPI_CR1_SPE;
-}
-
-void spi_write(void *base, unsigned int data)
-{
-  volatile stm32_spi_t *spi = base;
-
-  while ((spi->sr & STM32_SPI_SR_TXE) == 0)
-    asm volatile ("nop");
-
-  spi->dr = data & 0xffff;
-
-  while ((spi->sr & STM32_SPI_SR_TXE))
-    asm volatile ("nop");
-}
-#endif
 
 void lcd_wr(unsigned int data)
 {
@@ -505,7 +416,9 @@ void hal_board_init()
   clock_init(&pll_params);
   led_init(leds, ARRSIZ(leds));
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
+#if APPL
   stm32_hal_spi_init((void *)0x40015000, 8);
   lcd_panel_init();
-  lcd_init();
+  lcd_init(LCD_X, LCD_Y);
+#endif
 }

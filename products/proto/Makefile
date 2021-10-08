@@ -375,6 +375,7 @@ FILES.f429 += stm32_rcc_a.o
 FILES.f429 += stm32_board_f429.o
 FILES.f429 += stm32_hal_spi.o
 FILES.f429 += stm32_hal_dma.o
+FILES.f429 += stm32_lcd.o
 FILES.f429 += $(FILES.f4xx)
 FILES.f429 += $(FILES.fxxx)
 

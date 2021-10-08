@@ -47,7 +47,7 @@
 #include "xslog.h"
 #include "xtime.h"
 
-#if STM32_F746 || STM32_H735DK
+#if STM32_F429 || STM32_F746 || STM32_H735DK
 #define LCD_DEMO 1
 #endif
 
@@ -210,12 +210,20 @@ extern uart_t debug_uart_2;
 #if LCD_DEMO
 void set_lcd(unsigned int start, unsigned int width, unsigned int height);
 
+#if STM32_F429
+#define LCD_X 240
+#define LCD_Y 320
+#else
+#define LCD_X 480
+#define LCD_Y 272
+#endif
+
 void lcd_task(void *arg)
 {
   unsigned int i = 0;
 
   for (;;) {
-    set_lcd(i++, 480, 272);
+    set_lcd(i++, LCD_X, LCD_Y);
     task_delay(10);
   }
 }
