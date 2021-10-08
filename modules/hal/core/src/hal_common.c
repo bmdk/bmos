@@ -24,6 +24,8 @@
 #include "common.h"
 #include "xassert.h"
 
+#include "hal_board.h"
+
 extern unsigned int _fsdata, _rsdata, _redata, _sbss, _ebss, _stack_end;
 extern unsigned int _flash_start, _flash_end, _ram_start, _end;
 
@@ -87,6 +89,23 @@ static int cmd_mem(int argc, char *argv[])
 }
 
 SHELL_CMD(mem, cmd_mem);
+
+static int cmd_hal(int argc, char *argv[])
+{
+  char cmd = 'c';
+
+  if (argc > 1)
+    cmd = argv[1][0];
+
+  switch (cmd) {
+  case 'c':
+    xprintf("CPU clock: %d\n", hal_cpu_clock);
+    break;
+  }
+  return 0;
+}
+
+SHELL_CMD(hal, cmd_hal);
 
 #ifndef PRIVATE_SBRK
 #define _sbrk sbrk
