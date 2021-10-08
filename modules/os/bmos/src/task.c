@@ -175,10 +175,10 @@ void task_delay(int time)
 {
   unsigned int saved;
 
-  saved = interrupt_disable();
-
   if (time == 0)
-    goto exit;
+    return;
+
+  saved = interrupt_disable();
 
   if (time != 0) {
     CURRENT->sleep = time;
@@ -188,7 +188,6 @@ void task_delay(int time)
 
   schedule();
 
-exit:
   interrupt_enable(saved);
 }
 
