@@ -93,6 +93,9 @@ uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 38, 0 };
 
 static const gpio_handle_t leds[] = { GPIO(1, 8) };
 
+/* configure system clock to run at 170MHz */
+#if 1
+/* HSI16 */
 static const struct pll_params_t pll_params = {
   .flags  = PLL_FLAG_PLLREN,
   .pllsrc = RCC_PLLCFGR_PLLSRC_HSI16,
@@ -101,6 +104,18 @@ static const struct pll_params_t pll_params = {
   .pllr   = PLLR_DIV_2,
   .acr    = 4
 };
+#else
+/* 24MHz external oscillator */
+static const struct pll_params_t pll_params = {
+  .flags  = PLL_FLAG_PLLREN,
+  .pllsrc = RCC_PLLCFGR_PLLSRC_HSE,
+  .pllm   = 6,
+  .plln   = 85,
+  .pllr   = PLLR_DIV_2,
+  .acr    = 4
+};
+#endif
+
 
 unsigned int hal_cpu_clock = 170000000;
 
