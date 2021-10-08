@@ -313,7 +313,7 @@ void shell_input(shell_t *shell, int c)
       cmdline->escseq = 2;
     else
       cmdline->escseq = 0;
-  }else if (cmdline->escseq == 2) {
+  } else if (cmdline->escseq == 2) {
     if (c >= 0x40 && c <= 0x7e) {
       if (c == '~' && cmdline->escpos == 1) {
         if (cmdline->esc[0] == '3')
