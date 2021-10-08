@@ -26,6 +26,5 @@ void hal_cpu_init(void);
 void hal_board_init(void);
 
 extern unsigned int hal_cpu_clock;
-#define CLOCK hal_cpu_clock
 
 #endif

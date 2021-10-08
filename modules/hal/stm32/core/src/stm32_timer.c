@@ -115,7 +115,7 @@ unsigned int hal_time_us(void)
 
 static unsigned int timer_calc_div(void)
 {
-  return (CLOCK / TIM2_DIV  + (1000000 / 2 - 1)) / 1000000;
+  return (hal_cpu_clock / TIM2_DIV  + (1000000 / 2 - 1)) / 1000000;
 }
 
 void hal_time_reinit(void)

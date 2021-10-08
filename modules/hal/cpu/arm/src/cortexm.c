@@ -109,7 +109,7 @@ void hal_cpu_init()
 
 void systick_init()
 {
-  SYSTICK->load = CLOCK / 1000 - 1;
+  SYSTICK->load = hal_cpu_clock / 1000 - 1;
   SYSTICK->val = 0;
   SYSTICK->ctrl = SYSTICK_CTRL_CLKSOURCE | SYSTICK_CTRL_TICKINT |
                   SYSTICK_CTRL_ENABLE;

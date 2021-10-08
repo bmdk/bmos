@@ -51,7 +51,7 @@
 #endif
 
 #define WSPERIOD_NS 1250
-#define TIMER_CLOCK CLOCK
+#define TIMER_CLOCK hal_cpu_clock
 
 /* Number of clocks in 1250 ns - the nominal one bit period for WS281X */
 #define WSCLOCKS ((TIMER_CLOCK / 1000) * WSPERIOD_NS + 1000000 / 2) / 1000000

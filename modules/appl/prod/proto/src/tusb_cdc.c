@@ -28,7 +28,7 @@ void usb_init(void);
 
 static void usb_task(void *arg)
 {
-  SystemCoreClock = CLOCK;
+  SystemCoreClock = hal_cpu_clock;
   usb_init();
   tusb_init();
 
