@@ -25,12 +25,7 @@
 void hal_cpu_init(void);
 void hal_board_init(void);
 
-#if ARCH_STM32
-#include "stm32_hal_board.h"
-#elif ARCH_PICO
-#include "pico_hal_board.h"
-#else
-#error need an architecture
-#endif
+extern unsigned int hal_cpu_clock;
+#define CLOCK hal_cpu_clock
 
 #endif

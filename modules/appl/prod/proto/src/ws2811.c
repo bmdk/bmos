@@ -32,7 +32,7 @@
 #include "common.h"
 #include "fast_log.h"
 #include "hal_int.h"
-#include "stm32_hal_board.h"
+#include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_timer.h"
 #include "fb.h"

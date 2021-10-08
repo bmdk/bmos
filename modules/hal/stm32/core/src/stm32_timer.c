@@ -26,7 +26,7 @@
 #include "hal_common.h"
 #include "io.h"
 #include "shell.h"
-#include "stm32_hal_board.h"
+#include "hal_board.h"
 #include "stm32_timer.h"
 
 typedef struct {

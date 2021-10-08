@@ -6,7 +6,7 @@
 #include "hal_int.h"
 #include "io.h"
 #include "shell.h"
-#include "stm32_hal_board.h"
+#include "hal_board.h"
 #include "tusb.h"
 #include "xslog.h"
 

@@ -224,6 +224,8 @@ static void cdc_shell_put(void *arg)
   }
 }
 
+unsigned int hal_cpu_clock = 125000000;
+
 int main()
 {
   debug_uart_init();

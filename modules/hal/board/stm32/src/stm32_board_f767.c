@@ -27,7 +27,7 @@
 #include "io.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
-#include "stm32_hal_board.h"
+#include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_f7xx.h"
@@ -151,7 +151,7 @@ static const struct pll_params_t pll_params = {
   .acr   = 5
 };
 
-unsigned int clock = 216000000;
+unsigned int hal_cpu_clock = 216000000;
 
 void hal_board_init()
 {
