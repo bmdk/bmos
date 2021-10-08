@@ -156,12 +156,9 @@ XCFLAGS.l452 += -DSTM32_L452 -DSTM32_L4XX
 XCFLAGS.l452 += -mcpu=cortex-m4
 STACK_END.l452 = 0x20028000
 
-XCFLAGS.l452 += -DWS2811
-
 XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
 XCFLAGS.l496 += -mcpu=cortex-m4
 STACK_END.l496 = 0x20040000
-XCFLAGS.l496 += -DWS2811
 
 XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474N
 XCFLAGS.g474n += -mcpu=cortex-m4
@@ -496,13 +493,11 @@ FILES.l432 += ws2811.o
 FILES.l452 += stm32_hal_bdma.o
 FILES.l452 += stm32_hal_rtc.o
 FILES.l452 += stm32_board_l452.o
-FILES.l452 += ws2811.o
 
 FILES.l496 += stm32_hal_bdma.o
 FILES.l496 += stm32_hal_spi.o
 FILES.l496 += stm32_hal_adc.o
 FILES.l496 += stm32_board_l496.o
-FILES.l496 += ws2811.o
 
 FILES.l432 += $(FILES.l4xx)
 FILES.l452 += $(FILES.l4xx)
