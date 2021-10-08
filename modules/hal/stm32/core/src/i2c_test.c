@@ -247,7 +247,7 @@ void fb_to_i2cdisp(fb_t *fb)
 
 void task_i2c_clock()
 {
-  rtc_time_t t;
+  rtc_time_t t, ot;
   unsigned char digits[4];
   unsigned int yo = 16;
   unsigned int xo = 8;
@@ -257,22 +257,28 @@ void task_i2c_clock()
   i2c_init(I2C);
   disp_init();
 
+  memset(&ot, 0, sizeof(rtc_time_t));
+
   for (;;) {
     rtc_get_time(&t);
 
-    digits[0] = t.hours / 10;
-    digits[1] = t.hours % 10;
-    digits[2] = t.mins / 10;
-    digits[3] = t.mins % 10;
+    if (t.hours != ot.hours || t.mins != ot.mins) {
+      digits[0] = t.hours / 10;
+      digits[1] = t.hours % 10;
+      digits[2] = t.mins / 10;
+      digits[3] = t.mins % 10;
 
-    fb_clear(fb);
+      fb_clear(fb);
 
-    disp_char_w(fb, 0 + xo, yo, 16 + digits[0]);
-    disp_char_w(fb, 24 + xo, yo, 16 + digits[1]);
-    disp_char_w(fb, 64 + xo, yo, 16 + digits[2]);
-    disp_char_w(fb, 88 + xo, yo, 16 + digits[3]);
+      disp_char_w(fb, 0 + xo, yo, 16 + digits[0]);
+      disp_char_w(fb, 24 + xo, yo, 16 + digits[1]);
+      disp_char_w(fb, 64 + xo, yo, 16 + digits[2]);
+      disp_char_w(fb, 88 + xo, yo, 16 + digits[3]);
 
-    fb_to_i2cdisp(fb);
+      fb_to_i2cdisp(fb);
+
+      ot = t;
+    }
 
     task_delay(2000);
   }
