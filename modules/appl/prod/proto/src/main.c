@@ -103,7 +103,7 @@ static void polled_shell(void)
   }
 }
 
-#if STM32_H7XX
+#if STM32_H7XX || STM32_G474N
 #define SHELL_SRC_COUNT 2
 #else
 #define SHELL_SRC_COUNT 1
@@ -259,7 +259,7 @@ int main()
 
   shell_info_init(&shell_info, "sh1rx", 0);
   shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
-#if STM32_H7XX
+#if STM32_H7XX || STM32_G474N
   shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
 #endif
 

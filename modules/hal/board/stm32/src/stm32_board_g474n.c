@@ -56,7 +56,7 @@ void pin_init()
   gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
                                              GPIO_SPEED_LOW, 12, GPIO_ALT));
 
-#if 0
+#if 1
   /* USART1 */
   enable_apb2(14);
   gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
@@ -125,8 +125,9 @@ void pin_init()
 #if 1
 uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 91,
                       STM32_UART_LP | STM32_UART_FIFO };
-#else
-uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37, STM32_UART_FIFO };
+#endif
+#if 1
+uart_t debug_uart_2 = { "debug", USART1_BASE, APB2_CLOCK, 37, STM32_UART_FIFO };
 #endif
 #endif
 
