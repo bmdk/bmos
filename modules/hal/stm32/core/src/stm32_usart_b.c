@@ -301,7 +301,7 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
 
   usart_set_baud(usart, baud, u->clock, u->flags);
 
-  duart->rtor = RTO_DEFAULT;
+  usart->rtor = RTO_DEFAULT;
 
   cr1 = CR1_DEFAULT;
   if ((u->flags & STM32_UART_LP) == 0) {
