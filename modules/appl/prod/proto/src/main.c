@@ -120,7 +120,7 @@ static shell_info_t shell_info;
 
 void shell_info_init(shell_info_t *info, const char *name, unsigned int dest)
 {
-  info->rxq = queue_create("sh1rx", QUEUE_TYPE_TASK);
+  info->rxq = queue_create(name, QUEUE_TYPE_TASK);
   info->dest = dest;
 }
 
