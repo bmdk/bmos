@@ -28,6 +28,7 @@ void delay(unsigned int cycles);
 void led_set(unsigned int n, unsigned int v);
 
 #define STM32_UART_LP BIT(0)
+#define STM32_UART_FIFO BIT(1)
 
 void debug_uart_init(void *base, unsigned int baud,
                      unsigned int clock, unsigned int flags);
