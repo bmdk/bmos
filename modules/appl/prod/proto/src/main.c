@@ -150,6 +150,7 @@ static int _xgetc(int timeout)
 
     if (m->op >= SHELL_SRC_COUNT || m->len == 0) {
       op_msg_return(m);
+      m = NULL;
       return -1;
     }
 
@@ -184,7 +185,8 @@ static void shell_task(void *arg)
   for (;;) {
     int c = _xgetc(-1);
 
-    shell_input(&sh, c);
+    if (c >= 0)
+      shell_input(&sh, c);
   }
 }
 
