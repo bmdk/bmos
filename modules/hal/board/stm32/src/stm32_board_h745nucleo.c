@@ -136,14 +136,12 @@ static void pin_init()
 #define USART3_BASE 0x40004800
 #define APB2_CLOCK 100000000
 #if BMOS
-#if 0
-uart_t debug_uart = { "debugser", (void *)USART2_BASE, APB2_CLOCK, 38 };
-#else
 uart_t debug_uart =
-{ "debugser3", (void *)USART3_BASE, APB2_CLOCK, 39, 0, "u3pool", "u3tx" };
+{ "debugser3", (void *)USART3_BASE, APB2_CLOCK, 39, STM32_UART_FIFO, "u3pool",
+  "u3tx" };
 uart_t debug_uart_2 =
-{ "debugser2", (void *)USART2_BASE, APB2_CLOCK, 38, 0, "u2pool", "u2tx" };
-#endif
+{ "debugser2", (void *)USART2_BASE, APB2_CLOCK, 38, STM32_UART_FIFO, "u2pool",
+  "u2tx" };
 #endif
 
 /* Red, Green, Blue */
@@ -180,7 +178,6 @@ void hal_board_init()
 #endif
 
 #if 0
-  /* problems with virtual com port on USART3 so use USART2 FTM */
   debug_uart_init((void *)USART2_BASE, 115200, APB2_CLOCK, 0);
 #else
   debug_uart_init((void *)USART3_BASE, 115200, APB2_CLOCK, 0);

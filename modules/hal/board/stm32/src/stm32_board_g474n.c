@@ -123,9 +123,10 @@ void pin_init()
 
 #if BMOS
 #if 1
-uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 91, STM32_UART_LP };
+uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 91,
+                      STM32_UART_LP | STM32_UART_FIFO };
 #else
-uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37, 0 };
+uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 37, STM32_UART_FIFO };
 #endif
 #endif
 
