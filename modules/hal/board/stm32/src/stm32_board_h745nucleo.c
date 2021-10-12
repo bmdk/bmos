@@ -137,11 +137,11 @@ static void pin_init()
 #define APB2_CLOCK 100000000
 #if BMOS
 uart_t debug_uart =
-{ "debugser3", (void *)USART3_BASE, APB2_CLOCK, 39, STM32_UART_FIFO, "u3pool",
-  "u3tx" };
+{ "debugser3", (void *)USART3_BASE, APB2_CLOCK, 39, STM32_UART_FIFO,
+  "u3pool", "u3tx" };
 uart_t debug_uart_2 =
-{ "debugser2", (void *)USART2_BASE, APB2_CLOCK, 38, STM32_UART_FIFO, "u2pool",
-  "u2tx" };
+{ "debugser2", (void *)USART2_BASE, APB2_CLOCK, 38, STM32_UART_FIFO,
+  "u2pool", "u2tx" };
 #endif
 
 /* Red, Green, Blue */
