@@ -107,7 +107,7 @@ static struct pll_params_t clock_params = {
 };
 #endif
 
-unsigned int hal_cpu_clock = 400000000;
+unsigned int hal_cpu_clock = 480000000;
 
 void hal_board_init()
 {
