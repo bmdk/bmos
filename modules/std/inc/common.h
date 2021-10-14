@@ -38,4 +38,8 @@
 
 #define WEAK __attribute__((__weak__))
 
+typedef volatile unsigned int reg32_t;
+typedef volatile unsigned short reg16_t;
+typedef volatile unsigned char reg8_t;
+
 #endif
