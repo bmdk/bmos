@@ -31,8 +31,8 @@
                      (((unsigned int)(_x_) >>  8) & 0x0000ff00U) | \
                      (((unsigned int)(_x_) >> 24) & 0x000000ffU))
 
-#define SWAP16(_x_) ((((unsigned short)_x_ <<  8) & 0x00ff0000) | \
-                     (((unsigned short)_x_ >>  8) & 0x0000ff00))
+#define SWAP16(_x_) ((((unsigned short)_x_ <<  8) & 0xff00) | \
+                     (((unsigned short)_x_ >>  8) & 0x00ff))
 
 #define ALIGN(_num_, _n_) (((_num_) + (1U << (_n_)) - 1) & ~((1U << (_n_)) - 1))
 
