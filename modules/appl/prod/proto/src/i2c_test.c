@@ -252,7 +252,7 @@ void task_i2c_clock()
   unsigned int yo = 16;
   unsigned int xo = 8;
 
-  fb = fb_init(128, 64, 1);
+  fb = fb_init(128, 64, 1, 0);
 
   i2c_init(I2C);
   disp_init();
@@ -292,7 +292,7 @@ static int i2c_cmd(int argc, char *argv[])
   unsigned char wbuf;
 
   if (!fb)
-    fb = fb_init(128, 64, 1);
+    fb = fb_init(128, 64, 1, 0);
 
   switch (argv[1][0]) {
   case 'i':

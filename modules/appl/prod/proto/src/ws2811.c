@@ -305,7 +305,7 @@ void task_led(void *arg)
 
   irq_register("ws2811", irq_ws2811, 0, WSIRQ);
 
-  fb_t *fb = fb_init(w, h, 24);
+  fb_t *fb = fb_init(w, h, 24, 0);
 
   for (;;) {
     int i, len, ofs;
