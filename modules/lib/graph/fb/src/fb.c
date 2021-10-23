@@ -26,9 +26,9 @@ fb_t *fb_init(unsigned int width, unsigned int height, unsigned int depth)
       xslog(LOG_ERR, "invalid width for depth 1\n");
       return 0;
     }
-  } else if (depth < 8)
+  } else if (depth <= 8)
     stride = 1;
-  else if (depth < 16)
+  else if (depth <= 16)
     stride = 2;
   else
     stride = 4;
@@ -60,6 +60,11 @@ fb_t *fb_init(unsigned int width, unsigned int height, unsigned int depth)
 void *fb_get(fb_t *fb)
 {
   return (void *)fb->fb;
+}
+
+unsigned int fb_get_size(fb_t *fb)
+{
+  return fb->size;
 }
 
 void fb_clear(fb_t *fb)

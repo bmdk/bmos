@@ -8,6 +8,7 @@ void fb_draw(fb_t *fb, int x, int y, unsigned int col);
 
 void fb_clear(fb_t *fb);
 void *fb_get(fb_t *fb);
+unsigned int fb_get_size(fb_t *fb);
 unsigned int fb_width(fb_t *fb);
 unsigned int fb_height(fb_t *fb);
 
