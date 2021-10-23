@@ -11,11 +11,13 @@ struct _fb_t {
   unsigned char depth;
   unsigned short width;
   unsigned short height;
+  unsigned short flags;
   unsigned int size;
   unsigned char *fb;
 };
 
-fb_t *fb_init(unsigned int width, unsigned int height, unsigned int depth)
+fb_t *fb_init(unsigned int width, unsigned int height, unsigned int depth,
+              unsigned int flags)
 {
   unsigned int size, stride;
   fb_t *fb;
@@ -53,6 +55,7 @@ fb_t *fb_init(unsigned int width, unsigned int height, unsigned int depth)
   fb->height = height;
   fb->stride = stride;
   fb->depth = depth;
+  fb->flags = flags;
 
   return fb;
 }
@@ -114,11 +117,17 @@ void fb_draw(fb_t *fb, int x, int y, unsigned int col)
     *(unsigned char *)addr = (unsigned char)col;
     break;
   case 2:
-    *(unsigned short *)addr = (unsigned short)col;
+    if (fb->flags & FB_FLAG_SWAP)
+      *(unsigned short *)addr = SWAP16(col);
+    else
+      *(unsigned short *)addr = (unsigned short)col;
     break;
   case 4:
   default:
-    *(unsigned int *)addr = (unsigned int)col;
+    if (fb->flags & FB_FLAG_SWAP)
+      *(unsigned int *)addr = SWAP32(col);
+    else
+      *(unsigned int *)addr = (unsigned int)col;
     break;
   }
 }
