@@ -108,6 +108,8 @@ static int cmd_xmodem(int argc, char *argv[])
   flash_erase(1, 4);
 #elif STM32_WBXX
   flash_erase(8, 8);
+#elif STM32_UXXX
+  flash_erase(4, 8);
 #else
   flash_erase(16, 16);
 #endif

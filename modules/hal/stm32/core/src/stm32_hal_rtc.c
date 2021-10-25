@@ -28,6 +28,35 @@
 #include "io.h"
 #include "hal_rtc.h"
 
+#if STM32_UXXX
+typedef struct {
+  unsigned int tr;
+  unsigned int dr;
+  unsigned int ssr;
+  unsigned int isr;
+  unsigned int prer;
+  unsigned int wutr;
+  unsigned int cr;
+  unsigned int privcfgr;
+  unsigned int seccfgr;
+  unsigned int wpr;
+  unsigned int calr;
+  unsigned int shiftr;
+  unsigned int tstr;
+  unsigned int tsdr;
+  unsigned int tsssr;
+  unsigned int alrmar;
+  unsigned int alrmassr;
+  unsigned int alrmbr;
+  unsigned int alrmbssr;
+  unsigned int sr;
+  unsigned int msr;
+  unsigned int smsr;
+  unsigned int scr;
+  unsigned int alrabinr;
+  unsigned int alrbbinr;
+} stm32_rtc_t;
+#else
 typedef struct {
   unsigned int tr;
   unsigned int dr;
@@ -51,9 +80,12 @@ typedef struct {
   unsigned int or;
   unsigned int bkp[32];
 } stm32_rtc_t;
+#endif
 
 #if STM32_H7XX
 #define RTC_BASE 0x58004000
+#elif STM32_UXXX
+#define RTC_BASE 0x46007800
 #else
 #define RTC_BASE 0x40002800
 #endif

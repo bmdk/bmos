@@ -62,6 +62,8 @@ typedef struct {
 #define GPIO_BASE 0x48000000
 #elif STM32_H7XX
 #define GPIO_BASE 0x58020000
+#elif STM32_UXXX
+#define GPIO_BASE 0x42020000
 #else
 #define GPIO_BASE 0x40020000
 #endif

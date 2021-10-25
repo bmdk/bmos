@@ -19,6 +19,8 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdlib.h>
+
 #include "common.h"
 #include "hal_gpio.h"
 #include "stm32_hal.h"
@@ -73,6 +75,8 @@ void delay(unsigned int count)
 
 #if STM32_H7XX
 #define DBGMCU_IDCODE 0x5C001000
+#elif STM32_UXXX
+#define DBGMCU_IDCODE 0xE0044000
 #else
 #define DBGMCU_IDCODE 0xE0042000
 #endif
@@ -131,6 +135,9 @@ int cmd_devid(int argc, char *argv[])
   case 0x479:
     idstr = "G4 Cat 4";
     break;
+  case 0x482:
+    idstr = "U575/585";
+    break;
   case 0x483:
     idstr = "H72x/H73x";
     break;
@@ -145,3 +152,20 @@ int cmd_devid(int argc, char *argv[])
 }
 
 SHELL_CMD(devid, cmd_devid);
+
+int cmd_led(int argc, char *argv[])
+{
+  unsigned int num, en;
+
+  if (argc < 3)
+    return -1;
+
+  num = atoi(argv[1]);
+  en = atoi(argv[2]);
+
+  led_set(num, en);
+
+  return 0;
+}
+
+SHELL_CMD(led, cmd_led);

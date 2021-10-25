@@ -41,6 +41,7 @@ PROG += l452
 PROG += l496
 PROG += g474n
 PROG += g431kbn
+PROG += u575n
 PROG += wb55n
 
 PROG_TRG = $(addprefix board-, $(PROG))
@@ -127,14 +128,24 @@ STACK_END.g474n = 0x20020000
 XCFLAGS.g431kbn += -DSTM32_G431KBN -DSTM32_G4XX
 STACK_END.g431kbn = 0x20008000
 
+XCFLAGS.u575n += -DSTM32_U575N -DSTM32_UXXX
+STACK_END.u575n = 0x20028000
+CPU.u575n = cortex-m33
+
 XCFLAGS.wb55n += -DSTM32_WB55N -DSTM32_WBXX
 STACK_END.wb55n = 0x20030000
 
 XCFLAGS += $(XCFLAGS.$(PROG))
 STACK_END = $(STACK_END.$(PROG))
 
+ifdef CPU.$(PROG)
+CPU = $(CPU.$(PROG))
+else
+CPU = cortex-m4
+endif
+
 XCFLAGS += -DARCH_STM32
-XCFLAGS += -mcpu=cortex-m4
+XCFLAGS += -mcpu=$(CPU)
 XCFLAGS += -mthumb
 XCFLAGS += -Wall -Werror
 XCFLAGS += -Os
@@ -300,6 +311,16 @@ FILES.l4r += stm32_usart_b.o
 FILES.l4r += stm32_rcc_b.o
 FILES.l4r += stm32_board_l4r.o
 FILES.l4r += stm32_pwr_lxxx.o
+
+FILES.uxxx += stm32_usart_b.o
+FILES.uxxx += stm32_rcc_d.o
+FILES.uxxx += stm32_exti_uxxx.o
+FILES.uxxx += stm32_pwr_uxxx.o
+FILES.uxxx += stm32_hal_rtc.o
+#FILES.uxxx += stm32_pwr_lxxx.o
+
+FILES.u575n += $(FILES.uxxx)
+FILES.u575n += stm32_board_u575n.o
 
 FILES.wbxx += stm32_usart_b.o
 FILES.wbxx += stm32_rcc_b.o

@@ -41,6 +41,7 @@ PROG += l496
 PROG += l4r
 PROG += g474n
 PROG += g431kbn
+PROG += u575n
 PROG += wb55n
 
 PROG_TRG = $(addprefix board-, $(PROG))
@@ -167,6 +168,10 @@ STACK_END.g474n = 0x20020000
 XCFLAGS.g431kbn += -DSTM32_G4XX -DSTM32_G432KBN
 XCFLAGS.g431kbn += -mcpu=cortex-m4
 STACK_END.g431kbn = 0x20008000
+
+XCFLAGS.u575n += -DSTM32_U575N -DSTM32_UXXX
+XCFLAGS.u575n += -mcpu=cortex-m33
+STACK_END.u575n = 0x20020000
 
 XCFLAGS.wb55n += -DSTM32_WBXX -DSTM32_WB55N
 XCFLAGS.wb55n += -mcpu=cortex-m4
@@ -529,6 +534,13 @@ FILES.g431kbn += $(FILES.g4xx)
 FILES.g431kbn += stm32_hal_rtc.o
 FILES.g431kbn += stm32_board_g431kbn.o
 FILES.g431kbn += fdcan.o
+
+FILES.u575n += stm32_hal_rtc.o
+FILES.u575n += stm32_exti_uxxx.o
+FILES.u575n += stm32_pwr_uxxx.o
+FILES.u575n += stm32_rcc_d.o
+FILES.u575n += stm32_usart_b.o
+FILES.u575n += stm32_board_u575n.o
 
 FILES.wb55n += $(FILES.wbxx)
 FILES.wb55n += stm32_hal_rtc.o
