@@ -40,7 +40,7 @@ typedef struct {
   reg32_t ier;
   reg32_t sr;
   reg32_t ifcr;
-  unsigned int pad1[1];
+  reg32_t autocr;
   union {
     reg8_t b;
     reg16_t h;
