@@ -234,6 +234,7 @@ void lcd_task(void *arg)
 }
 #endif
 
+void task_spi_clock();
 void task_i2c_clock();
 void task_net();
 void task_led();
@@ -280,6 +281,10 @@ int main()
 
 #if I2C_DEMO
   task_init(task_i2c_clock, NULL, "clk", 2, 0, 1024);
+#endif
+
+#if STM32_H743WA
+  task_init(task_spi_clock, NULL, "spiclk", 2, 0, 1024);
 #endif
 
 #if CONFIG_LWIP
