@@ -50,20 +50,20 @@ typedef struct {
 #define STM32_SPI_SR_TXE BIT(1)
 #define STM32_SPI_SR_RXNE BIT(0)
 
-void stm32_hal_spi_init(void *base, unsigned int wordlen)
+void stm32_hal_spi_init(stm32_hal_spi_t *s)
 {
-  volatile stm32_spi_t *spi = base;
+  volatile stm32_spi_t *spi = s->base;
 
   spi->cr1 &= ~STM32_SPI_CR1_SPE;
   spi->cr1 = STM32_SPI_CR1_SSM | STM32_SPI_CR1_SSI | \
              STM32_SPI_CR1_BR(3) | STM32_SPI_CR1_MSTR;
-  spi->cr2 = (((wordlen - 1) & 0xf) << 8);
+  spi->cr2 = ((((unsigned int)s->wordlen - 1) & 0xf) << 8);
   spi->cr1 |= STM32_SPI_CR1_SPE;
 }
 
-void stm32_hal_spi_write(void *base, unsigned int data)
+void stm32_hal_spi_write(stm32_hal_spi_t *s, unsigned int data)
 {
-  volatile stm32_spi_t *spi = base;
+  volatile stm32_spi_t *spi = s->base;
 
   while ((spi->sr & STM32_SPI_SR_TXE) == 0)
     asm volatile ("nop");
@@ -76,9 +76,9 @@ void stm32_hal_spi_write(void *base, unsigned int data)
 #endif
 }
 
-void stm32_hal_spi_wait_done(void *base)
+void stm32_hal_spi_wait_done(stm32_hal_spi_t *s)
 {
-  volatile stm32_spi_t *spi = base;
+  volatile stm32_spi_t *spi = s->base;
 
   while ((spi->sr & STM32_SPI_SR_BSY))
     asm volatile ("nop");

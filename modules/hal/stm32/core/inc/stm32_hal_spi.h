@@ -22,8 +22,18 @@
 #ifndef STM32_HAL_SPI
 #define STM32_HAL_SPI
 
-void stm32_hal_spi_init(void *base, unsigned int wordlen);
-void stm32_hal_spi_write(void *base, unsigned int data);
-void stm32_hal_spi_wait_done(void *base);
+#include <hal_gpio.h>
+
+typedef struct {
+  void *base;
+  unsigned char wordlen;
+  unsigned char div;
+  gpio_handle_t cs;
+} stm32_hal_spi_t;
+
+void stm32_hal_spi_init(stm32_hal_spi_t *spi);
+void stm32_hal_spi_write(stm32_hal_spi_t *spi, unsigned int data);
+void stm32_hal_spi_wait_done(stm32_hal_spi_t *spi);
+void stm32_hal_spi_write_buf(stm32_hal_spi_t *s, void *data, unsigned int len);
 
 #endif
