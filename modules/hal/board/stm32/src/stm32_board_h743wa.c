@@ -72,9 +72,41 @@ static void pin_init()
                  GPIO_ATTR_STM32(GPIO_FLAG_PULL_PD, GPIO_SPEED_HIG, 7,
                                  GPIO_ALT));
 
-  enable_apb4(1);  /* SYSCFG */
-  enable_apb1(0);  /* TIM2 */
-  enable_apb2(0);  /* TIM1 */
+  /* SPI1 - SPI FLASH */
+  enable_apb2(12);
+  /* PB4 MISO */
+  gpio_init_attr(GPIO(1, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+  /* PD7 MOSI */
+  gpio_init_attr(GPIO(3, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+  /* PB3 CLK */
+  gpio_init_attr(GPIO(1, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+  /* PD6 CS */
+  gpio_init(GPIO(3, 6), GPIO_OUTPUT);
+
+  /* SPI1 - SPI FLASH */
+  enable_apb2(12);
+  /* PB4 MISO */
+  gpio_init_attr(GPIO(1, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+  /* PD7 MOSI */
+  gpio_init_attr(GPIO(3, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+  /* PB3 CLK */
+  gpio_init_attr(GPIO(1, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+  /* PD6 CS */
+
+  /* SPI4 - LCD DISPLAY */
+  enable_apb2(13);
+  /* SPI4 MOSI */
+  gpio_init_attr(GPIO(4, 14), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+  /* SPI4 SCK */
+  gpio_init_attr(GPIO(4, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
+
+  gpio_init(GPIO(4, 13), GPIO_OUTPUT); /* LCD_WR_RS */
+  gpio_init(GPIO(4, 11), GPIO_OUTPUT); /* LCD_CD */
+  gpio_init(GPIO(4, 10), GPIO_OUTPUT); /* Backlight */
+
+  enable_apb4(1);                      /* SYSCFG */
+  enable_apb1(0);                      /* TIM2 */
+  enable_apb2(0);                      /* TIM1 */
 }
 
 #define USART2_BASE 0x40004400
@@ -117,6 +149,11 @@ void hal_board_init()
   clock_init(&clock_params);
   backup_domain_protect(0);
   clock_init_ls();
+
+  /* 48MHz - USB clock */
+  set_spi123sel(SPI123SEL_PLL1_Q_CK);
+  /* 120MHz - APB clock */
+  set_spi45sel(SPI45SEL_APB);
 
 #if APPL
   stm32_syscfg_set_exti(2, 13);

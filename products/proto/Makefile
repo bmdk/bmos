@@ -308,6 +308,9 @@ FILES.h735dk += stm32_fdcan.o
 FILES.h735dk += fdcan.o
 
 FILES.h743wa += stm32_board_h743wa.o
+FILES.h743wa += stm32_hal_spi_b.o
+FILES.h743wa += spi_test.o
+FILES.h743wa += st7735.o
 
 FILES.h743nucleo += stm32_board_h743nucleo.o
 FILES.h743nucleo += lwip.o
