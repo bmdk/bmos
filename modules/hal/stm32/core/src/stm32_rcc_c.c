@@ -318,7 +318,7 @@ static void _clock_init(const struct pll_params_t *params)
                RCC_PLLCFGR_DIVR2EN | \
                RCC_PLLCFGR_DIVP3EN | RCC_PLLCFGR_DIVQ3EN |
                RCC_PLLCFGR_DIVR3EN);
-  pllcfgr |= RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVR3EN;
+  pllcfgr |= RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVQ1EN | RCC_PLLCFGR_DIVR3EN;
 
   if (1)
     pllcfgr |= RCC_PLLCFGR_DIVQ1EN;
@@ -370,10 +370,14 @@ void disable_apb1(unsigned int dev)
     RCC->apb1lenr &= ~BIT(dev);
 }
 
-
 void enable_apb2(unsigned int dev)
 {
   RCC->apb2enr |= BIT(dev);
+}
+
+void disable_apb2(unsigned int dev)
+{
+  RCC->apb2enr &= ~BIT(dev);
 }
 
 void enable_apb3(unsigned int dev)
@@ -384,6 +388,16 @@ void enable_apb3(unsigned int dev)
 void enable_apb4(unsigned int dev)
 {
   RCC->apb4enr |= BIT(dev);
+}
+
+void set_spi123sel(unsigned int sel)
+{
+  reg_set_field(&RCC->d2ccip1r, 3, 12, sel);
+}
+
+void set_spi45sel(unsigned int sel)
+{
+  reg_set_field(&RCC->d2ccip1r, 3, 16, sel);
 }
 
 void set_fdcansel(unsigned int sel)
@@ -399,6 +413,17 @@ void set_usbsel(unsigned int sel)
 void set_usart234578sel(unsigned int sel)
 {
   reg_set_field(&RCC->d2ccip2r, 3, 0, sel);
+}
+
+void set_spi6sel(unsigned int sel)
+{
+  reg_set_field(&RCC->d3ccipr, 3, 28, sel);
+}
+
+void set_mco1(unsigned int sel, unsigned int div)
+{
+  reg_set_field(&RCC->cfgr, 3, 22, sel);
+  reg_set_field(&RCC->cfgr, 4, 18, div);
 }
 
 #define RCC_BDCR_LSEON BIT(0)

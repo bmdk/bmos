@@ -28,6 +28,26 @@ struct pll_params_t {
 
 void clock_init(const struct pll_params_t *params);
 
+#define SPI123SEL_PLL1_Q_CK 0
+#define SPI123SEL_PLL2_P_CK 1
+#define SPI123SEL_PLL3_P_CK 2
+#define SPI123SEL_I2S_CKIN 3
+#define SPI123SEL_CSI_KER_CK 4
+#define SPI123SEL_HSE_CK 5
+
+#define SPI45SEL_APB 0
+#define SPI45SEL_PLL2_Q_CK 1
+#define SPI45SEL_PLL3_Q_CK 2
+#define SPI45SEL_HSI_KER_CK 3
+#define SPI45SEL_CSI_KER_CK 4
+
+#define SPI6SEL_PCLK4 0
+#define SPI6SEL_PLL2_Q_CK 1
+#define SPI6SEL_PLL3_Q_CK 2
+#define SPI6SEL_HSI_KER_CK 3
+#define SPI6SEL_CSI_KER_CK 4
+#define SPI6SEL_HSE_CK 5
+
 #define FDCANSEL_HSE_CK 0
 #define FDCANSEL_PLL1_Q_CK 1
 #define FDCANSEL_PLL2_Q_CK 2
@@ -44,8 +64,17 @@ void clock_init(const struct pll_params_t *params);
 #define USART234578SEL_CSI_KER_CK 4
 #define USART234578SEL_LSE_CK 5
 
+void set_spi123sel(unsigned int sel);
+void set_spi45sel(unsigned int sel);
 void set_fdcansel(unsigned int sel);
 void set_usbsel(unsigned int sel);
 void set_usart234578sel(unsigned int sel);
+
+#define SEL_MCO1_HSI 0
+#define SEL_MCO1_LCE 1
+#define SEL_MCO1_HSE 2
+#define SEL_MCO1_PLL1_Q 3
+#define SEL_MCO1_HSI48 4
+void set_mco1(unsigned int sel, unsigned int div);
 
 #endif
