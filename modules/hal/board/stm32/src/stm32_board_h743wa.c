@@ -83,16 +83,6 @@ static void pin_init()
   /* PD6 CS */
   gpio_init(GPIO(3, 6), GPIO_OUTPUT);
 
-  /* SPI1 - SPI FLASH */
-  enable_apb2(12);
-  /* PB4 MISO */
-  gpio_init_attr(GPIO(1, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
-  /* PD7 MOSI */
-  gpio_init_attr(GPIO(3, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
-  /* PB3 CLK */
-  gpio_init_attr(GPIO(1, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 5, GPIO_ALT));
-  /* PD6 CS */
-
   /* SPI4 - LCD DISPLAY */
   enable_apb2(13);
   /* SPI4 MOSI */
