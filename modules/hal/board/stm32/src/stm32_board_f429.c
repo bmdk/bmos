@@ -46,6 +46,10 @@
 
 unsigned char framebuf[LCD_MEM_SIZE];
 
+static stm32_hal_spi_t spi = {
+  (void *)0x40015000, 8, 0, 0
+};
+
 typedef struct {
   gpio_handle_t gpio;
   unsigned char alt;
@@ -153,8 +157,8 @@ void pin_init()
 void lcd_wr(unsigned int data)
 {
   gpio_set(LCD_CSX, 0);
-  stm32_hal_spi_write((void *)0x40015000, data);
-  stm32_hal_spi_wait_done((void *)0x40015000);
+  stm32_hal_spi_write(&spi, data);
+  stm32_hal_spi_wait_done(&spi);
   gpio_set(LCD_CSX, 1);
 }
 
@@ -417,7 +421,7 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 #if APPL
-  stm32_hal_spi_init((void *)0x40015000, 8);
+  stm32_hal_spi_init(&spi);
   lcd_panel_init();
   lcd_init(LCD_X, LCD_Y);
 #endif
