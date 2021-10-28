@@ -543,6 +543,8 @@ FILES.u575n += stm32_exti_uxxx.o
 FILES.u575n += stm32_pwr_uxxx.o
 FILES.u575n += stm32_rcc_d.o
 FILES.u575n += stm32_usart_b.o
+FILES.u575n += stm32_fdcan.o
+FILES.u575n += fdcan.o
 FILES.u575n += stm32_board_u575n.o
 
 FILES.wb55n += $(FILES.wbxx)

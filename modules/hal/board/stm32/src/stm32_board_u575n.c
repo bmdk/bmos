@@ -44,6 +44,7 @@ void pin_init()
   enable_ahb2(0); /* GPIOA */
   enable_ahb2(1); /* GPIOB */
   enable_ahb2(2); /* GPIOC */
+  enable_ahb2(3); /* GPIOC */
   enable_ahb2(6); /* GPIOG */
 
   gpio_init_attr(GPIO(0, 8),
@@ -75,6 +76,13 @@ void pin_init()
   gpio_init_attr(GPIO(0, 10),
                  GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
                                  GPIO_ALT));
+
+  /* FDCAN */
+  enable_apb1(41);
+  /* PD0 - CAN_RX */
+  gpio_init_attr(GPIO(3, 0), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+  /* PD1 - CAN_TX */
+  gpio_init_attr(GPIO(3, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
 
   enable_apb3(1);  /* SYSCFG */
   enable_ahb3(2);  /* PWR */
@@ -112,12 +120,12 @@ uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 61, 0 };
 static const gpio_handle_t leds[] = { GPIO(2, 7), GPIO(1, 7), GPIO(6, 2) };
 
 static const struct pll_params_t pll_params = {
-  .flags  = PLL_FLAG_PLLREN,
+  .flags  = PLL_FLAG_PLLREN | PLL_FLAG_PLLQEN,
   .pllsrc = RCC_D_CLK_MSIS,
   .divm1  = 1,
   .divn1  = 80,
   .divp1  = 2,
-  .divq1  = 1,
+  .divq1  = 2,
   .divr1  = 2,
   .acr    = 4
 };
@@ -139,6 +147,8 @@ void hal_board_init()
   clock_init(&pll_params);
 
   stm32_pwr_power(STM32_PWR_POWER_SMPS);
+
+  set_fdcansel(FDCANSEL_PLL1Q);
 
 #if APPL
   backup_domain_protect(0);
