@@ -124,17 +124,11 @@ typedef struct {
 } fdcan_buf_t;
 
 #ifdef STM32_G4XX
-#define FDCAN1_BASE 0x40006400
-#define FDCAN2_BASE 0x40006800
-#define FDCAN3_BASE 0x40006C00
-
 #define FDCAN_MES_BASE 0x4000A400
-#else
-#define FDCAN1_BASE 0x4000A000
-#define FDCAN2_BASE 0x4000A400
-#define FDCAN3_BASE 0x4000D400
-
+#elif STM32_H7XX || STM32_UXXX
 #define FDCAN_MES_BASE 0x4000AC00
+#else
+#error define FDCAN_MES_BASE
 #endif
 
 #define FDCAN_DBTP(tdc, dbrp, dtseg1, dtseg2, dsjw) \
