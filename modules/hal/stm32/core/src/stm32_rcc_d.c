@@ -133,7 +133,7 @@ typedef struct {
   unsigned int pad9;
   reg32_t srdamr;
   unsigned int pad10;
-  reg32_t ccipri[3];
+  reg32_t ccipr[3];
   unsigned int pad11;
   reg32_t bdcr;
   reg32_t csr;
@@ -271,7 +271,12 @@ static void _clock_init(const struct pll_params_t *params)
     for (j = 0; j < 3; j++)
       _clock_pll_div_en(i, j, 0);
 
-  _clock_pll_div_en(0, RCC_DIVR, 1);
+  if (params->flags & PLL_FLAG_PLLREN)
+    _clock_pll_div_en(0, RCC_DIVR, 1);
+  if (params->flags & PLL_FLAG_PLLQEN)
+    _clock_pll_div_en(0, RCC_DIVQ, 1);
+  if (params->flags & PLL_FLAG_PLLPEN)
+    _clock_pll_div_en(0, RCC_DIVP, 1);
 
   reg_set_field(&RCC->pllcfgr[0], 2, 2, RCC_PLLCFGR_RGE_4_8);
 
@@ -295,29 +300,32 @@ void enable_ahb3(unsigned int dev)
 
 void enable_ahb2(unsigned int dev)
 {
-  if (dev >= 32) {
-    dev -= 32;
-    RCC->ahb2enr[1] |= BIT(dev);
-  } else
-    RCC->ahb2enr[0] |= BIT(dev);
+  unsigned int reg;
+
+  reg = dev / 32;
+  dev %= 32;
+
+  RCC->ahb2enr[reg] |= BIT(dev);
 }
 
 void enable_apb1(unsigned int dev)
 {
-  if (dev >= 32) {
-    dev -= 32;
-    RCC->apb1enr[1] |= BIT(dev);
-  } else
-    RCC->apb1enr[0] |= BIT(dev);
+  unsigned int reg;
+
+  reg = dev / 32;
+  dev %= 32;
+
+  RCC->apb1enr[reg] |= BIT(dev);
 }
 
 void disable_apb1(unsigned int dev)
 {
-  if (dev >= 32) {
-    dev -= 32;
-    RCC->apb1enr[1] &= ~BIT(dev);
-  } else
-    RCC->apb1enr[0] &= ~BIT(dev);
+  unsigned int reg;
+
+  reg = dev / 32;
+  dev %= 32;
+
+  RCC->apb1enr[reg] &= ~BIT(dev);
 }
 
 void enable_apb2(unsigned int dev)
@@ -366,4 +374,9 @@ void set_mco(unsigned int sel, unsigned int div)
 {
   reg_set_field(&RCC->cfgr[0], 4, 24, sel);
   reg_set_field(&RCC->cfgr[0], 3, 28, div);
+}
+
+void set_fdcansel(unsigned int sel)
+{
+  reg_set_field(&RCC->ccipr[0], 2, 24, sel);
 }

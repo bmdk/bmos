@@ -71,4 +71,9 @@ void set_usart234578sel(unsigned int sel);
 
 void set_mco(unsigned int sel, unsigned int div);
 
+#define FDCANSEL_HSE 0
+#define FDCANSEL_PLL1Q 1
+#define FDCANSEL_PLL2P 2
+void set_fdcansel(unsigned int sel);
+
 #endif
