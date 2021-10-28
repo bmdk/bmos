@@ -41,10 +41,14 @@
 #define FDCAN1_BASE 0x40006400
 #define FDCAN2_BASE 0x40006800
 #define FDCAN3_BASE 0x40006C00
-#else
+#elif STM32_UXXX
+#define FDCAN1_BASE 0x4000A400
+#elif STM32_H7XX
 #define FDCAN1_BASE 0x4000A000
 #define FDCAN2_BASE 0x4000A400
 #define FDCAN3_BASE 0x4000D400
+#else
+#error Define FDCAN base addresses
 #endif
 
 #define OP_CAN1_DATA 1
@@ -64,6 +68,7 @@ static const unsigned int can_id_list[] = {
 };
 
 #if STM32_G4XX
+/* HSE at 24MHz clock */
 static candev_t can0 = {
   .name     = "can0",
   .base     = (void *)FDCAN1_BASE,
@@ -75,7 +80,21 @@ static candev_t can0 = {
     .sjw    = 3
   }
 };
+#elif STM32_UXXX
+/* PLL1Q at 160 MHz clock */
+static candev_t can0 = {
+  .name     = "can0",
+  .base     = (void *)FDCAN1_BASE,
+  .irq      = 39,
+  .params   = {
+    .prediv = 8,
+    .ts1    = 10,
+    .ts2    = 9,
+    .sjw    = 3
+  }
+};
 #else
+/* HSE at 25MHz clock */
 static candev_t can0 = {
   .name     = "can0",
   .base     = (void *)FDCAN1_BASE,
