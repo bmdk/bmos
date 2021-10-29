@@ -90,13 +90,8 @@ void pin_init()
   enable_apb1(0);  /* TIM 2 */
   enable_apb3(21); /* RTC APB Clock */
 
-#if 0
-  /* DMA 1 */
+  /* GPDMA */
   enable_ahb1(0);
-
-  /* DMA 2 */
-  enable_ahb1(1);
-#endif
 
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);

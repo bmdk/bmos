@@ -23,10 +23,28 @@
 #include <string.h>
 
 #include "hal_common.h"
-#include "shell.h"
-#include "io.h"
 
-#include "stm32_hal_bdma.h"
+#include "hal_dma_if.h"
+
+#define CCR_CT BIT(16)
+#define CCR_DBM BIT(15)
+#define CCR_MEM2MEM BIT(14)
+#define CCR_PL(_l_) (((_l_) & 0x3) << 12) /* prio */
+#define CCR_MSIZ(_s_) (((_s_) & 0x3) << 10)
+#define CCR_PSIZ(_s_) (((_s_) & 0x3) << 8)
+#define CCR_MINC BIT(7)
+#define CCR_PINC BIT(6)
+#define CCR_CIRC BIT(5)
+#define CCR_DIR BIT(4) /* 0 - from peripheral */
+#define CCR_TEIE BIT(3)
+#define CCR_HEIE BIT(2)
+#define CCR_TCIE BIT(1)
+#define CCR_EN BIT(0)
+
+#define IER_TEIF BIT(3)
+#define IER_HTIF BIT(2)
+#define IER_TCIF BIT(1)
+#define IER_GIF BIT(0)
 
 typedef struct {
   unsigned int ccr;
@@ -43,14 +61,15 @@ typedef struct {
   unsigned int cselr;
 } stm32_bdma_t;
 
-void stm32_bdma_set_chan(void *base, unsigned int chan, unsigned int devid)
+static void stm32_bdma_set_chan(void *base, unsigned int chan,
+                                unsigned int devid)
 {
   volatile stm32_bdma_t *d = base;
 
   reg_set_field(&d->cselr, 4, chan << 2, devid);
 }
 
-void stm32_bdma_en(void *base, unsigned int chan, int en)
+static void stm32_bdma_en(void *base, unsigned int chan, int en)
 {
   volatile stm32_bdma_t *d = base;
   volatile stm32_bdma_chan_t *c = &d->chan[chan];
@@ -61,7 +80,7 @@ void stm32_bdma_en(void *base, unsigned int chan, int en)
     c->ccr &= ~CCR_EN;
 }
 
-void stm32_bdma_sw_trig(void *base, unsigned int chan)
+static void stm32_bdma_start(void *base, unsigned int chan)
 {
   volatile stm32_bdma_t *d = base;
   volatile stm32_bdma_chan_t *c = &d->chan[chan];
@@ -70,19 +89,20 @@ void stm32_bdma_sw_trig(void *base, unsigned int chan)
   c->ccr |= (CCR_MEM2MEM | CCR_EN);
 }
 
-void stm32_bdma_irq_ack(void *base, unsigned int chan, unsigned int flags)
+static void stm32_bdma_irq_ack(void *base, unsigned int chan)
 {
   volatile stm32_bdma_t *d = base;
 
-  reg_set_field(&d->ifcr, 4, chan << 2, flags);
+  reg_set_field(&d->ifcr, 4, chan << 2, IER_TCIF);
 }
 
-void stm32_bdma_trans(void *base, unsigned int chan,
-                      void *src, void *dst, unsigned int n,
-                      unsigned int flags)
+static void stm32_bdma_trans(void *base, unsigned int chan,
+                             void *src, void *dst, unsigned int n,
+                             dma_attr_t attr)
 {
   volatile stm32_bdma_t *d = base;
   volatile stm32_bdma_chan_t *c = &d->chan[chan];
+  unsigned int flags;
 
   c->ccr &= ~CCR_EN;
 
@@ -90,16 +110,41 @@ void stm32_bdma_trans(void *base, unsigned int chan,
   c->cpar = (unsigned int)src;
   c->cmar[0] = (unsigned int)dst;
 
+  flags = CCR_PL(attr.prio);
+
+  if (attr.dir == DMA_DIR_TO) {
+    c->cpar = (unsigned int)dst;
+    c->cmar[0] = (unsigned int)src;
+
+    flags |= CCR_MSIZ(attr.ssiz) | CCR_PSIZ(attr.dsiz);;
+
+    if (attr.sinc)
+      flags |= CCR_MINC;
+
+    if (attr.dinc)
+      flags |= CCR_PINC;
+
+    flags |= CCR_DIR;
+  } else {
+    c->cpar = (unsigned int)src;
+    c->cmar[0] = (unsigned int)dst;
+
+    flags |= CCR_MSIZ(attr.dsiz) | CCR_PSIZ(attr.ssiz);;
+
+    if (attr.sinc)
+      flags |= CCR_PINC;
+
+    if (attr.dinc)
+      flags |= CCR_MINC;
+  }
+
+  if (attr.irq)
+    flags |= CCR_TCIE;
+
   c->ccr = flags;
 }
 
-void stm32_bdma_memcpy(void *base, void *src, void *dst, unsigned int n)
-{
-  stm32_bdma_trans(base, 0, src, dst, n,
-                   CCR_PL(0) | CCR_MSIZ(0) | CCR_PSIZ(0) | CCR_MINC | CCR_PINC);
-  stm32_bdma_sw_trig(base, 0);
-}
-
+#if 0
 void stm32_bdma_chan_dump(void *base, unsigned int chan)
 {
   volatile stm32_bdma_t *d = base;
@@ -107,50 +152,12 @@ void stm32_bdma_chan_dump(void *base, unsigned int chan)
 
   xprintf("S: %08x D: %08x C: %d\n", c->cpar, c->cmar[0], c->cndtr);
 }
+#endif
 
-#define GPIO_ADDR_SET_CLEAR(port) (0x48000000 + 0x400 * (port) + 0x18)
-#define GPIO_ADDR GPIO_ADDR_SET_CLEAR(0)
-
-int cmd_bdma(int argc, char *argv[])
-{
-  unsigned int chan, devid;
-  unsigned int src, dst, n;
-
-  if (argc < 2)
-    return -1;
-
-  switch (argv[1][0]) {
-  case 'c':
-    if (argc < 4)
-      return -1;
-    chan = atoi(argv[2]);
-    devid = atoi(argv[3]);
-
-    stm32_bdma_set_chan(BDMA1_BASE, chan, devid);
-    break;
-  case 'm':
-    if (argc < 5)
-      return -1;
-    src = strtoul(argv[2], 0, 16);
-    dst = strtoul(argv[3], 0, 16);
-    n = strtoul(argv[4], 0, 0);
-
-    xprintf("copy src: %08x dst: %08x cnt: %d\n", src, dst, n);
-    stm32_bdma_memcpy(BDMA1_BASE, (void *)src, (void *)dst, n);
-    break;
-  case 't':
-    if (argc < 3)
-      return -1;
-    stm32_bdma_sw_trig(BDMA1_BASE, atoi(argv[2]));
-    break;
-  case 'd':
-    stm32_bdma_chan_dump(BDMA1_BASE, 1);
-    stm32_bdma_chan_dump(BDMA1_BASE, 2);
-    stm32_bdma_chan_dump(BDMA1_BASE, 5);
-    break;
-  }
-
-  return 0;
-}
-
-SHELL_CMD(bdma, cmd_bdma);
+dma_controller_t stm32_bdma_controller = {
+  stm32_bdma_trans,
+  stm32_bdma_set_chan,
+  stm32_bdma_en,
+  stm32_bdma_start,
+  stm32_bdma_irq_ack
+};

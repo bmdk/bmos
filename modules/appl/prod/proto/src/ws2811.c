@@ -31,23 +31,18 @@
 #include "bmos_task.h"
 #include "common.h"
 #include "fast_log.h"
-#include "hal_int.h"
+#include "fb.h"
 #include "hal_board.h"
+#include "hal_dma.h"
+#include "hal_int.h"
+#include "io.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_timer.h"
-#include "fb.h"
-#include "io.h"
 
 #if STM32_F411BP || STM32_F401BP
 #define WS2811_USE_DMA 1
 #else
 #define WS2811_USE_BDMA 1
-#endif
-
-#if WS2811_USE_DMA
-#include "stm32_hal_dma.h"
-#else
-#include "stm32_hal_bdma.h"
 #endif
 
 #define WSPERIOD_NS 1250
@@ -67,10 +62,12 @@
 #define WSIRQ 57
 /* the gpio bank (B) */
 #define WSGPIO 1
+#define DMANUM 1
 #else
 #define WSBIT 0
 #define WSIRQ 12
 #define WSGPIO 0
+#define DMANUM 0
 #endif
 
 #define STM32_GPIO_ADDR_SET_CLEAR(port) (unsigned int)(&STM32_GPIO(port)->bsrr)
@@ -82,63 +79,44 @@ static unsigned int compare[2];
 #define PIXELS 300
 static unsigned char buf[24 * PIXELS];
 
-#if WS2811_USE_DMA
 static void ws2811_tx()
 {
+  dma_attr_t attr;
+
   FAST_LOG('W', "ws2811 tx start\n", 0, 0);
 
   timer_stop(TIM1_BASE);
 
-#define DMANUM 1
-  stm32_dma_set_chan(DMANUM, 5, 6); /* TIM1 UP */
-  stm32_dma_set_chan(DMANUM, 1, 6); /* TIM1 CH1 */
-  stm32_dma_set_chan(DMANUM, 2, 6); /* TIM1 CH2 */
+  dma_set_chan(DMANUM, 5, 6); /* TIM1 UP */
+  dma_set_chan(DMANUM, 1, 6); /* TIM1 CH1 */
+  dma_set_chan(DMANUM, 2, 6); /* TIM1 CH2 */
 
-  stm32_dma_trans(DMANUM, 5, &one, (void *)(GPIO_ADDR), 24 * PIXELS,
-                  DMA_CR_DIR_P2M | DMA_CR_PL(0) | \
-                  DMA_CR_MSIZ(0) | DMA_CR_PSIZ(0));
+  attr.ssiz = DMA_SIZ_1;
+  attr.dsiz = DMA_SIZ_1;
+  attr.dir = DMA_DIR_TO;
+  attr.prio = 0;
+  attr.sinc = 0;
+  attr.dinc = 0;
+  attr.irq = 0;
 
-  stm32_dma_trans(DMANUM, 1, buf, (void *)(GPIO_ADDR + 2), 24 * PIXELS,
-                  DMA_CR_DIR_P2M | DMA_CR_PL(0) | DMA_CR_MSIZ(0) | \
-                  DMA_CR_PSIZ(0) | DMA_CR_PINC | DMA_CR_TCIE);
+  dma_trans(DMANUM, 5, &one, (void *)(GPIO_ADDR), 24 * PIXELS, attr);
 
-  stm32_dma_trans(DMANUM, 2, &one, (void *)(GPIO_ADDR + 2), 24 * PIXELS,
-                  DMA_CR_DIR_P2M | DMA_CR_PL(0) | \
-                  DMA_CR_MSIZ(0) | DMA_CR_PSIZ(0));
+  attr.sinc = 1;
+  attr.irq = 1;
 
-  stm32_dma_en(DMANUM, 5, 1);
-  stm32_dma_en(DMANUM, 1, 1);
-  stm32_dma_en(DMANUM, 2, 1);
+  dma_trans(DMANUM, 1, buf, (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
 
-  timer_init_dma(TIM1_BASE, 1, WSCLOCKS - 1, compare, ARRSIZ(compare), 1);
-}
-#else
-static void ws2811_tx()
-{
-  FAST_LOG('W', "ws2811 tx start\n", 0, 0);
+  attr.sinc = 0;
+  attr.irq = 0;
 
-  timer_stop(TIM1_BASE);
+  dma_trans(DMANUM, 2, &one, (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
 
-  stm32_bdma_set_chan(BDMA1_BASE, 5, 7); /* TIM1 UP */
-  stm32_bdma_set_chan(BDMA1_BASE, 1, 7); /* TIM1 CH1 */
-  stm32_bdma_set_chan(BDMA1_BASE, 2, 7); /* TIM1 CH2 */
-
-  stm32_bdma_trans(BDMA1_BASE, 5, &one, (void *)(GPIO_ADDR), 24 * PIXELS,
-                   CCR_PL(0) | CCR_MSIZ(0) | CCR_PSIZ(0));
-
-  stm32_bdma_trans(BDMA1_BASE, 1, buf, (void *)(GPIO_ADDR + 2), 24 * PIXELS,
-                   CCR_PL(0) | CCR_MSIZ(0) | CCR_PSIZ(0) | CCR_PINC | CCR_TCIE);
-
-  stm32_bdma_trans(BDMA1_BASE, 2, &one, (void *)(GPIO_ADDR + 2), 24 * PIXELS,
-                   CCR_PL(0) | CCR_MSIZ(0) | CCR_PSIZ(0));
-
-  stm32_bdma_en(BDMA1_BASE, 5, 1);
-  stm32_bdma_en(BDMA1_BASE, 1, 1);
-  stm32_bdma_en(BDMA1_BASE, 2, 1);
+  dma_en(DMANUM, 5, 1);
+  dma_en(DMANUM, 1, 1);
+  dma_en(DMANUM, 2, 1);
 
   timer_init_dma(TIM1_BASE, 1, WSCLOCKS - 1, compare, ARRSIZ(compare), 1);
 }
-#endif
 
 #define MASK 0x01010101
 
@@ -209,11 +187,7 @@ unsigned int scale(unsigned int v, unsigned int s)
 
 void irq_ws2811(void *data)
 {
-#if WS2811_USE_DMA
-  stm32_dma_irq_ack(1, 1, DMA_IER_TCIF);
-#else
-  stm32_bdma_irq_ack(BDMA1_BASE, 1, IER_TCIF);
-#endif
+  dma_irq_ack(DMANUM, 1);
   FAST_LOG('W', "irq_ws2811\n", 0, 0);
 }
 

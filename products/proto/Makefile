@@ -271,6 +271,8 @@ FILES += stm32_hal.o
 FILES += stm32_timer.o
 FILES += xslog.o
 FILES += circ_buf.o
+FILES += hal_dma.o
+FILES += stm32_dma_if.o
 
 # BMOS
 FILES += reg.o
@@ -394,6 +396,7 @@ FILES.f469d += stm32_hal_dma.o
 FILES.f469d += $(FILES.f4xx)
 FILES.f469d += $(FILES.fxxx)
 
+FILES.f746 += stm32_hal_dma.o
 FILES.f746 += stm32_usart_b.o
 FILES.f746 += stm32_rcc_a.o
 FILES.f746 += stm32_hal_rtc.o
@@ -404,6 +407,7 @@ FILES.f746 += lwip.o
 FILES.f746 += $(FILES.f7xx)
 FILES.f746 += $(FILES.fxxx)
 
+FILES.f767 += stm32_hal_dma.o
 FILES.f767 += stm32_usart_b.o
 FILES.f767 += stm32_rcc_a.o
 FILES.f767 += stm32_hal_rtc.o
@@ -516,6 +520,7 @@ FILES.l496 += $(FILES.l4xx)
 #FILES.l496 += ds1302_test.o
 FILES.l496 += stm32_hal_rtc.o
 
+FILES.l4r += stm32_hal_bdma.o
 FILES.l4r += stm32_usart_b.o
 FILES.l4r += stm32_rcc_b.o
 FILES.l4r += stm32_board_l4r.o
@@ -543,6 +548,7 @@ FILES.u575n += stm32_exti_uxxx.o
 FILES.u575n += stm32_pwr_uxxx.o
 FILES.u575n += stm32_rcc_d.o
 FILES.u575n += stm32_usart_b.o
+FILES.u575n += stm32_hal_gpdma.o
 FILES.u575n += stm32_fdcan.o
 FILES.u575n += fdcan.o
 FILES.u575n += stm32_board_u575n.o
