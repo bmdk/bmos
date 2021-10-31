@@ -52,18 +52,13 @@
 /* this has nothing to do with the DMA type so it should probably be it's own
    configuration parameter(s) in the future */
 #if STM32_F411BP || STM32_F401BP
+
 /* the bit in the bank that is used */
 #define WSBIT 0
 #define WSIRQ 57
 /* the gpio bank (B) */
 #define WSGPIO 1
 #define DMANUM 1
-#else
-#define WSBIT 0
-#define WSIRQ 12
-#define WSGPIO 0
-#define DMANUM 0
-#endif
 
 #define CHAN_TIM1_UP 5
 #define CHAN_TIM1_CH1 1
@@ -72,6 +67,38 @@
 #define DEVID_TIM1_UP 6
 #define DEVID_TIM1_CH1 6
 #define DEVID_TIM1_CH2 6
+
+#elif STM32_U575N
+
+#define WSBIT 0
+#define WSIRQ 31 /* GPDMA1_CH2 */
+#define WSGPIO 0
+#define DMANUM 0
+
+#define CHAN_TIM1_UP 1
+#define CHAN_TIM1_CH1 2
+#define CHAN_TIM1_CH2 3
+
+#define DEVID_TIM1_CH1 42
+#define DEVID_TIM1_CH2 43
+#define DEVID_TIM1_UP 46
+
+#else
+
+#define WSBIT 0
+#define WSIRQ 12
+#define WSGPIO 0
+#define DMANUM 0
+
+#define CHAN_TIM1_UP 5
+#define CHAN_TIM1_CH1 1
+#define CHAN_TIM1_CH2 2
+
+#define DEVID_TIM1_UP 6
+#define DEVID_TIM1_CH1 6
+#define DEVID_TIM1_CH2 6
+
+#endif
 
 #define STM32_GPIO_ADDR_SET_CLEAR(port) (unsigned int)(&STM32_GPIO(port)->bsrr)
 #define GPIO_ADDR STM32_GPIO_ADDR_SET_CLEAR(WSGPIO)
