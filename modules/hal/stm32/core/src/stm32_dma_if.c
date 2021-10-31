@@ -5,6 +5,7 @@ dma_controller_t stm32_bdma_controller;
 dma_controller_t stm32_dma_controller;
 dma_controller_t stm32_gpdma_controller;
 
+/* *INDENT-OFF* */
 #ifdef STM32_H7XX
 dma_cont_data_t dma_cont_data[] = {
   { &stm32_dma_controller,  (void *)0x40020000 },
@@ -29,5 +30,6 @@ dma_cont_data_t dma_cont_data[] = {
 #else
 #error Define dma controller configuration for this platform
 #endif
+/* *INDENT-ON* */
 
 unsigned int dma_cont_data_len = ARRSIZ(dma_cont_data);
