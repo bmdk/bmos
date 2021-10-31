@@ -192,7 +192,7 @@ unsigned int scale(unsigned int v, unsigned int s)
 
 void irq_ws2811(void *data)
 {
-  dma_irq_ack(DMANUM, 1);
+  dma_irq_ack(DMANUM, CHAN_TIM1_CH1);
   FAST_LOG('W', "irq_ws2811\n", 0, 0);
 }
 
@@ -283,6 +283,8 @@ void task_led(void *arg)
   compare_init();
 
   irq_register("ws2811", irq_ws2811, 0, WSIRQ);
+
+  gpio_init(GPIO(WSGPIO, WSBIT), GPIO_OUTPUT);
 
   fb_t *fb = fb_init(w, h, 24, 0);
 
