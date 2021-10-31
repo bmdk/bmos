@@ -45,8 +45,6 @@ void pin_init()
   enable_ahb2(1); /* GPIOB */
   enable_ahb2(2); /* GPIOC */
 
-  gpio_init(GPIO(0, 0), GPIO_OUTPUT);
-
   gpio_init_attr(GPIO(2, 13),
                  GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
 

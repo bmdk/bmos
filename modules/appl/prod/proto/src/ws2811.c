@@ -36,6 +36,7 @@
 #include "hal_dma.h"
 #include "hal_int.h"
 #include "io.h"
+#include "hal_gpio.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_timer.h"
 
@@ -375,6 +376,8 @@ void task_led(void *arg)
   compare_init();
 
   irq_register("ws2811", irq_ws2811, 0, WSIRQ);
+
+  gpio_init(GPIO(WSGPIO, WSBIT), GPIO_OUTPUT);
 
   for (;;) {
     if (1)
