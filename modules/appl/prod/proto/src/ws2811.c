@@ -39,12 +39,6 @@
 #include "stm32_hal_gpio.h"
 #include "stm32_timer.h"
 
-#if STM32_F411BP || STM32_F401BP
-#define WS2811_USE_DMA 1
-#else
-#define WS2811_USE_BDMA 1
-#endif
-
 #define WSPERIOD_NS 1250
 #define TIMER_CLOCK hal_cpu_clock
 
@@ -56,7 +50,7 @@
 
 /* this has nothing to do with the DMA type so it should probably be it's own
    configuration parameter(s) in the future */
-#if WS2811_USE_DMA
+#if STM32_F411BP || STM32_F401BP
 /* the bit in the bank that is used */
 #define WSBIT 0
 #define WSIRQ 57
@@ -69,6 +63,14 @@
 #define WSGPIO 0
 #define DMANUM 0
 #endif
+
+#define CHAN_TIM1_UP 5
+#define CHAN_TIM1_CH1 1
+#define CHAN_TIM1_CH2 2
+
+#define DEVID_TIM1_UP 6
+#define DEVID_TIM1_CH1 6
+#define DEVID_TIM1_CH2 6
 
 #define STM32_GPIO_ADDR_SET_CLEAR(port) (unsigned int)(&STM32_GPIO(port)->bsrr)
 #define GPIO_ADDR STM32_GPIO_ADDR_SET_CLEAR(WSGPIO)
@@ -87,9 +89,9 @@ static void ws2811_tx()
 
   timer_stop(TIM1_BASE);
 
-  dma_set_chan(DMANUM, 5, 6); /* TIM1 UP */
-  dma_set_chan(DMANUM, 1, 6); /* TIM1 CH1 */
-  dma_set_chan(DMANUM, 2, 6); /* TIM1 CH2 */
+  dma_set_chan(DMANUM, CHAN_TIM1_UP, DEVID_TIM1_UP);
+  dma_set_chan(DMANUM, CHAN_TIM1_CH1, DEVID_TIM1_CH1);
+  dma_set_chan(DMANUM, CHAN_TIM1_CH2, DEVID_TIM1_CH2);
 
   attr.ssiz = DMA_SIZ_1;
   attr.dsiz = DMA_SIZ_1;
@@ -99,21 +101,24 @@ static void ws2811_tx()
   attr.dinc = 0;
   attr.irq = 0;
 
-  dma_trans(DMANUM, 5, &one, (void *)(GPIO_ADDR), 24 * PIXELS, attr);
+  dma_trans(DMANUM, CHAN_TIM1_UP, &one,
+            (void *)(GPIO_ADDR), 24 * PIXELS, attr);
 
   attr.sinc = 1;
   attr.irq = 1;
 
-  dma_trans(DMANUM, 1, buf, (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
+  dma_trans(DMANUM, CHAN_TIM1_CH1, buf,
+            (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
 
   attr.sinc = 0;
   attr.irq = 0;
 
-  dma_trans(DMANUM, 2, &one, (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
+  dma_trans(DMANUM, CHAN_TIM1_CH2, &one,
+            (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
 
-  dma_en(DMANUM, 5, 1);
-  dma_en(DMANUM, 1, 1);
-  dma_en(DMANUM, 2, 1);
+  dma_en(DMANUM, CHAN_TIM1_UP, 1);
+  dma_en(DMANUM, CHAN_TIM1_CH1, 1);
+  dma_en(DMANUM, CHAN_TIM1_CH2, 1);
 
   timer_init_dma(TIM1_BASE, 1, WSCLOCKS - 1, compare, ARRSIZ(compare), 1);
 }
