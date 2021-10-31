@@ -210,6 +210,7 @@ typedef struct {
 #define GPDMA_TR1_DSEC BIT(31)
 
 #define GPDMA_TR2_SWREQ BIT(9)
+#define GPDMA_TR2_DREQ BIT(10)
 
 void stm32_gpdma_set_chan(void *addr, unsigned int chan,
                           unsigned int devid)
@@ -266,7 +267,13 @@ void stm32_gpdma_trans(void *addr, unsigned int chan,
   c->dar = (unsigned int)dst;
   c->br1 = n;
 
-  flags = GPDMA_TR1_DDW(attr.dsiz) | GPDMA_TR1_SDW(attr.ssiz);
+  flags = GPDMA_TR1_DDW(attr.dsiz) | GPDMA_TR1_SDW(attr.ssiz) |
+          GPDMA_TR1_SBL(0) | GPDMA_TR1_DBL(0);
+
+  if (attr.dir == DMA_DIR_TO)
+    c->tr2 |= GPDMA_TR2_DREQ;
+  else
+    c->tr2 &= ~GPDMA_TR2_DREQ;
 
   if (attr.sinc)
     flags |= GPDMA_TR1_SINC;
@@ -274,21 +281,15 @@ void stm32_gpdma_trans(void *addr, unsigned int chan,
   if (attr.dinc)
     flags |= GPDMA_TR1_DINC;
 
-  if (attr.irq)
-    flags |= GPDMA_TCF;
-
   c->tr1 = flags;
+
+  if (attr.irq)
+    c->cr |= GPDMA_TCF;
+  else
+    c->cr &= ~GPDMA_TCF;
 }
 
 #if 0
-void stm32_gpdma_memcpy(void *addr, void *src, void *dst, unsigned int n)
-{
-  stm32_gpdma_trans(num, 0, src, dst, n,
-                    GPDMA_TR1_DDW(0) | GPDMA_TR1_SDW(0) | \
-                    GPDMA_TR1_SINC | GPDMA_TR1_DINC);
-  stm32_gpdma_sw_trig(num, 0);
-}
-
 void stm32_gpdma_chan_dump(void *addr)
 {
   stm32_gpdma_t *d = addr;
@@ -300,69 +301,6 @@ void stm32_gpdma_chan_dump(void *addr)
             c->sr, c->cr, c->sar, c->dar, c->tr1 & 0xffff);
   }
 }
-
-#define DMANUM 0
-
-int cmd_gpdma(int argc, char *argv[])
-{
-  unsigned int chan, devid;
-  unsigned int src, dst, n;
-
-  if (argc < 2)
-    return -1;
-
-  switch (argv[1][0]) {
-  case 'c':
-    if (argc < 4)
-      return -1;
-    chan = atoi(argv[2]);
-    devid = atoi(argv[3]);
-
-    stm32_gpdma_set_chan(DMANUM, chan, devid);
-    break;
-  case 'm':
-    if (argc < 5)
-      return -1;
-    src = strtoul(argv[2], 0, 16);
-    dst = strtoul(argv[3], 0, 16);
-    n = strtoul(argv[4], 0, 0);
-
-    xprintf("copy src: %08x dst: %08x cnt: %d\n", src, dst, n);
-    stm32_gpdma_memcpy(DMANUM, (void *)src, (void *)dst, n);
-    break;
-  case 'p':
-    if (argc < 5)
-      return -1;
-    src = strtoul(argv[2], 0, 16);
-    dst = strtoul(argv[3], 0, 16);
-    n = strtoul(argv[4], 0, 0);
-    stm32_gpdma_trans(DMANUM, 0, (void *)src, (void *)dst, n,
-                      GPDMA_TR1_DDW(0) | GPDMA_TR1_SDW(0));
-    break;
-  case 't':
-    if (argc < 3)
-      return -1;
-    stm32_gpdma_sw_trig(DMANUM, atoi(argv[2]));
-    break;
-  case 'e':
-    if (argc < 3)
-      return -1;
-    stm32_gpdma_en(DMANUM, atoi(argv[2]), 1);
-    break;
-  case 's':
-    if (argc < 3)
-      return -1;
-    stm32_gpdma_en(DMANUM, atoi(argv[2]), 0);
-    break;
-  case 'd':
-    stm32_gpdma_chan_dump(DMANUM);
-    break;
-  }
-
-  return 0;
-}
-
-SHELL_CMD(gpdma, cmd_gpdma);
 #endif
 
 dma_controller_t stm32_gpdma_controller = {
