@@ -114,8 +114,14 @@ void msi_set_range(unsigned int range)
     ;
 }
 
+#if STM32_WBXX
+#define RCC_PLLCFGR_PLLREN BIT(28)
+#define RCC_PLLCFGR_PLLQEN BIT(24)
+#else
 #define RCC_PLLCFGR_PLLREN BIT(24)
 #define RCC_PLLCFGR_PLLQEN BIT(20)
+#endif
+
 #define RCC_PLLCFGR_PLLPEN BIT(16)
 
 #define RCC_CFGR_SW_MSI 0
@@ -131,20 +137,23 @@ void msi_set_range(unsigned int range)
 #error Define default clock
 #endif
 
-#define PLLCFGR(pllr, pllq, plln, pllm, src) \
-  ((((pllr) & 0x3) << 25) | (((pllq) & 0x3) << 21) | \
+#if STM32_WBXX
+#define PLLCFGR(pllr, pllq, pllp, plln, pllm, src) \
+  (((((pllr) - 1) & 0x7) << 29) | ((((pllq) - 1) & 0x7) << 25) | \
+   ((((pllp) - 1) & 0x1f) << 17) | \
    (((plln) & 0x7f) << 8) | ((((pllm) - 1) & 0x7) << 4) | ((src) & 0x3))
+#else
+#define PLLCFGR(pllr, pllq, pllp, plln, pllm, src) \
+  ((((pllp) & 0x1f) << 27) | (((pllr) & 0x3) << 25) | \
+   (((pllq) & 0x3) << 21) | \
+   (((plln) & 0x7f) << 8) | ((((pllm) - 1) & 0x7) << 4) | ((src) & 0x3))
+#endif
 
 #define CFGR(ppre2, ppre1, hpre, src) \
   ((((ppre2) & 0x7) << 11) | (((ppre1) & 0x7) << 8) | \
    (((hpre) & 0xf) << 4) | ((src) & 0x3))
 
-/* FIXME: use HSE directly as clock source for the moment on WBXX not PLL */
-#if STM32_WBXX
-#define HIGH_CLOCK RCC_CFGR_SW_HSE
-#else
 #define HIGH_CLOCK RCC_CFGR_SW_PLL
-#endif
 #define CFGR_HIGH_VAL CFGR(0, 0, 0, HIGH_CLOCK)
 
 #define CFGR_LOW_VAL CFGR(0, 0, 0, DEFAULT_CLOCK)
@@ -172,7 +181,7 @@ static void _clock_init(const struct pll_params_t *p)
   while (RCC->cr & RCC_CR_PLLRDY)
     ;
 
-  pllcfgr = PLLCFGR(p->pllr, p->pllq, p->plln, p->pllm, p->pllsrc);
+  pllcfgr = PLLCFGR(p->pllr, p->pllq, p->pllp, p->plln, p->pllm, p->pllsrc);
 
   if (p->flags & PLL_FLAG_PLLREN)
     pllcfgr |= RCC_PLLCFGR_PLLREN;
