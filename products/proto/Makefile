@@ -183,6 +183,7 @@ STACK_END = $(STACK_END.$(PROG))
 XCFLAGS += -DARCH_STM32
 XCFLAGS += -mthumb
 XCFLAGS += -Wall -Werror
+XCFLAGS += -Wno-error=strict-overflow
 #XCFLAGS += -Os
 XCFLAGS += -O2
 XCFLAGS += -mno-unaligned-access
