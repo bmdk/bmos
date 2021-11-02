@@ -13,7 +13,7 @@ A simple main with a blink application and a shell is also included.
 
 To initialize external modules run:
 
-    git submodules update --init
+    git submodule update --init
 
 Ensure you have installed an arm-none-eabi toolchain and that it is in your PATH or set the path to the toolchain with
 
