@@ -35,7 +35,11 @@ typedef struct {
   unsigned int cier;
   unsigned int cifr;
   unsigned int cicr;
+#if STM32_WBXX
+  unsigned int smpscr; /* wb55 */
+#else
   unsigned int pad0;
+#endif
   unsigned int ahb1rstr;
   unsigned int ahb2rstr;
   unsigned int ahb3rstr;
@@ -65,7 +69,11 @@ typedef struct {
   unsigned int bdcr;
   unsigned int csr;
   unsigned int crrcr;
+#if STM32_WBXX
+  /* TODO */
+#else
   unsigned int ccipr2;
+#endif
 } stm32_rcc_t;
 
 #define RCC_EXTCFGR (volatile unsigned int *)(RCC_BASE + 0x108)
