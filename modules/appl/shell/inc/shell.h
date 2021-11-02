@@ -72,7 +72,8 @@ typedef struct {
   { #_name_, _fun_ }
 #endif
 
-#define SHELL_CMD_H(_name_, _help_) _SHELL_CMD(_name_, cmd_ ## _name_, _help_)
+#define SHELL_CMD_H(_name_, _fun_, _help_) \
+        _SHELL_CMD(_name_, _fun_, _help_)
 
 #define SHELL_CMD(_name_, _fun_) _SHELL_CMD(_name_, _fun_, 0)
 

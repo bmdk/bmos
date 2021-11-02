@@ -48,26 +48,6 @@ static int _isprint(int c)
 
 #define CMD_PER_LINE 6
 
-int cmd_help(int argc, char *argv[])
-{
-  cmd_ent_t *ent;
-  unsigned int i;
-
-  ent = &cmd_list_start;
-  for (i = 0; i < CMD_LIST_LEN; i++) {
-    if (i && (i % CMD_PER_LINE) == 0)
-      xprintf("\n");
-    xprintf("%12s", ent->name);
-    ent++;
-  }
-
-  xprintf("\n");
-
-  return 0;
-}
-
-SHELL_CMD(help, cmd_help);
-
 static void history_init(sh_hist_t *hist)
 {
   hist->count = 0;
@@ -207,8 +187,14 @@ void run_command(char *cmdline)
   else {
     rc = ent->cmd(argc, argv);
 
-    if (rc != 0)
+    if (rc != 0) {
+#ifdef CONFIG_SHELL_HELP
+      if (ent->help)
+        xputs(ent->help);
+      xputs("\n\n");
+#endif
       xprintf("error %d\n", rc);
+    }
   }
 }
 
@@ -411,3 +397,41 @@ void shell_input(shell_t *shell, int c)
     }
   }
 }
+
+#ifdef CONFIG_SHELL_HELP
+int cmd_help(int argc, char *argv[])
+{
+  cmd_ent_t *ent;
+  unsigned int i;
+
+  if (argc < 2) {
+    ent = &cmd_list_start;
+    for (i = 0; i < CMD_LIST_LEN; i++) {
+      if (i && (i % CMD_PER_LINE) == 0)
+        xprintf("\n");
+      xprintf("%12s", ent->name);
+      ent++;
+    }
+  } else {
+    ent = find_command(argv[1]);
+    if (!ent) {
+      xprintf("no such command");
+    } else {
+      const char *help = "help missing";
+
+      if (ent->help)
+        help = ent->help;
+
+      xputs(help);
+    }
+  }
+
+  xputs("\n");
+
+  return 0;
+}
+
+SHELL_CMD_H(help, cmd_help,
+"get help for command\n\n"
+"help [command]");
+#endif

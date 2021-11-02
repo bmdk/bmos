@@ -53,7 +53,6 @@ static int cmd_dm(int argc, char *argv[])
   if (argc > 2)
     count = strtoul(argv[2], 0, 0);
 
-
   for (i = 0; i < count; i += ipl) {
     unsigned int left = count - i;
     if (left > ipl)
@@ -79,9 +78,15 @@ static int cmd_dm(int argc, char *argv[])
   return 0;
 }
 
-SHELL_CMD(dm, cmd_dm);
-SHELL_CMD(dmb, cmd_dm);
-SHELL_CMD(dmh, cmd_dm);
+#if CONFIG_SHELL_HELP
+static const char dm_help[] =
+"display memory\n\n"
+"dm[bh] <addr> <count>: b - byte, h - halfword";
+#endif
+
+SHELL_CMD_H(dm, cmd_dm, dm_help);
+SHELL_CMD_H(dmb, cmd_dm, dm_help);
+SHELL_CMD_H(dmh, cmd_dm, dm_help);
 
 static int cmd_sm(int argc, char *argv[])
 {
@@ -127,9 +132,15 @@ static int cmd_sm(int argc, char *argv[])
   return 0;
 }
 
-SHELL_CMD(sm, cmd_sm);
-SHELL_CMD(smb, cmd_sm);
-SHELL_CMD(smh, cmd_sm);
+#if CONFIG_SHELL_HELP
+static const char sm_help[] =
+"set memory\n\n"
+"sm[bh] <addr> <val>: b - byte, h - halfword";
+#endif
+
+SHELL_CMD_H(sm, cmd_sm, sm_help);
+SHELL_CMD_H(smb, cmd_sm, sm_help);
+SHELL_CMD_H(smh, cmd_sm, sm_help);
 
 static int cmd_mf(int argc, char *argv[])
 {
@@ -185,6 +196,12 @@ static int cmd_mf(int argc, char *argv[])
   return 0;
 }
 
-SHELL_CMD(mf, cmd_mf);
-SHELL_CMD(mfb, cmd_mf);
-SHELL_CMD(mfh, cmd_mf);
+#if CONFIG_SHELL_HELP
+static const char mf_help[] =
+"fill memory\n\n"
+"mf[bh] <addr> <val> <count>: b - byte, h - halfword";
+#endif
+
+SHELL_CMD_H(mf, cmd_mf, mf_help);
+SHELL_CMD_H(mfb, cmd_mf, mf_help);
+SHELL_CMD_H(mfh, cmd_mf, mf_help);

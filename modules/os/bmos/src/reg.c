@@ -339,4 +339,12 @@ int cmd_os(int argc, char *argv[])
   return 0;
 }
 
-SHELL_CMD(os, cmd_os);
+SHELL_CMD_H(os, cmd_os,
+"display os information\n\n"
+"os q[d]: queue [details]\n"
+"os p[d]: pool [details]\n"
+"os s[d]: semaphore [details]\n"
+"os m[d]: mutex [details]\n"
+"os t: task\n"
+"os h: scheduling statistics"
+);

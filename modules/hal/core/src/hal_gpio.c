@@ -78,4 +78,9 @@ int cmd_gpio(int argc, char *argv[])
   return 0;
 }
 
-SHELL_CMD(gpio, cmd_gpio);
+SHELL_CMD_H(gpio, cmd_gpio,
+"configure and control GPIOs\n\n"
+"gpio w <bank> <pin> <0|1>: write value to gpio\n"
+"gpio r <bank> <pin>      : read value from gpio\n"
+"gpio d <bank> <pin> <i|o>: configure gpio direction"
+);
