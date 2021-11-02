@@ -88,11 +88,9 @@ void hal_board_init()
 
   led_init(leds, ARRSIZ(leds));
 
-#if 0
   stm32_pwr_vos(1);
   while (!stm32_pwr_vos_rdy())
     ;
-#endif
   clock_init(&pll_params);
 
 #if APPL
