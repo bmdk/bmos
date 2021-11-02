@@ -50,7 +50,7 @@ typedef struct {
   unsigned int cr[4];
   unsigned int sr[2];
   unsigned int scr;
-  unsigned int pad0;
+  unsigned int cr5;
   struct {
     unsigned int d;
     unsigned int u;
