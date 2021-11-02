@@ -52,23 +52,18 @@ void pin_init()
                  GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
                                  GPIO_ALT));
 
+#if 0
   /* SYSCFG */
   enable_apb2(0);
-
   /* PWR */
   enable_apb1(28);
+#endif
 
-  /* TIM 1 */
-  enable_apb2(11);
-
-  /* TIM 2 */
-  enable_apb1(0);
-
-  /* DMA 1 */
-  enable_ahb1(0);
-
-  /* DMA 2 */
-  enable_ahb1(1);
+  enable_apb2(11); /* TIM 1 */
+  enable_apb1(0); /* TIM 2 */
+  enable_ahb1(0); /* DMA 1 */
+  enable_ahb1(1); /* DMA 2 */
+  enable_ahb1(2); /* DMAMUX */
 }
 
 #define USART1_BASE (void *)0x40013800
@@ -100,7 +95,7 @@ static const struct pll_params_t pll_params = {
   .pllsrc = RCC_PLLCFGR_PLLSRC_HSE,
   .pllm   = 4,
   .plln   = 16,
-  .pllr   = 1,
+  .pllr   = 2,
   .acr    = 3
 };
 #endif
@@ -114,8 +109,12 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
 
 #if CLOCK_HS
-  stm32_pwr_vos(2);
+  led_set(1,1);
+  stm32_pwr_vos(1);
+  while (!stm32_pwr_vos_rdy())
+    ;
   clock_init(&pll_params);
+  led_set(0,0);
 #endif
 #if 1
   backup_domain_protect(0);
