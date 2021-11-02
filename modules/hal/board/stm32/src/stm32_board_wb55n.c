@@ -52,13 +52,6 @@ void pin_init()
                  GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
                                  GPIO_ALT));
 
-#if 0
-  /* SYSCFG */
-  enable_apb2(0);
-  /* PWR */
-  enable_apb1(28);
-#endif
-
   enable_apb2(11); /* TIM 1 */
   enable_apb1(0); /* TIM 2 */
   enable_ahb1(0); /* DMA 1 */
@@ -69,19 +62,8 @@ void pin_init()
 #define USART1_BASE (void *)0x40013800
 #define LPUART1_BASE (void *)0x40008000
 
-#define CLOCK_HS 1
-#if CLOCK_HS
-#if 0
 #define APB2_CLOCK 64000000
 #define APB1_CLOCK 64000000
-#else
-#define APB2_CLOCK 32000000
-#define APB1_CLOCK 32000000
-#endif
-#else
-#define APB1_CLOCK 4000000
-#define APB2_CLOCK 4000000
-#endif
 
 #if BMOS
 uart_t debug_uart = { "debug", USART1_BASE, APB1_CLOCK, 36 };
@@ -89,7 +71,6 @@ uart_t debug_uart = { "debug", USART1_BASE, APB1_CLOCK, 36 };
 
 static const gpio_handle_t leds[] = { GPIO(1, 0), GPIO(1, 1), GPIO(1, 5) };
 
-#if CLOCK_HS
 static const struct pll_params_t pll_params = {
   .flags  = PLL_FLAG_PLLREN,
   .pllsrc = RCC_PLLCFGR_PLLSRC_HSE,
@@ -98,9 +79,8 @@ static const struct pll_params_t pll_params = {
   .pllr   = 2,
   .acr    = 3
 };
-#endif
 
-unsigned int hal_cpu_clock = 32000000;
+unsigned int hal_cpu_clock = 64000000;
 
 void hal_board_init()
 {
@@ -108,15 +88,14 @@ void hal_board_init()
 
   led_init(leds, ARRSIZ(leds));
 
-#if CLOCK_HS
-  led_set(1,1);
+#if 0
   stm32_pwr_vos(1);
   while (!stm32_pwr_vos_rdy())
     ;
-  clock_init(&pll_params);
-  led_set(0,0);
 #endif
-#if 1
+  clock_init(&pll_params);
+
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
 #endif
