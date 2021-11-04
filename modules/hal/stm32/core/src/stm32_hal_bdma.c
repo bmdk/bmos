@@ -105,10 +105,7 @@ static void stm32_bdma_trans(void *base, unsigned int chan,
   unsigned int flags;
 
   c->ccr &= ~CCR_EN;
-
   c->cndtr = n;
-  c->cpar = (unsigned int)src;
-  c->cmar[0] = (unsigned int)dst;
 
   flags = CCR_PL(attr.prio);
 
