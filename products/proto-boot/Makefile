@@ -43,6 +43,7 @@ PROG += g474n
 PROG += g431kbn
 PROG += u575n
 PROG += wb55n
+PROG += wb55usb
 
 PROG_TRG = $(addprefix board-, $(PROG))
 
@@ -134,6 +135,9 @@ CPU.u575n = cortex-m33
 
 XCFLAGS.wb55n += -DSTM32_WB55N -DSTM32_WBXX
 STACK_END.wb55n = 0x20030000
+
+XCFLAGS.wb55usb += -DSTM32_WB55USB -DSTM32_WBXX
+STACK_END.wb55usb = 0x20030000
 
 XCFLAGS += $(XCFLAGS.$(PROG))
 STACK_END = $(STACK_END.$(PROG))
@@ -330,6 +334,9 @@ FILES.wbxx += stm32_exti_lxxx.o
 
 FILES.wb55n += $(FILES.wbxx)
 FILES.wb55n += stm32_board_wb55n.o
+
+FILES.wb55usb += $(FILES.wbxx)
+FILES.wb55usb += stm32_board_wb55usb.o
 
 FILES.g4xx += stm32_usart_b.o
 FILES.g4xx += stm32_rcc_b.o
