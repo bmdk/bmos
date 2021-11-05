@@ -141,6 +141,9 @@ int cmd_devid(int argc, char *argv[])
   case 0x483:
     idstr = "H72x/H73x";
     break;
+  case 0x495:
+    idstr = "WB55xx/35xx";
+    break;
   default:
     idstr = "Unknown";
     break;
