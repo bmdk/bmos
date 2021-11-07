@@ -182,7 +182,7 @@ static void stm32_dma_trans(void *addr, unsigned int chan,
   }
 
   if (attr.irq)
-    flags |= DMA_IER_TCIF;
+    flags |= DMA_CR_TCIE;
 
   c->fcr &= ~DMA_FCR_DMDIS; /* disable fifo */
   c->ndtr = n;
