@@ -45,6 +45,22 @@
 #define APP_BASE 0x08008000
 #endif
 
+#if STM32_H7XX
+#define FLASH_BLKSIZE 128
+#elif STM32_G4XX || STM32_L4XX
+#define FLASH_BLKSIZE 2
+#elif STM32_L4R || STM32_WBXX
+#define FLASH_BLKSIZE 4
+#elif STM32_UXXX
+#define FLASH_BLKSIZE 8
+#elif STM32_F4XX
+#define FLASH_BLKSIZE 16
+#elif STM32_F7XX
+#define FLASH_BLKSIZE 32
+#else
+#error define FLASH_BLKSIZE
+#endif
+
 void blink()
 {
 }
@@ -88,6 +104,25 @@ static int xmodem_block(void *block_ctx, void *data, unsigned int len)
   return 0;
 }
 
+static inline int _flash_erase(unsigned int start, unsigned int count)
+{
+  if ((start % FLASH_BLKSIZE) != 0) {
+    xprintf("invalid start");
+    return -1;
+  }
+  if ((count % FLASH_BLKSIZE) != 0) {
+    xprintf("invalid count");
+    return -1;
+  }
+
+  start /= FLASH_BLKSIZE;
+  count /= FLASH_BLKSIZE;
+
+  flash_erase(start, count);
+
+  return 0;
+}
+
 static int cmd_xmodem(int argc, char *argv[])
 {
   int err;
@@ -97,22 +132,13 @@ static int cmd_xmodem(int argc, char *argv[])
   bd.addr = APP_BASE;
 
 #if STM32_H7XX
-  flash_erase(1, 1);
-#elif STM32_G4XX
-  flash_erase(16, 32);
-#elif STM32_L4R
-  flash_erase(8, 8);
-#elif STM32_F429 || STM32_F411 || STM32_F401 || STM32_F4XX
-  flash_erase(2, 4);
-#elif STM32_F767 || STM32_F746
-  flash_erase(1, 4);
-#elif STM32_WBXX
-  flash_erase(8, 8);
-#elif STM32_UXXX
-  flash_erase(4, 8);
+  err = _flash_erase(128, 128);
 #else
-  flash_erase(16, 16);
+  err = _flash_erase(32, 64);
 #endif
+
+  if (err < 0)
+    return err;
 
   xmdat.putc = debug_putc;
   xmdat.block = xmodem_block;
