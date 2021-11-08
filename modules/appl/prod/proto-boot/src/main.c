@@ -45,6 +45,11 @@
 #define APP_BASE 0x08008000
 #endif
 
+typedef struct {
+  unsigned char count;
+  unsigned char size;
+} flash_block_t;
+
 #if STM32_H7XX
 #define FLASH_BLKSIZE 128
 #elif STM32_G4XX || STM32_L4XX
@@ -54,7 +59,8 @@
 #elif STM32_UXXX
 #define FLASH_BLKSIZE 8
 #elif STM32_F4XX
-#define FLASH_BLKSIZE 16
+#define FLASH_BLOCKS { 4, 16 }, { 1, 64 }, { 7, 128 }, \
+  { 4, 16 }, { 1, 64 }, { 7, 128 }
 #elif STM32_F7XX
 #define FLASH_BLKSIZE 32
 #else
@@ -104,6 +110,47 @@ static int xmodem_block(void *block_ctx, void *data, unsigned int len)
   return 0;
 }
 
+#ifdef FLASH_BLOCKS
+static const flash_block_t flash_blocks[] = { FLASH_BLOCKS };
+
+static inline int _find_block(unsigned int ofs)
+{
+  unsigned int i;
+  unsigned int cofs = 0;
+  unsigned int blk_cnt = 0;
+
+  for (i = 0; i < ARRSIZ(flash_blocks); i++) {
+    const flash_block_t *c = &flash_blocks[i];
+    unsigned int blk_ofs;
+
+    blk_ofs = (ofs - cofs) / c->size;
+    if (blk_ofs < c->count)
+      return blk_cnt + blk_ofs;
+
+    cofs += c->count * c->size;
+    blk_cnt += c->count;
+  }
+
+  return -1;
+}
+
+static inline int _flash_erase(unsigned int start, unsigned int count)
+{
+  unsigned int s = _find_block(start);
+  unsigned int e = _find_block(start + count - 1);
+  unsigned int c = e - s + 1;
+
+  if (s < 0 || e < 0) {
+    xprintf("error computing start or end block (%d,%d)\n", s, e);
+    return -1;
+  }
+
+#if 0
+  xprintf("flash_erase block %d-%d count %d\n", s, e, c);
+#endif
+  return flash_erase(s, c);
+}
+#else
 static inline int _flash_erase(unsigned int start, unsigned int count)
 {
   if ((start % FLASH_BLKSIZE) != 0) {
@@ -122,6 +169,7 @@ static inline int _flash_erase(unsigned int start, unsigned int count)
 
   return 0;
 }
+#endif
 
 static int cmd_xmodem(int argc, char *argv[])
 {
