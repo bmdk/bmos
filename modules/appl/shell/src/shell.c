@@ -414,9 +414,9 @@ int cmd_help(int argc, char *argv[])
     }
   } else {
     ent = find_command(argv[1]);
-    if (!ent) {
+    if (!ent)
       xprintf("no such command");
-    } else {
+    else {
       const char *help = "help missing";
 
       if (ent->help)
@@ -432,6 +432,6 @@ int cmd_help(int argc, char *argv[])
 }
 
 SHELL_CMD_H(help, cmd_help,
-"get help for command\n\n"
-"help [command]");
+            "get help for command\n\n"
+            "help [command]");
 #endif
