@@ -53,10 +53,10 @@ void pin_init()
                                  GPIO_ALT));
 
   enable_apb2(11); /* TIM 1 */
-  enable_apb1(0); /* TIM 2 */
-  enable_ahb1(0); /* DMA 1 */
-  enable_ahb1(1); /* DMA 2 */
-  enable_ahb1(2); /* DMAMUX */
+  enable_apb1(0);  /* TIM 2 */
+  enable_ahb1(0);  /* DMA 1 */
+  enable_ahb1(1);  /* DMA 2 */
+  enable_ahb1(2);  /* DMAMUX */
 }
 
 #define USART1_BASE (void *)0x40013800
