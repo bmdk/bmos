@@ -80,8 +80,8 @@ static int cmd_dm(int argc, char *argv[])
 
 #if CONFIG_SHELL_HELP
 static const char dm_help[] =
-"display memory\n\n"
-"dm[bh] <addr> <count>: b - byte, h - halfword";
+  "display memory\n\n"
+  "dm[bh] <addr> <count>: b - byte, h - halfword";
 #endif
 
 SHELL_CMD_H(dm, cmd_dm, dm_help);
@@ -134,8 +134,8 @@ static int cmd_sm(int argc, char *argv[])
 
 #if CONFIG_SHELL_HELP
 static const char sm_help[] =
-"set memory\n\n"
-"sm[bh] <addr> <val>: b - byte, h - halfword";
+  "set memory\n\n"
+  "sm[bh] <addr> <val>: b - byte, h - halfword";
 #endif
 
 SHELL_CMD_H(sm, cmd_sm, sm_help);
@@ -198,8 +198,8 @@ static int cmd_mf(int argc, char *argv[])
 
 #if CONFIG_SHELL_HELP
 static const char mf_help[] =
-"fill memory\n\n"
-"mf[bh] <addr> <val> <count>: b - byte, h - halfword";
+  "fill memory\n\n"
+  "mf[bh] <addr> <val> <count>: b - byte, h - halfword";
 #endif
 
 SHELL_CMD_H(mf, cmd_mf, mf_help);

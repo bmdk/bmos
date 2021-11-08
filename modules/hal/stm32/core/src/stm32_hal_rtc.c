@@ -252,8 +252,8 @@ int cmd_rtc(int argc, char *argv[])
 }
 
 SHELL_CMD_H(rtc, cmd_rtc,
-"set and fetch rtc parameters\n\n"
-"rtc s hh:mm:ss [daynum dd:mm:yy]: set time/date\n"
-"rtc t                           : display time/date\n"
-"rtc d <1|0>                     : enable/disable daylight savings time"
-);
+            "set and fetch rtc parameters\n\n"
+            "rtc s hh:mm:ss [daynum dd:mm:yy]: set time/date\n"
+            "rtc t                           : display time/date\n"
+            "rtc d <1|0>                     : enable/disable daylight savings time"
+            );
