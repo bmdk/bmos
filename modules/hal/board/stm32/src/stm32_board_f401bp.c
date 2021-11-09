@@ -40,6 +40,11 @@
 #include "stm32_rcc_a.h"
 #include "stm32_regs.h"
 
+int bl_enter(void)
+{
+  return !gpio_get(GPIO(0, 0));
+}
+
 void pin_init()
 {
   enable_ahb1(0); /* GPIOA */
