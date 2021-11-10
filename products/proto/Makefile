@@ -31,6 +31,7 @@ PROG += f429
 PROG += f469d
 PROG += f746
 PROG += f767
+PROG += h723n
 PROG += h735dk
 PROG += h743wa
 PROG += h743nucleo
@@ -90,6 +91,11 @@ XCFLAGS.h743nucleo += -DSTM32_H7XX
 STACK_END.h743nucleo = 0x20020000
 XCFLAGS.h743nucleo += -mcpu=cortex-m7
 XCFLAGS.h743nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
+
+XCFLAGS.h723n += -DSTM32_H7XX -DSTM32_H723N
+STACK_END.h723n = 0x20020000
+XCFLAGS.h723n += -mcpu=cortex-m7
+XCFLAGS.h723n += -DCONFIG_LWIP -DLWIP_DEBUG
 
 XCFLAGS.h745nucleo += -DSTM32_H7XX -DSTM32_H745N
 STACK_END.h745nucleo = 0x20020000
@@ -210,7 +216,7 @@ XLDFLAGS += -specs=nano.specs
 else
 XLDFLAGS += -nostdlib
 endif
-ifeq ($(findstring $(PROG), h743nucleo h745nucleo h735dk, h743wa),)
+ifeq ($(findstring $(PROG), h723n h743nucleo h745nucleo h735dk, h743wa),)
 XLDFLAGS += -T appl.ld
 else
 XLDFLAGS += -T appl-h7xx.ld
@@ -309,6 +315,11 @@ FILES.h7xx += ssd1306_fonts.o
 FILES.h7xx += fb.o
 FILES.h7xx += i2c_test.o
 FILES.h7xx += hd44780.o
+
+FILES.h723n += stm32_board_h723n.o
+FILES.h723n += lwip.o
+FILES.h723n += stm32_fdcan.o
+FILES.h723n += fdcan.o
 
 FILES.h735dk += stm32_lcd.o
 FILES.h735dk += stm32_board_h735dk.o
@@ -469,6 +480,7 @@ FILES.h7xx += $(FILES.lwip)
 FILES.f767 += $(FILES.lwip)
 FILES.f746 += $(FILES.lwip)
 
+FILES.h723n += $(FILES.h7xx)
 FILES.h735dk += $(FILES.h7xx)
 FILES.h743wa += $(FILES.h7xx)
 FILES.h743nucleo += $(FILES.h7xx)

@@ -27,6 +27,7 @@ PROG += f411bp
 PROG += f401bp
 PROG += f407deb
 PROG += f407debm
+PROG += h723n
 PROG += h743wa
 PROG += h743nucleo
 PROG += h745nucleo
@@ -77,6 +78,9 @@ clean:
 
 XCFLAGS.h735dk += -DSTM32_H7XX
 STACK_END.h735dk = 0x20020000
+
+XCFLAGS.h723n += -DSTM32_H7XX
+STACK_END.h723n = 0x20020000
 
 XCFLAGS.h743nucleo += -DSTM32_H7XX
 STACK_END.h743nucleo = 0x20020000
@@ -213,7 +217,7 @@ FILES += crc_ccitt16.o
 FILES += xmodem.o
 FILES += stm32_timer.o
 FILES += xslog_simple.o
-ifeq ($(findstring $(PROG), h743nucleo h745nucleo h735dk, h743wa),)
+ifeq ($(findstring $(PROG), h723n h743nucleo h745nucleo h735dk, h743wa),)
 FILES += stm32_flash.o
 endif
 
@@ -226,6 +230,9 @@ FILES.h7xx += stm32_rcc_c.o
 FILES.h7xx += stm32_hal_rtc.o
 FILES.h7xx += stm32_flash_h7xx.o
 FILES.h7xx += stm32_pwr_h7xx.o
+
+FILES.h723n += stm32_board_h723n.o
+FILES.h723n += $(FILES.h7xx)
 
 FILES.h743wa += stm32_board_h743wa.o
 FILES.h743wa += $(FILES.h7xx)
