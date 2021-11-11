@@ -23,48 +23,6 @@
 #define STM32_REGS_H
 
 typedef struct {
-  unsigned int mcr;
-  unsigned int msr;
-  unsigned int tsr;
-  unsigned int rfr[2];
-  unsigned int ier;
-  unsigned int esr;
-  unsigned int btr;
-  unsigned int pad0[88];
-
-  struct {
-    unsigned int i;
-    unsigned int dt;
-    unsigned int d[2];
-  } t[3];
-
-  struct {
-    unsigned int i;
-    unsigned int dt;
-    unsigned int d[2];
-  } r[2];
-
-  unsigned int pad1[12];
-
-  unsigned int fmr;
-  unsigned int fm1r;
-  unsigned int pad2;
-  unsigned int fs1r;
-  unsigned int pad3;
-  unsigned int ffa1r;
-  unsigned int pad4;
-  unsigned int fa1r;
-
-  unsigned int pad5[8];
-
-  struct {
-    unsigned int id;
-    unsigned int mask;
-  } f[28];
-
-} stm32_can_t;
-
-typedef struct {
   unsigned int pad0[2];
   unsigned int sscr;
   unsigned int bpcr;
