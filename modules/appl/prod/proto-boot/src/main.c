@@ -280,11 +280,11 @@ void boot()
 WEAK int bl_enter(void)
 {
   int c;
-  xtime_ms_t start = hal_time_us();
+  xtime_ms_t start = xtime_ms();
 
   xputs("\nPress return to enter bootloader\n");
 
-  while (hal_time_us() - start < 1500000) {
+  while (xtime_ms() - start < 1500) {
     c = debug_getc();
     if (c == '\r')
       return 1;
@@ -316,7 +316,7 @@ void systick_handler(void)
 
 int main()
 {
-  interrupt_disable();
+  INTERRUPT_OFF();
   hal_cpu_init();
   hal_board_init();
   hal_time_init();
@@ -326,7 +326,7 @@ int main()
   xputs("\nBOOT\n\n");
 
   systick_init();
-  interrupt_enable(0);
+  INTERRUPT_ON();
 
   try_boot();
 
