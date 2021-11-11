@@ -24,12 +24,21 @@
 #include "hal_int.h"
 #include "hal_uart.h"
 #include "stm32_hal.h"
-#include "stm32_regs.h"
 #include "xassert.h"
 #if BMOS
 #include "bmos_op_msg.h"
 #include "bmos_msg_queue.h"
 #endif
+
+typedef struct {
+  unsigned int sr;
+  unsigned int dr;
+  unsigned int brr;
+  unsigned int cr1;
+  unsigned int cr2;
+  unsigned int cr3;
+  unsigned int gtpr;
+} stm32_usart_a_t;
 
 #define UART_SR_ORE BIT(3)
 #define UART_SR_RXNE BIT(5)

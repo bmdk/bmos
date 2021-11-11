@@ -23,16 +23,6 @@
 #define STM32_REGS_H
 
 typedef struct {
-  unsigned int sr;
-  unsigned int dr;
-  unsigned int brr;
-  unsigned int cr1;
-  unsigned int cr2;
-  unsigned int cr3;
-  unsigned int gtpr;
-} stm32_usart_a_t;
-
-typedef struct {
   unsigned int mcr;
   unsigned int msr;
   unsigned int tsr;
