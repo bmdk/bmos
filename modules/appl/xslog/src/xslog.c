@@ -12,8 +12,17 @@
 #include "xtime.h"
 #include "fast_log.h"
 
+#ifdef CONFIG_SYSLOG_LINELEN
+#define SYSLOG_MAX CONFIG_SYSLOG_LINELEN
+#else
 #define SYSLOG_MAX 64
+#endif
+
+#ifdef CONFIG_SYSLOG_NUM_LINES
+#define NSYSLOG CONFIG_SYSLOG_NUM_LINES
+#else
 #define NSYSLOG 64
+#endif
 
 #define OP_SYSLOG_DATA 1
 
