@@ -86,6 +86,10 @@ void *malloc(size_t nbytes)
   if (nbytes == 0)
     return NULL;
 
+#if DEBUG > 1
+  debug_printf("m: %p %d\n", __builtin_return_address(0), nbytes);
+#endif
+
   nunits = (nbytes + CHUNK_SIZE - 1) / CHUNK_SIZE + 1;
 
 restart:
@@ -135,6 +139,10 @@ restart:
 void free(void *ap)
 {
   malloc_hdr_t *r;
+
+#if DEBUG > 1
+  debug_printf("f: %p %p\n", __builtin_return_address(0), ap);
+#endif
 
   if (!ap)
     return;
