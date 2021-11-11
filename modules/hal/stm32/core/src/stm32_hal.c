@@ -99,8 +99,14 @@ int cmd_devid(int argc, char *argv[])
   case 0x419:
     idstr = "F42x/43x";
     break;
+  case 0x420:
+    idstr = "F100 l/m";
+    break;
   case 0x423:
     idstr = "F401xB/C";
+    break;
+  case 0x428:
+    idstr = "F100 h";
     break;
   case 0x433:
     idstr = "F401xD/E";

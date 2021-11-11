@@ -21,50 +21,43 @@
 
 #include "common.h"
 #include "hal_common.h"
-#include "stm32_exti.h"
+#include "stm32_pwr.h"
 
 typedef struct {
-  reg32_t imr;
-  reg32_t emr;
-  reg32_t rtsr;
-  reg32_t ftsr;
-  reg32_t swier;
-  reg32_t pr;
-  reg32_t pad0[2];
-} stm32_exti_t;
+  reg32_t cr;
+  reg32_t csr;
+} stm32_pwr_f1xx_t;
 
-#ifdef STM32_F1XX
-#define EXTI_BASE 0x40010400
-#else
-#define EXTI_BASE 0x40013c00
-#endif
+#define PWR ((volatile stm32_pwr_f1xx_t *)(0x40007000))
 
-#define EXTI ((stm32_exti_t *)(EXTI_BASE))
+#define PWR_CR_DBP BIT(8)
 
-void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
+void backup_domain_protect(int on)
 {
-  bit_en(&EXTI->rtsr, n, en);
+  if (on)
+    PWR->cr &= ~PWR_CR_DBP;
+  else
+    PWR->cr |= PWR_CR_DBP;
 }
 
-void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
-{
-  bit_en(&EXTI->ftsr, n, en);
-}
+typedef struct {
+  reg32_t evcr;
+  reg32_t mapr;
+  reg32_t exticr[4];
+  reg32_t mapr2;
+} stm32_afio_t;
 
-void stm32_exti_irq_enable(unsigned int n, int en)
-{
-  bit_en(&EXTI->imr, n, en);
-}
+#define AFIO ((stm32_afio_t *)0x40010000)
 
-void stm32_exti_irq_ack(unsigned int n)
+void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
 {
-  if (n >= 32)
+  unsigned int reg, ofs;
+
+  if (n > 15)
     return;
 
-  EXTI->pr = BIT(n);
-}
+  reg = n / 4;
+  ofs = n % 4;
 
-void stm32_exti_ev_enable(unsigned int n, int en)
-{
-  bit_en(&EXTI->emr, n, en);
+  reg_set_field(&AFIO->exticr[reg], 4, ofs << 2, v);
 }

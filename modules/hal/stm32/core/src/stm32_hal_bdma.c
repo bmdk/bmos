@@ -64,9 +64,11 @@ typedef struct {
 static void stm32_bdma_set_chan(void *base, unsigned int chan,
                                 unsigned int devid)
 {
+#if !STM32_F1XX
   volatile stm32_bdma_t *d = base;
 
   reg_set_field(&d->cselr, 4, chan << 2, devid);
+#endif
 }
 
 static void stm32_bdma_en(void *base, unsigned int chan, int en)

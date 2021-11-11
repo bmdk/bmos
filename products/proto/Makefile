@@ -23,6 +23,7 @@ ifeq ($(PROG),)
 export BUILD_DIR = build
 export ROOT ?= $(shell pwd)/../..
 
+PROG += f100d
 PROG += f401bp
 PROG += f411bp
 PROG += f407deb
@@ -105,6 +106,15 @@ XCFLAGS.h745nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
 XCFLAGS.l4r += -DSTM32_L4R
 XCFLAGS.l4r += -mcpu=cortex-m4
 STACK_END.l4r = 0x200A0000
+
+XCFLAGS.f100d += -DSTM32_F1XX
+XCFLAGS.f100d += -DSTM32_F100D
+XCFLAGS.f100d += -DCONFIG_SYSLOG_NUM_LINES=4
+XCFLAGS.f100d += -DCONFIG_FAST_LOG_SHIFT=4
+XCFLAGS.f100d += -DCONFIG_MALLOC_CHUNK_POW2=6
+XCFLAGS.f100d += -DCONFIG_N_INTS=61
+XCFLAGS.f100d += -mcpu=cortex-m3
+STACK_END.f100d = 0x20002000
 
 XCFLAGS.f411bp += -DSTM32_F411 -DSTM32_F4XX
 XCFLAGS.f411bp += -DSTM32_F411BP
@@ -282,7 +292,6 @@ FILES += misc.o
 FILES += fast_log.o
 FILES += stm32_hal.o
 FILES += stm32_timer.o
-FILES += xslog.o
 FILES += circ_buf.o
 FILES += hal_dma.o
 FILES += stm32_dma_if.o
@@ -343,6 +352,16 @@ FILES.h745nucleo += fdcan.o
 FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f4xx += stm32_pwr_f4xx.o
 FILES.fxxx += stm32_exti_fxxx.o
+
+#FILES.f100d += stm32_hal_rtc.o # Needs new driver
+FILES.f100d += stm32_board_f100d.o
+FILES.f100d += stm32_exti_fxxx.o
+FILES.f100d += stm32_flash_f1.o
+FILES.f100d += stm32_hal_bdma.o
+FILES.f100d += stm32_pwr_f1xx.o
+FILES.f100d += stm32_rcc_f1.o
+FILES.f100d += stm32_usart_a.o
+XSLOG.f100d += xslog_simple.o
 
 FILES.f411bp += stm32_hal_rtc.o
 FILES.f411bp += stm32_usart_a.o
@@ -579,6 +598,13 @@ FILES.wb55n += stm32_board_wb55n.o
 FILES.wb55usb += $(FILES.wbxx)
 FILES.wb55usb += stm32_hal_rtc.o
 FILES.wb55usb += stm32_board_wb55usb.o
+CPU.f100d = cortex-m3
+
+ifdef XSLOG.$(PROG)
+FILES += $(XSLOG.$(PROG))
+else
+FILES += xslog.o
+endif
 
 FILES += $(FILES.$(PROG))
 

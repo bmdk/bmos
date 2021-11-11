@@ -24,13 +24,27 @@
 #include "hal_gpio.h"
 #include "stm32_hal_gpio.h"
 
-static void stm32_gpio_mode(volatile stm32_gpio_t *gpio, unsigned int pin,
+#if STM32_F1XX
+/* set the mode and cnf fields */
+void stm32_gpio_attr(stm32_gpio_t *gpio, unsigned int num, unsigned int attr)
+{
+  unsigned int reg = 0;
+
+  if (num >= 8) {
+    num -= 8;
+    reg = 1;
+  }
+
+  reg_set_field(&gpio->cr[reg], 4, num << 2, attr);
+}
+#else
+static void stm32_gpio_mode(stm32_gpio_t *gpio, unsigned int pin,
                             unsigned int mode)
 {
   reg_set_field(&gpio->moder, 2, pin << 1, mode);
 }
 
-static void stm32_gpio_otype(volatile stm32_gpio_t *gpio, unsigned int pin,
+static void stm32_gpio_otype(stm32_gpio_t *gpio, unsigned int pin,
                              unsigned int flags)
 {
   if (flags & GPIO_FLAG_OPEN_DRAIN)
@@ -39,19 +53,19 @@ static void stm32_gpio_otype(volatile stm32_gpio_t *gpio, unsigned int pin,
     gpio->otyper &= ~BIT(pin);
 }
 
-static void stm32_gpio_pupd(volatile stm32_gpio_t *gpio, unsigned int pin,
+static void stm32_gpio_pupd(stm32_gpio_t *gpio, unsigned int pin,
                             unsigned int flags)
 {
   reg_set_field(&gpio->pupdr, 2, pin << 1, flags & 0x3);
 }
 
-static void stm32_gpio_ospeed(volatile stm32_gpio_t *gpio, unsigned int pin,
+static void stm32_gpio_ospeed(stm32_gpio_t *gpio, unsigned int pin,
                               unsigned int speed)
 {
   reg_set_field(&gpio->ospeedr, 2, pin << 1, speed);
 }
 
-static void stm32_gpio_alt(volatile stm32_gpio_t *gpio, unsigned int pin,
+static void stm32_gpio_alt(stm32_gpio_t *gpio, unsigned int pin,
                            unsigned int mode)
 {
   volatile unsigned int *reg;
@@ -67,8 +81,9 @@ static void stm32_gpio_alt(volatile stm32_gpio_t *gpio, unsigned int pin,
 
   reg_set_field(reg, 4, pin << 2, mode);
 }
+#endif
 
-static void stm32_gpio_set(volatile stm32_gpio_t *gpio, unsigned int num,
+static void stm32_gpio_set(stm32_gpio_t *gpio, unsigned int num,
                            unsigned int val)
 {
   unsigned int reg;
@@ -84,7 +99,7 @@ static void stm32_gpio_set(volatile stm32_gpio_t *gpio, unsigned int num,
   gpio->bsrr = reg;
 }
 
-static int stm32_gpio_get(volatile stm32_gpio_t *gpio, unsigned int num)
+static int stm32_gpio_get(stm32_gpio_t *gpio, unsigned int num)
 {
   if (num > 15)
     return 0;
@@ -113,18 +128,28 @@ void gpio_init(gpio_handle_t gpio, unsigned int type)
   unsigned int bank = GPIO_BANK(gpio);
   unsigned int pin = GPIO_PIN(gpio);
 
+#if STM32_F1XX
+  stm32_gpio_attr(STM32_GPIO(bank), pin, (type == GPIO_INPUT) ?
+                  GPIO_ATTR_STM32F1(CNF_INP_FLO, MODE_INPUT) :
+                  GPIO_ATTR_STM32F1(CNF_OUT_PP, MODE_OUTPUT_HIG));
+#else
   stm32_gpio_mode(STM32_GPIO(bank), pin, type);
+#endif
 }
 
 void gpio_init_attr(gpio_handle_t gpio, unsigned int attr)
 {
   unsigned int bank = GPIO_BANK(gpio);
   unsigned int pin = GPIO_PIN(gpio);
-  volatile stm32_gpio_t *gpio_reg = STM32_GPIO(bank);
+  stm32_gpio_t *gpio_reg = STM32_GPIO(bank);
 
+#if STM32_F1XX
+  stm32_gpio_attr(gpio_reg, pin, attr);
+#else
   stm32_gpio_alt(gpio_reg, pin, GPIO_ATTR_STM32_ALT(attr));
   stm32_gpio_pupd(gpio_reg, pin, GPIO_ATTR_STM32_FLAGS(attr));
   stm32_gpio_otype(gpio_reg, pin, GPIO_ATTR_STM32_FLAGS(attr));
   stm32_gpio_ospeed(gpio_reg, pin, GPIO_ATTR_STM32_SPEED(attr));
   stm32_gpio_mode(gpio_reg, pin, GPIO_ATTR_STM32_TYPE(attr));
+#endif
 }

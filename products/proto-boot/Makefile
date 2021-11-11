@@ -23,6 +23,7 @@ ifeq ($(PROG),)
 export BUILD_DIR = build
 export ROOT ?= $(shell pwd)/../..
 
+PROG += f100d
 PROG += f411bp
 PROG += f401bp
 PROG += f407deb
@@ -93,6 +94,11 @@ STACK_END.h745nucleo = 0x20020000
 
 XCFLAGS.l4r += -DSTM32_L4R
 STACK_END.l4r = 0x200A0000
+
+XCFLAGS.f100d += -DSTM32_F100 -DSTM32_F1XX
+XCFLAGS.f100d += -DCONFIG_FAST_LOG_SHIFT=4
+STACK_END.f100d = 0x20002000
+CPU.f100d = cortex-m3
 
 XCFLAGS.f411bp += -DSTM32_F411 -DSTM32_F4XX
 STACK_END.f411bp = 0x20020000
@@ -217,7 +223,8 @@ FILES += crc_ccitt16.o
 FILES += xmodem.o
 FILES += stm32_timer.o
 FILES += xslog_simple.o
-ifeq ($(findstring $(PROG), h723n h743nucleo h745nucleo h735dk, h743wa),)
+
+ifeq ($(findstring $(PROG), f100d h723n h743nucleo h745nucleo h735dk, h743wa),)
 FILES += stm32_flash.o
 endif
 
@@ -251,6 +258,11 @@ FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f4xx += stm32_pwr_f4xx.o
 
 FILES.fxxx += stm32_exti_fxxx.o
+
+FILES.f100d += stm32_usart_a.o
+FILES.f100d += stm32_rcc_f1.o
+FILES.f100d += stm32_flash_f1.o
+FILES.f100d += stm32_board_f100d.o
 
 FILES.f411bp += stm32_usart_a.o
 FILES.f411bp += stm32_rcc_a.o

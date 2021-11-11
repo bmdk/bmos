@@ -78,7 +78,7 @@ void blink()
 #elif STM32_UXXX
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 24 /* EXTI13 */
-#elif STM32_F411BP || STM32_F407DEB || STM32_F407DEBM
+#elif STM32_F411BP || STM32_F407DEB || STM32_F407DEBM || STM32_F1XX
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 6
 #else
@@ -86,11 +86,15 @@ void blink()
 #define BUTTON_IRQ 40
 #endif
 
+#define BUTTON_INT 1
+
+#if BUTTON_INT
 void button_int(void *data)
 {
   stm32_exti_irq_ack(BUTTON_EXTI);
   debug_puts("X\n");
 }
+#endif
 
 static void polled_shell(void)
 {
@@ -256,9 +260,11 @@ int main()
 
   xslog(LOG_INFO, "starting");
 
+#if BUTTON_INT
   irq_register("ext", button_int, 0, BUTTON_IRQ);
+#endif
 
-  task_init(blink_task, NULL, "blink", 2, 0, 1024);
+  task_init(blink_task, NULL, "blink", 2, 0, 128);
 
   shell_info_init(&shell_info, "sh1rx", 0);
   shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
@@ -266,7 +272,13 @@ int main()
   shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
 #endif
 
-  task_init(shell_task, &shell_info, "shell", 2, 0, 4096);
+#ifdef STM32_F1XX
+#define SHELL_STACK 1280
+#else
+#define SHELL_STACK 4096
+#endif
+
+  task_init(shell_task, &shell_info, "shell", 2, 0, SHELL_STACK);
 
   io_set_output(shell_info.txq[0], 0);
 
