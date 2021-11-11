@@ -121,7 +121,7 @@ void xslog_init()
   slogp =
     op_msg_pool_create("slog", QUEUE_TYPE_TASK, 2, sizeof(syslog_entry_t));
 
-  task_init(slog_task, 0, "slog", 10, 0, 1024);
+  task_init(slog_task, 0, "slog", 10, 0, 128);
 }
 
 static void _slog_dump(int count)
