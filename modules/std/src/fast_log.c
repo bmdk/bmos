@@ -38,7 +38,12 @@ typedef struct fast_log_entry_t {
   unsigned long v2;
 } fle_t;
 
-#define FAST_LOG_SHIFT (9)
+#ifdef CONFIG_FAST_LOG_SHIFT
+#define FAST_LOG_SHIFT (CONFIG_FAST_LOG_SHIFT)
+#else
+#define FAST_LOG_SHIFT 9
+#endif
+
 #define FAST_LOG_SIZE (1 << FAST_LOG_SHIFT)
 #define FAST_LOG_MASK (FAST_LOG_SIZE - 1)
 static unsigned int fast_log_index = 0;
