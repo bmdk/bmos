@@ -22,7 +22,6 @@
 #include "common.h"
 #include "hal_common.h"
 #include "stm32_hal.h"
-#include "stm32_regs.h"
 #include "stm32_rcc_b.h"
 
 typedef struct {

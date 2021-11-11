@@ -42,7 +42,6 @@
 #include "shell.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
-#include "stm32_regs.h"
 #include "xassert.h"
 #include "xslog.h"
 #include "xtime.h"

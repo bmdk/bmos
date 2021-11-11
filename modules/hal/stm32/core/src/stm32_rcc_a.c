@@ -21,7 +21,6 @@
 
 #include "common.h"
 #include "hal_common.h"
-#include "stm32_regs.h"
 #include "stm32_pwr.h"
 #include "stm32_rcc_a.h"
 

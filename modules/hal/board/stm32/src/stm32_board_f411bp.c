@@ -38,7 +38,6 @@
 #include "stm32_pwr.h"
 #include "stm32_pwr_f4xx.h"
 #include "stm32_rcc_a.h"
-#include "stm32_regs.h"
 
 int bl_enter(void)
 {

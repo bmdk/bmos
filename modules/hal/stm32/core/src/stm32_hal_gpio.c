@@ -23,7 +23,6 @@
 #include "hal_common.h"
 #include "hal_gpio.h"
 #include "stm32_hal_gpio.h"
-#include "stm32_regs.h"
 
 static void stm32_gpio_mode(volatile stm32_gpio_t *gpio, unsigned int pin,
                             unsigned int mode)

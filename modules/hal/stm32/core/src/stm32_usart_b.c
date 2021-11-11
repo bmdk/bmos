@@ -31,7 +31,6 @@
 #include "hal_uart.h"
 #include "io.h"
 #include "stm32_hal.h"
-#include "stm32_regs.h"
 #include "xassert.h"
 #if BMOS
 #include "bmos_op_msg.h"

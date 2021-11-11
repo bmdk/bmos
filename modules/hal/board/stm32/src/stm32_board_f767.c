@@ -32,7 +32,6 @@
 #include "stm32_pwr.h"
 #include "stm32_pwr_f7xx.h"
 #include "stm32_rcc_a.h"
-#include "stm32_regs.h"
 
 #if APPL
 static void eth_pin_init()

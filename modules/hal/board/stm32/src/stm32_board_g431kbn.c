@@ -37,7 +37,6 @@
 #include "stm32_pwr.h"
 #include "stm32_pwr_lxxx.h"
 #include "stm32_rcc_b.h"
-#include "stm32_regs.h"
 
 void pin_init()
 {

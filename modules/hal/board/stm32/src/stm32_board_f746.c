@@ -38,7 +38,6 @@
 #include "stm32_pwr.h"
 #include "stm32_pwr_f7xx.h"
 #include "stm32_rcc_a.h"
-#include "stm32_regs.h"
 
 #define LCD_X 480
 #define LCD_Y 272
