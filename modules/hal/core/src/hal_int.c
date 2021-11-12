@@ -64,7 +64,11 @@ typedef struct irq_handler_data {
   unsigned int count;
 } irq_handler_data_t;
 
+#ifdef CONFIG_N_INTS
+#define N_INTS CONFIG_N_INTS
+#else
 #define N_INTS 128
+#endif
 static irq_handler_data_t interrupts[N_INTS];
 
 void irq_stats_reset(unsigned int num)
