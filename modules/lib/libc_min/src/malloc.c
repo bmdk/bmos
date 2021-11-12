@@ -34,7 +34,11 @@ struct _malloc_hdr_t {
   unsigned int size;
 };
 
+#ifndef CONFIG_MALLOC_CHUNK_POW2
 #define CHUNK_POW2 8
+#else
+#define CHUNK_POW2 CONFIG_MALLOC_CHUNK_POW2
+#endif
 #define CHUNK_SIZE sizeof(malloc_hdr_t)
 
 #define DEBUG 0
