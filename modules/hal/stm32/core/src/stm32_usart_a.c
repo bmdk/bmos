@@ -42,8 +42,14 @@ typedef struct {
 
 #define UART_SR_ORE BIT(3)
 #define UART_SR_RXNE BIT(5)
-#define UART_SR_TXE BIT(7)
 #define UART_SR_TC BIT(6)
+#define UART_SR_TXE BIT(7)
+
+#define USART_CR1_RE BIT(2)     /* RX enable */
+#define USART_CR1_TE BIT(3)     /* TX enable */
+#define USART_CR1_RXNEIE BIT(5) /* RX int enable */
+#define USART_CR1_TXEIE BIT(7)  /* TX int enable */
+#define USART_CR1_UE BIT(13)    /* usart enable */
 
 static volatile stm32_usart_a_t *duart;
 
@@ -83,19 +89,13 @@ int debug_ser_tx_done(void)
   return usart_tx_done(duart);
 }
 
-#define USART_RE BIT(2)     /* RX enable */
-#define USART_TE BIT(3)     /* TX enable */
-#define USART_RXNEIE BIT(5) /* RX int enable */
-#define USART_TXEIE BIT(7)  /* TX int enable */
-#define USART_UE BIT(13)    /* usart enable */
-
 void debug_uart_init(void *base, unsigned int baud, unsigned int clock,
                      unsigned int flags)
 {
   duart = (volatile stm32_usart_a_t *)base;
 
   duart->brr = (clock + baud / 2) / baud;
-  duart->cr1 = USART_UE | USART_RXNEIE | USART_TE | USART_RE;
+  duart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE;
 }
 
 #if BMOS
@@ -125,7 +125,7 @@ static void usart_tx(uart_t *u)
   } else {
     m = op_msg_get(u->txq);
     if (!m) {
-      usart->cr1 &= ~USART_TXEIE;
+      usart->cr1 &= ~USART_CR1_TXEIE;
       return;
     }
     len = m->len;
@@ -164,7 +164,7 @@ static void usart_isr(void *data)
   if (isr & UART_SR_ORE)
     u->stats.hw_overrun++;
 
-  if ((usart->cr1 & USART_TXEIE) && (isr & UART_SR_TXE))
+  if ((usart->cr1 & USART_CR1_TXEIE) && (isr & UART_SR_TXE))
     usart_tx(u);
 
   if (isr & UART_SR_RXNE) {
@@ -193,7 +193,7 @@ static void _put(void *p)
   uart_t *u = (uart_t *)p;
   volatile stm32_usart_a_t *usart = u->base;
 
-  usart->cr1 |= USART_TXEIE;
+  usart->cr1 |= USART_CR1_TXEIE;
 }
 
 bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
@@ -203,7 +203,7 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
 
   usart_set_baud(usart, baud, u->clock, u->flags);
 
-  duart->cr1 = USART_UE | USART_RXNEIE | USART_TE | USART_RE;
+  duart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE;
 
   u->pool = op_msg_pool_create("uart pool", QUEUE_TYPE_DRIVER, 4, 4);
   XASSERT(u->pool);
