@@ -75,6 +75,8 @@ static int cmd_mem(int argc, char *argv[])
           (unsigned int)&_ebss - (unsigned int)&_sbss);
   xprintf(" heap: %08x - %08x: %6d\n", (unsigned int)&_end,
           sbrk_next, sbrk_next - (unsigned int)&_end);
+  xprintf(" free: %08x - %08x: %6d\n", sbrk_next,
+          (unsigned int)&_stack_end, (unsigned int)&_stack_end - sbrk_next);
 
   if (data_start != data_start_flash) {
     xprintf("\n");
