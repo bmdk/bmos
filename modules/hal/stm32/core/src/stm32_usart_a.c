@@ -30,6 +30,9 @@
 #include "bmos_msg_queue.h"
 #endif
 
+#define MSGDATA_POW2 4
+#define MSGDATA_LEN (1 << MSGDATA_POW2)
+
 typedef struct {
   unsigned int sr;
   unsigned int dr;
@@ -41,12 +44,14 @@ typedef struct {
 } stm32_usart_a_t;
 
 #define UART_SR_ORE BIT(3)
+#define UART_SR_IDLE BIT(4)
 #define UART_SR_RXNE BIT(5)
 #define UART_SR_TC BIT(6)
 #define UART_SR_TXE BIT(7)
 
 #define USART_CR1_RE BIT(2)     /* RX enable */
 #define USART_CR1_TE BIT(3)     /* TX enable */
+#define USART_CR1_IDLEIE BIT(4) /* Idle int enable */
 #define USART_CR1_RXNEIE BIT(5) /* RX int enable */
 #define USART_CR1_TXEIE BIT(7)  /* TX int enable */
 #define USART_CR1_UE BIT(13)    /* usart enable */
@@ -150,13 +155,28 @@ static void usart_tx(uart_t *u)
   }
 }
 
+static void sendcb(uart_t *u)
+{
+  unsigned char *msgdata;
+  int len;
+  bmos_op_msg_t *m;
+
+  m = op_msg_get(u->pool);
+  if (!m)
+    u->stats.overrun++;
+  else {
+    msgdata = BMOS_OP_MSG_GET_DATA(m);
+    len = circ_buf_read(&u->cb, msgdata, MSGDATA_LEN);
+    if (len < MSGDATA_LEN)
+      len += circ_buf_read(&u->cb, msgdata + len, MSGDATA_LEN);
+    op_msg_put(u->rxq, m, u->op, len);
+  }
+}
+
 static void usart_isr(void *data)
 {
   uart_t *u = (uart_t *)data;
   volatile stm32_usart_a_t *usart = u->base;
-  int c;
-  bmos_op_msg_t *m;
-  unsigned char *msgdata;
   unsigned int isr;
 
   isr = usart->sr;
@@ -168,23 +188,22 @@ static void usart_isr(void *data)
     usart_tx(u);
 
   if (isr & UART_SR_RXNE) {
-    for (;;) {
-      c = usart_xgetc(usart);
-      if (c < 0)
-        break;
+    unsigned char c;
+    int len;
 
-      m = op_msg_get(u->pool);
-      if (!m) {
-        u->stats.overrun++;
-        return;
-      }
+    c = usart->dr & 0xff;
 
-      msgdata = BMOS_OP_MSG_GET_DATA(m);
-
-      *msgdata = (unsigned char)c;
-
-      op_msg_put(u->rxq, m, u->op, 1);
+    len = circ_buf_write(&u->cb, &c, 1);
+    if (len == 0) {
+      sendcb(u);
+      (void)circ_buf_write(&u->cb, &c, 1);
     }
+  }
+
+  if (isr & UART_SR_IDLE) {
+    (void)usart->dr;
+    if (circ_buf_used(&u->cb) > 0)
+      sendcb(u);
   }
 }
 
@@ -203,9 +222,12 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
 
   usart_set_baud(usart, baud, u->clock, u->flags);
 
-  duart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE;
+  duart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | \
+               USART_CR1_IDLEIE | USART_CR1_TE | USART_CR1_RE;
 
-  u->pool = op_msg_pool_create("uart pool", QUEUE_TYPE_DRIVER, 4, 4);
+  circ_buf_init(&u->cb, MSGDATA_POW2);
+
+  u->pool = op_msg_pool_create("uart pool", QUEUE_TYPE_DRIVER, 4, MSGDATA_LEN);
   XASSERT(u->pool);
 
   u->txq = queue_create("uart tx", QUEUE_TYPE_DRIVER);
