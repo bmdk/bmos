@@ -68,6 +68,25 @@ typedef struct {
   unsigned int stir;
 } nvic_t;
 
+typedef struct {
+  reg32_t ctrl;
+  reg32_t cyccnt;
+  reg32_t cpicnt;
+  reg32_t exccnt;
+  reg32_t sleepcnt;
+  reg32_t lsucnt;
+  reg32_t foldcnt;
+  reg32_t pcsr;
+  struct {
+    reg32_t comp;
+    reg32_t mask;
+    reg32_t function;
+    reg32_t pad;
+  } event[4];
+} dwt_t;
+
+#define DWT ((dwt_t *)0xE0001000)
+
 void set_low_power(int en);
 
 void systick_init();
@@ -83,4 +102,12 @@ static inline void clear_pendsv()
 {
   SCB->icsr = BIT(27);
 }
+
+static inline unsigned int cycle_cnt()
+{
+  return DWT->cyccnt;
+}
+
+void dwt_init(void);
+
 #endif

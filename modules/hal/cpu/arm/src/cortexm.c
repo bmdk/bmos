@@ -319,3 +319,14 @@ int cmd_ccr(int argc, char *argv[])
 SHELL_CMD(ccr, cmd_ccr);
 #endif
 
+#define DWT_CTRL_CYCCNTENA BIT(0)
+
+#define DEBUG_DEMCR ((reg32_t *)0xE000EDFC)
+
+#define DEBUG_DEMCR_TRCENA BIT(24)
+
+void dwt_init()
+{
+  *DEBUG_DEMCR |= DEBUG_DEMCR_TRCENA;
+  DWT->ctrl |= DWT_CTRL_CYCCNTENA;
+}
