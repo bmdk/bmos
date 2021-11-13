@@ -49,15 +49,13 @@
 #define WCPCCLOCKS(period_ns) \
   (WSCLOCKS * (period_ns) + WSPERIOD_NS / 2) / WSPERIOD_NS
 
-/* this has nothing to do with the DMA type so it should probably be it's own
-   configuration parameter(s) in the future */
 #if STM32_F411BP || STM32_F401BP
 
 /* the bit in the bank that is used */
 #define WSBIT 0
-#define WSIRQ 57
 /* the gpio bank (B) */
 #define WSGPIO 1
+#define WSIRQ 57
 #define DMANUM 1
 
 #define CHAN_TIM1_UP 5
@@ -71,8 +69,8 @@
 #elif STM32_U575N
 
 #define WSBIT 0
-#define WSIRQ 31 /* GPDMA1_CH2 */
 #define WSGPIO 0
+#define WSIRQ 31 /* GPDMA1_CH2 */
 #define DMANUM 0
 
 #define CHAN_TIM1_UP 1
@@ -83,11 +81,22 @@
 #define DEVID_TIM1_CH2 43
 #define DEVID_TIM1_UP 46
 
-#else
+#elif STM32_F100D || STM32_F103N
 
+#define WSGPIO 1
 #define WSBIT 0
 #define WSIRQ 12
+#define DMANUM 0
+
+#define CHAN_TIM1_UP 4
+#define CHAN_TIM1_CH1 1
+#define CHAN_TIM1_CH2 2
+
+#else
+
 #define WSGPIO 0
+#define WSBIT 0
+#define WSIRQ 12
 #define DMANUM 0
 
 #define CHAN_TIM1_UP 5
@@ -100,13 +109,19 @@
 
 #endif
 
-#define STM32_GPIO_ADDR_SET_CLEAR(port) (unsigned int)(&STM32_GPIO(port)->bsrr)
-#define GPIO_ADDR STM32_GPIO_ADDR_SET_CLEAR(WSGPIO)
+#define STM32_GPIO_ADDR_SET(port) (unsigned char *)(&STM32_GPIO(port)->bsrr)
+#if STM32_F1XX
+#define STM32_GPIO_ADDR_CLEAR(port) (unsigned char *)(&STM32_GPIO(port)->brr)
+#else
+#define STM32_GPIO_ADDR_CLEAR(port) (STM32_GPIO_ADDR_SET(port) + 2)
+#endif
+#define GPIO_ADDR_SET STM32_GPIO_ADDR_SET(WSGPIO)
+#define GPIO_ADDR_CLEAR STM32_GPIO_ADDR_CLEAR(WSGPIO)
 
 static unsigned char one = BIT(WSBIT);
 static unsigned int compare[2];
 
-#define PIXELS 300
+#define PIXELS 256
 static unsigned char buf[24 * PIXELS];
 
 static void ws2811_tx()
@@ -117,32 +132,37 @@ static void ws2811_tx()
 
   timer_stop(TIM1_BASE);
 
+#if !STM32_F1XX
   dma_set_chan(DMANUM, CHAN_TIM1_UP, DEVID_TIM1_UP);
   dma_set_chan(DMANUM, CHAN_TIM1_CH1, DEVID_TIM1_CH1);
   dma_set_chan(DMANUM, CHAN_TIM1_CH2, DEVID_TIM1_CH2);
+#endif
 
   attr.ssiz = DMA_SIZ_1;
+#if STM32_F1XX
+  /* only word (32 bit) writes are allowed to gpio registers on f1xx.
+     This pads the byte with zeros out to 32 bits. */
+  attr.dsiz = DMA_SIZ_4;
+#else
   attr.dsiz = DMA_SIZ_1;
+#endif
   attr.dir = DMA_DIR_TO;
   attr.prio = 0;
   attr.sinc = 0;
   attr.dinc = 0;
   attr.irq = 0;
 
-  dma_trans(DMANUM, CHAN_TIM1_UP, &one,
-            (void *)(GPIO_ADDR), 24 * PIXELS, attr);
+  dma_trans(DMANUM, CHAN_TIM1_UP, &one, GPIO_ADDR_SET, 24 * PIXELS, attr);
 
   attr.sinc = 1;
   attr.irq = 1;
 
-  dma_trans(DMANUM, CHAN_TIM1_CH1, buf,
-            (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
+  dma_trans(DMANUM, CHAN_TIM1_CH1, buf, GPIO_ADDR_CLEAR, 24 * PIXELS, attr);
 
   attr.sinc = 0;
   attr.irq = 0;
 
-  dma_trans(DMANUM, CHAN_TIM1_CH2, &one,
-            (void *)(GPIO_ADDR + 2), 24 * PIXELS, attr);
+  dma_trans(DMANUM, CHAN_TIM1_CH2, &one, GPIO_ADDR_CLEAR, 24 * PIXELS, attr);
 
   dma_en(DMANUM, CHAN_TIM1_UP, 1);
   dma_en(DMANUM, CHAN_TIM1_CH1, 1);
