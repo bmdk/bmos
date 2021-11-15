@@ -40,6 +40,9 @@ void debug_puts(const char *str)
       debug_putc('\r');
     debug_putc(c);
   }
+
+  while (!debug_ser_tx_done())
+    ;
 }
 
 #if BMOS
