@@ -47,9 +47,7 @@ void pin_init()
   /* USART1 */
   enable_apb2(14);
   gpio_init_attr(GPIO(1, 6), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(1, 7),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
+  gpio_init_attr(GPIO(1, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 
   enable_apb2(11); /* TIM 1 */
   enable_apb1(0);  /* TIM 2 */

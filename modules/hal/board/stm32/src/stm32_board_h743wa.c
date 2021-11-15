@@ -68,9 +68,7 @@ static void pin_init()
   /* USART2 */
   enable_apb1(17);
   gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 3),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PD, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
+  gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 
   /* SPI1 - SPI FLASH */
   enable_apb2(12);

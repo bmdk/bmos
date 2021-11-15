@@ -47,15 +47,12 @@ void pin_init()
   /* USART1 */
   enable_apb2(14);
   gpio_init_attr(GPIO(0, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 10),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
+  gpio_init_attr(GPIO(0, 10), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 
   /* USART2 */
   enable_apb1(17);
   gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 15), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
-                                              GPIO_SPEED_HIG, 3, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 15), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 3, GPIO_ALT));
 
   /* SPI1 */
   enable_apb2(12);

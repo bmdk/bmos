@@ -65,41 +65,29 @@ static void pin_init()
 
   /* USART3 */
   enable_apb1(18);
-  gpio_init_attr(GPIO(3, 8),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
-  gpio_init_attr(GPIO(3, 9),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
+  gpio_init_attr(GPIO(3, 8), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
+  gpio_init_attr(GPIO(3, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 
   /* USART2 */
   enable_apb1(17);
-  gpio_init_attr(GPIO(3, 5),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
-  gpio_init_attr(GPIO(3, 6),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
+  gpio_init_attr(GPIO(3, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
+  gpio_init_attr(GPIO(3, 6), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 
   enable_apb4(1);  /* SYSCFG */
   enable_apb1(0);  /* TIM2 */
   enable_apb2(0);  /* TIM1 */
 
   /* TIM1_CH1 */
-  gpio_init_attr(GPIO(4, 9),
-                 GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
+  gpio_init_attr(GPIO(4, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
   /* TIM1_CH2 */
-  gpio_init_attr(GPIO(4, 11),
-                 GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
+  gpio_init_attr(GPIO(4, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
   /* TIM1_CH3 */
-  gpio_init_attr(GPIO(4, 13),
-                 GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
+  gpio_init_attr(GPIO(4, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
 
   /* TIM4 */
   enable_apb1(2);
 
-  gpio_init_attr(GPIO(1, 7),
-                 GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 2, GPIO_ALT));
+  gpio_init_attr(GPIO(1, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 2, GPIO_ALT));
 
   enable_apb1(22); /* I2C2 */
 

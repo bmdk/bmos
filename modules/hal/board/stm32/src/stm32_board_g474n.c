@@ -50,18 +50,14 @@ void pin_init()
 
   /* LPUART1 */
   enable_apb1(32);
-  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
-                                             GPIO_SPEED_LOW, 12, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
-                                             GPIO_SPEED_LOW, 12, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 12, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 12, GPIO_ALT));
 
 #if 1
   /* USART1 */
   enable_apb2(14);
   gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-  gpio_init_attr(GPIO(2, 5),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU, GPIO_SPEED_HIG, 7,
-                                 GPIO_ALT));
+  gpio_init_attr(GPIO(2, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 #endif
 
   /* SYSCFG */
