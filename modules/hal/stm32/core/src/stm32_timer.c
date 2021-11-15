@@ -41,7 +41,7 @@ typedef struct {
   unsigned int cnt;
   unsigned int psc;
   unsigned int arr;
-  unsigned int pad0;
+  unsigned int rcr;
   unsigned int ccr[4];
   unsigned int bdtr;
   unsigned int dcr;
