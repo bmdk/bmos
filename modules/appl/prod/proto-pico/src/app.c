@@ -69,6 +69,11 @@ void debug_putc(int ch)
   uart_putc_raw(DEBUG_UART, ch);
 }
 
+int debug_ser_tx_done()
+{
+  return 1;
+}
+
 static void polled_shell(void)
 {
   shell_t sh;
