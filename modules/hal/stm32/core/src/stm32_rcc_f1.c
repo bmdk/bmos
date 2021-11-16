@@ -113,7 +113,7 @@ void clock_init_hs(const struct pll_params_t *p)
   }
 
   //XASSERT(p->pllm > 1);
-  RCC->cfgr2 = (p->plln - 1) & 0xf;
+  reg_set_field(&RCC->cfgr2, 4, 0, p->plln - 1);
   reg_set_field(&RCC->cfgr, 4, 18, p->pllm - 2);
   reg_set_field(&RCC->cfgr, 3, 8, p->ppre1);
   reg_set_field(&RCC->cfgr, 3, 11, p->ppre2);
