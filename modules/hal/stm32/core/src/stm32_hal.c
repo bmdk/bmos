@@ -90,11 +90,23 @@ int cmd_devid(int argc, char *argv[])
   const char *idstr;
 
   switch (id) {
+  case 0x410:
+    idstr = "F103 m";
+    break;
+  case 0x412:
+    idstr = "F103 l";
+    break;
   case 0x413:
     idstr = "F405/407/415/417";
     break;
+  case 0x414:
+    idstr = "F103 h";
+    break;
   case 0x415:
     idstr = "L475/476/486";
+    break;
+  case 0x418:
+    idstr = "F103 c";
     break;
   case 0x419:
     idstr = "F42x/43x";
@@ -107,6 +119,9 @@ int cmd_devid(int argc, char *argv[])
     break;
   case 0x428:
     idstr = "F100 h";
+    break;
+  case 0x430:
+    idstr = "F103 x";
     break;
   case 0x433:
     idstr = "F401xD/E";

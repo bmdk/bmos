@@ -24,6 +24,7 @@ export BUILD_DIR = build
 export ROOT ?= $(shell pwd)/../..
 
 PROG += f100d
+PROG += f103bp
 PROG += f401bp
 PROG += f411bp
 PROG += f407deb
@@ -115,6 +116,15 @@ XCFLAGS.f100d += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.f100d += -DCONFIG_N_INTS=61
 XCFLAGS.f100d += -mcpu=cortex-m3
 STACK_END.f100d = 0x20002000
+
+XCFLAGS.f103bp += -DSTM32_F1XX
+XCFLAGS.f103bp += -DSTM32_F103BP -DSTM32_F103
+XCFLAGS.f103bp += -DCONFIG_SYSLOG_NUM_LINES=32
+XCFLAGS.f103bp += -DCONFIG_FAST_LOG_SHIFT=4
+XCFLAGS.f103bp += -DCONFIG_MALLOC_CHUNK_POW2=6
+XCFLAGS.f103bp += -DCONFIG_N_INTS=60
+XCFLAGS.f103bp += -mcpu=cortex-m3
+STACK_END.f103bp = 0x20005000
 
 XCFLAGS.f411bp += -DSTM32_F411 -DSTM32_F4XX
 XCFLAGS.f411bp += -DSTM32_F411BP
@@ -353,15 +363,20 @@ FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f4xx += stm32_pwr_f4xx.o
 FILES.fxxx += stm32_exti_fxxx.o
 
+FILES.f1xx += stm32_exti_fxxx.o
+FILES.f1xx += stm32_flash_f1.o
+FILES.f1xx += stm32_hal_bdma.o
+FILES.f1xx += stm32_pwr_f1xx.o
+FILES.f1xx += stm32_rcc_f1.o
+FILES.f1xx += stm32_usart_a.o
+
 #FILES.f100d += stm32_hal_rtc.o # Needs new driver
 FILES.f100d += stm32_board_f100d.o
-FILES.f100d += stm32_exti_fxxx.o
-FILES.f100d += stm32_flash_f1.o
-FILES.f100d += stm32_hal_bdma.o
-FILES.f100d += stm32_pwr_f1xx.o
-FILES.f100d += stm32_rcc_f1.o
-FILES.f100d += stm32_usart_a.o
 XSLOG.f100d += xslog_simple.o
+FILES.f100d += $(FILES.f1xx)
+
+FILES.f103bp += stm32_board_f103bp.o
+FILES.f103bp += $(FILES.f1xx)
 
 FILES.f411bp += stm32_hal_rtc.o
 FILES.f411bp += stm32_usart_a.o
