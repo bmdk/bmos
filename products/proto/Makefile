@@ -310,10 +310,12 @@ FILES += hal_dma.o
 FILES += stm32_dma_if.o
 
 # BMOS
-FILES += reg.o
-FILES += task.o
-FILES += queue.o
+FILES += mutex.o
 FILES += op_msg.o
+FILES += queue.o
+FILES += reg.o
+FILES += sem.o
+FILES += task.o
 
 ifneq ($(CONFIG_NEWLIB), y)
 FILES += libc.o

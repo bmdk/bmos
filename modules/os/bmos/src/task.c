@@ -23,18 +23,16 @@
 #include <string.h>
 
 #include "bmos_reg.h"
-#include "bmos_sem.h"
-#include "bmos_mutex.h"
 #include "bmos_task.h"
 #include "bmos_task_priv.h"
 #include "common.h"
 #include "cortexm.h"
+#include "fast_log.h"
 #include "hal_int.h"
 #include "hal_time.h"
 #include "io.h"
 #include "shell.h"
 #include "xassert.h"
-#include "fast_log.h"
 
 unsigned int systick_count = 0;
 
@@ -47,21 +45,9 @@ static inline void _task_yield()
   trigger_pendsv();
 }
 
-static void schedule(void);
-
 #define XPSR_THUMB BIT(24)
 
-typedef struct {
-  bmos_task_t *task_list;
-  bmos_task_t *current;
-  bmos_task_t *next;
-} sched_data_t;
-
-static sched_data_t sched_data = { 0 };
-
-#define CURRENT sched_data.current
-#define NEXT sched_data.next
-#define TASK_LIST sched_data.task_list
+sched_data_t sched_data = { 0 };
 
 static void idle_task(void *arg)
 {
@@ -222,7 +208,7 @@ void task_wake(bmos_task_t *t)
 
 sched_info_t sched_info;
 
-static void schedule(void)
+void schedule(void)
 {
   bmos_task_t *t;
   unsigned int start, diff;
@@ -319,37 +305,7 @@ void svc_handler(void)
 {
 }
 
-bmos_sem_t *sem_create(const char *name, unsigned int count)
-{
-  bmos_sem_t *s = malloc(sizeof(bmos_sem_t));
-
-  if (!s)
-    return NULL;
-
-  s->count = count;
-  s->name = name;
-  s->waiters.first = 0;
-  s->waiters.last = 0;
-
-  bmos_reg(BMOS_REG_TYPE_SEM, (void *)s);
-
-  return s;
-}
-
-unsigned int sem_count(bmos_sem_t *s)
-{
-  unsigned int saved, count;
-
-  saved = interrupt_disable();
-
-  count = s->count;
-
-  interrupt_enable(saved);
-
-  return count;
-}
-
-static void _waiters_add(bmos_task_list_t *waiters, bmos_task_t *t, int tms)
+void _waiters_add(bmos_task_list_t *waiters, bmos_task_t *t, int tms)
 {
   if (!waiters->first) {
     waiters->first = t;
@@ -368,7 +324,7 @@ static void _waiters_add(bmos_task_list_t *waiters, bmos_task_t *t, int tms)
   }
 }
 
-static void _waiters_remove(bmos_task_list_t *waiters, bmos_task_t *c)
+void _waiters_remove(bmos_task_list_t *waiters, bmos_task_t *c)
 {
   bmos_task_t *t, *p = 0;
 
@@ -387,7 +343,7 @@ static void _waiters_remove(bmos_task_list_t *waiters, bmos_task_t *c)
   }
 }
 
-static void _waiters_wake_first(bmos_task_list_t *waiters)
+void _waiters_wake_first(bmos_task_list_t *waiters)
 {
   bmos_task_t *t;
 
@@ -402,151 +358,6 @@ static void _waiters_wake_first(bmos_task_list_t *waiters)
       schedule();
     }
   }
-}
-
-bmos_mutex_t *mutex_create(const char *name)
-{
-  bmos_mutex_t *m = calloc(1, sizeof(bmos_mutex_t));
-
-  if (!m)
-    return NULL;
-
-  m->name = name;
-
-  bmos_reg(BMOS_REG_TYPE_MUT, (void *)m);
-
-  return m;
-}
-
-void mutex_unlock(bmos_mutex_t *m)
-{
-  unsigned int saved;
-
-  saved = interrupt_disable();
-
-  XASSERT(m->count > 0 && m->owner == CURRENT);
-
-  if (--m->count == 0) {
-    m->owner = NULL;
-    _waiters_wake_first(&m->waiters);
-  }
-
-  interrupt_enable(saved);
-}
-
-int mutex_lock_ms(bmos_mutex_t *m, int tms)
-{
-  unsigned int saved;
-  int status = TASK_STATUS_OK;
-  bmos_task_t *t;
-
-  saved = interrupt_disable();
-
-  t = CURRENT;
-
-  if (t == m->owner) {
-    m->count++;
-    goto exit;
-  }
-
-  while (m->count > 0 && status != TASK_STATUS_TIMEOUT) {
-    _waiters_add(&m->waiters, t, tms);
-
-    schedule();
-
-    interrupt_enable(saved);
-
-    __ISB();
-    asm volatile ("" : : : "memory");
-
-    saved = interrupt_disable();
-
-    status = CURRENT->status;
-  }
-
-  XASSERT(status == TASK_STATUS_TIMEOUT || status == TASK_STATUS_OK);
-
-  if (status == TASK_STATUS_TIMEOUT)
-    _waiters_remove(&m->waiters, CURRENT);
-  else {
-    XASSERT(m->owner == NULL && m->count == 0);
-
-    m->owner = CURRENT;
-    m->count++;
-  }
-
-exit:
-  interrupt_enable(saved);
-
-  return status;
-}
-
-void mutex_lock(bmos_mutex_t *m)
-{
-  int status = mutex_lock_ms(m, -1);
-
-  XASSERT(status == TASK_STATUS_OK);
-}
-
-void sem_post(bmos_sem_t *s)
-{
-  unsigned int saved;
-
-  FAST_LOG('S', "sem_post '%s'\n", s->name, 0);
-
-  saved = interrupt_disable();
-
-  s->count++;
-
-  _waiters_wake_first(&s->waiters);
-
-  interrupt_enable(saved);
-}
-
-void sem_wait(bmos_sem_t *s)
-{
-  (void)sem_wait_ms(s, -1);
-}
-
-int sem_wait_ms(bmos_sem_t *s, int tms)
-{
-  unsigned int saved;
-  int status = TASK_STATUS_OK;
-
-  FAST_LOG('S', "sem_wait_msS '%s' %d\n", s->name, tms);
-
-  saved = interrupt_disable();
-
-  while (s->count == 0 && status != TASK_STATUS_TIMEOUT) {
-    _waiters_add(&s->waiters, CURRENT, tms);
-
-    schedule();
-
-    interrupt_enable(saved);
-
-    __ISB();
-    asm volatile ("" : : : "memory");
-
-    saved = interrupt_disable();
-
-    status = CURRENT->status;
-  }
-
-  XASSERT(status == TASK_STATUS_TIMEOUT || status == TASK_STATUS_OK);
-
-  if (status == TASK_STATUS_TIMEOUT)
-    _waiters_remove(&s->waiters, CURRENT);
-  else {
-    XASSERT(s->count);
-
-    s->count--;
-  }
-
-  interrupt_enable(saved);
-
-  FAST_LOG('S', "sem_wait_msE '%s' %d\n", s->name, status);
-
-  return status;
 }
 
 static void *_task_get_tls(bmos_task_t *t, unsigned int n)

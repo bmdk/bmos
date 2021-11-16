@@ -1,6 +1,8 @@
 #ifndef BMOS_TASK_PRIV_H
 #define BMOS_TASK_PRIV_H
 
+#include "bmos_task.h"
+
 #define POISON_VAL 0x5aa5f00f
 
 #define MAX_TASK_TLS 2
@@ -56,6 +58,26 @@ typedef struct {
 } sched_info_t;
 
 extern sched_info_t sched_info;
+
+#include "bmos_task.h"
+
+typedef struct {
+  bmos_task_t *task_list;
+  bmos_task_t *current;
+  bmos_task_t *next;
+} sched_data_t;
+
+extern sched_data_t sched_data;
+
+#define CURRENT sched_data.current
+#define NEXT sched_data.next
+#define TASK_LIST sched_data.task_list
+
+void schedule(void);
+
+void _waiters_add(bmos_task_list_t *waiters, bmos_task_t *t, int tms);
+void _waiters_remove(bmos_task_list_t *waiters, bmos_task_t *c);
+void _waiters_wake_first(bmos_task_list_t *waiters);
 
 #endif
 
