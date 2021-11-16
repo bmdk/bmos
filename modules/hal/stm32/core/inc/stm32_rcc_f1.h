@@ -28,6 +28,7 @@ struct pll_params_t {
   unsigned char ppre1;
   unsigned char ppre2;
   unsigned char hpre;
+  unsigned char acr;
 };
 
 void clock_init(const struct pll_params_t *p);

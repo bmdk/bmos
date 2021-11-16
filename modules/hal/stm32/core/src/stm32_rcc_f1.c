@@ -39,6 +39,8 @@ typedef struct {
 } stm32_rcc_f1_t;
 
 #define RCC ((stm32_rcc_f1_t *)(0x40021000))
+#define FLASH_ACR ((reg32_t *)0x40022000)
+
 
 void enable_apb1(unsigned int n)
 {
@@ -123,6 +125,8 @@ void clock_init_hs(const struct pll_params_t *p)
   RCC->cr |= RCC_CR_PLLON;
   while ((RCC->cr & RCC_CR_PLLRDY) == 0)
     ;
+
+  reg_set_field(FLASH_ACR, 3, 0, p->acr);
 
   reg_set_field(&RCC->cfgr, 2, 0, RCC_CFGR_SW_PLL);
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
