@@ -29,4 +29,8 @@ void hal_delay_us(unsigned int us);
 
 unsigned int hal_time_us(void);
 
+#if CONFIG_TIMER_16BIT
+void hal_time_us_update(void);
+#endif
+
 #endif

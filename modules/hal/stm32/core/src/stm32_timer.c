@@ -22,11 +22,12 @@
 #include <stdlib.h>
 
 #include "common.h"
-#include "hal_time.h"
+#include "hal_board.h"
 #include "hal_common.h"
+#include "hal_int.h"
+#include "hal_time.h"
 #include "io.h"
 #include "shell.h"
-#include "hal_board.h"
 #include "stm32_timer.h"
 
 typedef struct {
@@ -96,10 +97,35 @@ void hal_delay_us(unsigned int us)
     ;
 }
 
+#if CONFIG_TIMER_16BIT
+static unsigned int hal_time_us_acc;
+static unsigned int hal_time_us_last;
+
+void hal_time_us_update(void)
+{
+  unsigned int saved, now;
+
+  saved = interrupt_disable();
+
+  now = timer_get(TIM2_BASE);
+  hal_time_us_acc += (unsigned int)(unsigned short)(now - hal_time_us_last);
+  hal_time_us_last = now;
+
+  interrupt_enable(saved);
+}
+
+unsigned int hal_time_us(void)
+{
+  hal_time_us_update();
+
+  return hal_time_us_acc;
+}
+#else
 unsigned int hal_time_us(void)
 {
   return timer_get(TIM2_BASE);
 }
+#endif
 
 #if STM32_F767
 #define TIM2_DIV 2

@@ -208,6 +208,9 @@ static void blink_task(void *arg)
 
 void systick_hook(void)
 {
+#if CONFIG_TIMER_16BIT
+  hal_time_us_update();
+#endif
   blink();
 }
 
