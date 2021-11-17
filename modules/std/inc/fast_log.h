@@ -23,13 +23,19 @@
 #define FAST_LOG_H_
 
 extern unsigned char fast_log_mask[];
+extern unsigned char fast_log_enabled;
 
 #define FAST_LOG(_m_, fmt, v1, v2)                             \
   do {                                                         \
-    if (fast_log_mask[_m_]) {                                  \
+    if (fast_log_enabled && fast_log_mask[_m_]) {              \
       fast_log(fmt, (unsigned long)(v1), (unsigned long)(v2)); \
     }                                                          \
   } while (0)
+
+static inline void fast_log_enable(unsigned int en)
+{
+  fast_log_enabled = en;
+}
 
 void fast_log(const char *fmt, unsigned long v1, unsigned long v2);
 

@@ -29,7 +29,9 @@
 #include "shell.h"
 #include "io.h"
 
-unsigned char fast_log_mask[256];
+#define FAST_LOG_ITEMS_LEN 128
+unsigned char fast_log_mask[FAST_LOG_ITEMS_LEN];
+unsigned char fast_log_enabled;
 
 typedef struct fast_log_entry_t {
   unsigned int tus;
@@ -103,7 +105,7 @@ void fast_log_dump(unsigned int ent, int debug)
 #define FAST_LOG_ENABLE 0xff
 #define FAST_LOG_DISABLE 0x00
 
-void fast_log_enable(const char *items, int enable)
+static void fast_log_enable_items(const char *items, int enable)
 {
   unsigned char mask;
 
@@ -119,14 +121,28 @@ void fast_log_enable(const char *items, int enable)
     memset(fast_log_mask, mask, sizeof(fast_log_mask));
   else {
     unsigned int c;
-    for (c = *items++; c != '\0'; c = *items++)
+    for (c = *items++; c != '\0'; c = *items++) {
+      if (c >= FAST_LOG_ITEMS_LEN)
+        continue;
       fast_log_mask[c] = mask;
+    }
   }
+}
+
+static void fast_log_show_items(void)
+{
+  unsigned int i;
+
+  for (i = 0; i < FAST_LOG_ITEMS_LEN; i++)
+    if (fast_log_mask[i])
+      xprintf("%c", i);
+  xprintf("\n%sabled\n", fast_log_enabled ? "en" : "dis");
 }
 
 void fast_log_init(const char *enable_items)
 {
-  fast_log_enable(enable_items, 1);
+  fast_log_enable(1);
+  fast_log_enable_items(enable_items, 1);
 }
 
 int cmd_fast_log(int argc, char *argv[])
@@ -147,16 +163,32 @@ int cmd_fast_log(int argc, char *argv[])
   case 'e':
     if (argc <= 2)
       return -1;
-    fast_log_enable(argv[2], 1);
+    fast_log_enable_items(argv[2], 1);
     break;
   case 'd':
     if (argc <= 2)
       return -1;
-    fast_log_enable(argv[2], 0);
+    fast_log_enable_items(argv[2], 0);
+    break;
+  case 'i':
+    fast_log_show_items();
+    break;
+  case 't':
+    fast_log_enable(1);
+    break;
+  case 'p':
+    fast_log_enable(0);
     break;
   }
 
   return 0;
 }
 
-SHELL_CMD(fast_log, cmd_fast_log);
+SHELL_CMD_H(fast_log, cmd_fast_log, "fast_log control\n\n"
+            " i: show enabled items\n"
+            " p: stop\n"
+            " t: start\n"
+            " d <item>|*: disable items\n"
+            " e <item>|*: enable items\n"
+            " s <count>: show entries"
+            );
