@@ -188,7 +188,7 @@ void run_command(char *cmdline)
     rc = ent->cmd(argc, argv);
 
     if (rc != 0) {
-#ifdef CONFIG_SHELL_HELP
+#if CONFIG_SHELL_HELP
       if (ent->help)
         xputs(ent->help);
       xputs("\n\n");
@@ -398,7 +398,7 @@ void shell_input(shell_t *shell, int c)
   }
 }
 
-#ifdef CONFIG_SHELL_HELP
+#if CONFIG_SHELL_HELP
 int cmd_help(int argc, char *argv[])
 {
   cmd_ent_t *ent;
