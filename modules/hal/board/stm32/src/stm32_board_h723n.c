@@ -120,6 +120,7 @@ void hal_board_init()
 {
   pin_init();
   led_init(leds, ARRSIZ(leds));
+  stm32_pwr_power(PWR_CR3_LDOEN);
   clock_init(&clock_params);
   backup_domain_protect(0);
   clock_init_ls();
