@@ -47,6 +47,20 @@ typedef struct {
 
 static reg_t reg_list[BMOS_REG_TYPE_COUNT];
 
+static void bmos_reg_printf(unsigned int debug, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start(ap, fmt);
+
+  if (debug)
+    debug_vprintf(fmt, ap);
+  else
+    xvprintf(fmt, ap);
+
+  va_end(ap);
+}
+
 void bmos_reg(bmos_reg_type_t type, void *p)
 {
   reg_t *r;
@@ -79,25 +93,16 @@ void task_info(char opt, int debug)
     return;
   }
 
-
-  if (debug)
-    debug_printf("name       stack      size prio\n");
-  else
-    xprintf("name       stack      size prio\n");
+  bmos_reg_printf(debug, "name       stack      size prio\n");
 
   for (i = 0; i < r->count; i++) {
     bmos_task_t *t = (bmos_task_t *)r->list[i];
 
-    if (debug)
-      debug_printf("%-10s %p %4d %4d %c %4d.%06d\n", t->name, t->stack,
-                   t->stack_size,
-                   t->prio, task_state_to_char(t->state),
-                   t->time / 1000000, t->time % 1000000);
-    else
-      xprintf("%-10s %p %4d %4d %c %4d.%06d\n", t->name, t->stack,
-              t->stack_size, t->prio,
-              task_state_to_char(t->state),
-              t->time / 1000000, t->time % 1000000);
+    bmos_reg_printf(debug,
+                    "%-10s %p %4d %4d %c %4d.%06d\n", t->name, t->stack,
+                    t->stack_size, t->prio,
+                    task_state_to_char(t->state),
+                    t->time / 1000000, t->time % 1000000);
   }
 }
 
@@ -106,10 +111,7 @@ void queue_info(char opt, int debug)
   reg_t *r = &reg_list[BMOS_REG_TYPE_QUEUE];
   unsigned int i;
 
-  if (debug)
-    debug_printf("name       typ count\n");
-  else
-    xprintf("name       typ count\n");
+  bmos_reg_printf(debug, "name       typ count\n");
 
   for (i = 0; i < r->count; i++) {
     bmos_queue_t *q = (bmos_queue_t *)r->list[i];
@@ -124,12 +126,8 @@ void queue_info(char opt, int debug)
       count = q->type_data.driver.count;
     }
 
-    if (debug)
-      debug_printf("%-10s %c   %5d %s\n", q->name, type, count,
-                   q->pool_data ? "pool" : "");
-    else
-      xprintf("%-10s %c   %5d %s\n", q->name, type, count,
-              q->pool_data ? "pool" : "");
+    bmos_reg_printf(debug, "%-10s %c   %5d %s\n", q->name, type, count,
+                    q->pool_data ? "pool" : "");
 #if 1
     /* COPY!! */
     if (opt == 'd') {
@@ -148,19 +146,14 @@ void queue_info(char opt, int debug)
 
       interrupt_enable(saved);
 
-      if (debug)
-        debug_printf("  msg        next       home       queue        len\n");
-      else
-        xprintf("  msg        next       home       queue        len\n");
+      bmos_reg_printf(debug,
+                      "  msg        next       home       queue        len\n");
 
       for (i = 0; i < count; i++) {
         m = d[i];
-        if (debug)
-          debug_printf("  %p %p %-10s %-10s %5d\n", m, m->next, m->home->name,
-                       m->queue ? m->queue->name : "none", m->len);
-        else
-          xprintf("  %p %p %-10s %-10s %5d\n", m, m->next, m->home->name,
-                  m->queue ? m->queue->name : "none", m->len);
+        bmos_reg_printf(debug,
+                        "  %p %p %-10s %-10s %5d\n", m, m->next, m->home->name,
+                        m->queue ? m->queue->name : "none", m->len);
       }
     }
 #endif
@@ -172,10 +165,7 @@ void pool_info(char opt, int debug)
   reg_t *r = &reg_list[BMOS_REG_TYPE_QUEUE];
   unsigned int i;
 
-  if (debug)
-    debug_printf("name       typ count alloc size\n");
-  else
-    xprintf("name       typ count alloc size\n");
+  bmos_reg_printf(debug, "name       typ count alloc size\n");
 
   for (i = 0; i < r->count; i++) {
     bmos_queue_t *q = (bmos_queue_t *)r->list[i];
@@ -193,29 +183,20 @@ void pool_info(char opt, int debug)
       count = q->type_data.driver.count;
     }
 
-    if (debug)
-      debug_printf("%-10s %c   %5d %5d %4d\n", q->name, type, count,
-                   q->pool_data->cnt, q->pool_data->size);
-    else
-      xprintf("%-10s %c   %5d %5d %4d\n", q->name, type, count,
-              q->pool_data->cnt, q->pool_data->size);
+    bmos_reg_printf(debug, "%-10s %c   %5d %5d %4d\n", q->name, type, count,
+                    q->pool_data->cnt, q->pool_data->size);
 
     if (opt == 'd') {
       bmos_msg_t *m = (bmos_msg_t *)(q->pool_data + 1);
       unsigned int j;
 
-      if (debug)
-        debug_printf("  msg        next       home       queue        len\n");
-      else
-        xprintf("  msg        next       home       queue        len\n");
+      bmos_reg_printf(debug,
+                      "  msg        next       home       queue        len\n");
 
       for (j = 0; j < q->pool_data->cnt; j++) {
-        if (debug)
-          debug_printf("  %p %p %-10s %-10s %5d\n", m, m->next, m->home->name,
-                       m->queue ? m->queue->name : "none", m->len);
-        else
-          xprintf("  %p %p %-10s %-10s %5d\n", m, m->next, m->home->name,
-                  m->queue ? m->queue->name : "none", m->len);
+        bmos_reg_printf(debug,
+                        "  %p %p %-10s %-10s %5d\n", m, m->next, m->home->name,
+                        m->queue ? m->queue->name : "none", m->len);
         m = (bmos_msg_t *)((char *)(m + 1) + q->pool_data->size);
       }
     }
@@ -236,13 +217,9 @@ static void show_waiters(bmos_task_list_t *wait_list, int debug)
 
   interrupt_enable(saved);
 
-  if (count > 0) {
+  if (count > 0)
     for (i = 0; i < count; i++)
-      if (debug)
-        debug_printf("  %s\n", waiters[i]->name);
-      else
-        xprintf("  %s\n", waiters[i]->name);
-  }
+      bmos_reg_printf(debug, "  %s\n", waiters[i]->name);
 }
 
 void sem_info(char opt, int debug)
@@ -250,18 +227,12 @@ void sem_info(char opt, int debug)
   reg_t *r = &reg_list[BMOS_REG_TYPE_SEM];
   unsigned int i;
 
-  if (debug)
-    debug_printf("name       count\n");
-  else
-    xprintf("name       count\n");
+  bmos_reg_printf(debug, "name       count\n");
 
   for (i = 0; i < r->count; i++) {
     bmos_sem_t *s = (bmos_sem_t *)r->list[i];
 
-    if (debug)
-      debug_printf("%-10s %d\n", s->name, s->count);
-    else
-      xprintf("%-10s %d\n", s->name, s->count);
+    bmos_reg_printf(debug, "%-10s %d\n", s->name, s->count);
 
     if (opt == 'd')
       show_waiters(&s->waiters, debug);
@@ -273,19 +244,14 @@ void mutex_info(char opt, int debug)
   reg_t *r = &reg_list[BMOS_REG_TYPE_MUT];
   unsigned int i;
 
-  if (debug)
-    debug_printf("name       count owner\n");
-  else
-    xprintf("name       count owner\n");
+  bmos_reg_printf(debug, "name       count owner\n");
 
   for (i = 0; i < r->count; i++) {
     bmos_mutex_t *m = (bmos_mutex_t *)r->list[i];
     bmos_task_t *t = m->owner;
 
-    if (debug)
-      debug_printf("%-10s %5d %s\n", m->name, m->count, t ? t->name : "");
-    else
-      xprintf("%-10s %5d %s\n", m->name, m->count, t ? t->name : "");
+    bmos_reg_printf(debug, "%-10s %5d %s\n", m->name, m->count,
+                    t ? t->name : "");
 
     if (opt == 'd')
       show_waiters(&m->waiters, debug);
