@@ -273,13 +273,7 @@ int main()
   shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
 #endif
 
-#ifdef STM32_F1XX
-#define SHELL_STACK 1280
-#else
-#define SHELL_STACK 4096
-#endif
-
-  task_init(shell_task, &shell_info, "shell", 2, 0, SHELL_STACK);
+  task_init(shell_task, &shell_info, "shell", 2, 0, 768);
 
   io_set_output(shell_info.txq[0], 0);
 
@@ -292,23 +286,23 @@ int main()
 #endif
 
 #if I2C_DEMO
-  task_init(task_i2c_clock, NULL, "clk", 2, 0, 1024);
+  task_init(task_i2c_clock, NULL, "clk", 2, 0, 256);
 #endif
 
 #if STM32_H743WA
-  task_init(task_spi_clock, NULL, "spiclk", 2, 0, 1024);
+  task_init(task_spi_clock, NULL, "spiclk", 2, 0, 256);
 #endif
 
 #if CONFIG_LWIP
-  task_init(task_net, NULL, "net", 4, 0, 8192);
+  task_init(task_net, NULL, "net", 4, 0, 1280);
 #endif
 
 #if WS2811
-  task_init(task_led, NULL, "lcd", 4, 0, 1024);
+  task_init(task_led, NULL, "lcd", 4, 0, 512);
 #endif
 
 #if STM32_G4XX || STM32_H735DK || STM32_H745N || STM32_U575N
-  task_init(task_can, NULL, "can", 4, 0, 1024);
+  task_init(task_can, NULL, "can", 4, 0, 256);
 #endif
 
   syspool = op_msg_pool_create("sys", QUEUE_TYPE_TASK, SYSPOOL_COUNT,
