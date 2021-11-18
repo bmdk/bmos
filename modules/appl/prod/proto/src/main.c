@@ -96,16 +96,16 @@ void button_int(void *data)
 }
 #endif
 
+static shell_t shell;
+
 static void polled_shell(void)
 {
-  shell_t sh;
-
-  shell_init(&sh, "> ");
+  shell_init(&shell, "> ");
 
   for (;;) {
     int c = debug_getc();
     if (c >= 0)
-      shell_input(&sh, c);
+      shell_input(&shell, c);
   }
 }
 
@@ -184,15 +184,13 @@ static int _xgetc(int timeout)
 
 static void shell_task(void *arg)
 {
-  shell_t sh;
-
-  shell_init(&sh, "> ");
+  shell_init(&shell, "> ");
 
   for (;;) {
     int c = _xgetc(-1);
 
     if (c >= 0)
-      shell_input(&sh, c);
+      shell_input(&shell, c);
   }
 }
 
