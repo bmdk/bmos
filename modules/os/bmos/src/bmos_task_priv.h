@@ -1,6 +1,8 @@
 #ifndef BMOS_TASK_PRIV_H
 #define BMOS_TASK_PRIV_H
 
+#define POISON_VAL 0x5aa5f00f
+
 #define MAX_TASK_TLS 2
 
 #define TASK_STATUS_INVALID 1

@@ -80,6 +80,24 @@ void bmos_reg(bmos_reg_type_t type, void *p)
   r->count++;
 }
 
+#if CONFIG_POISON_STACK
+static unsigned int task_check_stack_used(bmos_task_t *t)
+{
+  unsigned int i;
+  unsigned int *stack_words;
+
+  stack_words = (unsigned int *)t->stack;
+
+  for (i = 0; i < (t->stack_size >> 2); i++) {
+    unsigned int word = *stack_words++;
+    if (word != POISON_VAL)
+      return t->stack_size - (i << 2);
+  }
+
+  return 0;
+}
+#endif
+
 void task_info(char opt, int debug)
 {
   reg_t *r = &reg_list[BMOS_REG_TYPE_TASK];
@@ -93,15 +111,32 @@ void task_info(char opt, int debug)
     return;
   }
 
-  bmos_reg_printf(debug, "name       stack      size prio\n");
+  bmos_reg_printf(debug, "name       stack      size");
+#if CONFIG_POISON_STACK
+  bmos_reg_printf(debug, " used");
+#endif
+  bmos_reg_printf(debug, " prio\n");
 
   for (i = 0; i < r->count; i++) {
     bmos_task_t *t = (bmos_task_t *)r->list[i];
 
+#if CONFIG_POISON_STACK
+    unsigned int stack_used;
+
+    stack_used = task_check_stack_used(t);
+#endif
+
     bmos_reg_printf(debug,
-                    "%-10s %p %4d %4d %c %4d.%06d\n", t->name, t->stack,
-                    t->stack_size, t->prio,
-                    task_state_to_char(t->state),
+                    "%-10s %p %4d "
+#if CONFIG_POISON_STACK
+                    "%4d "
+#endif
+                    "%4d %c %4d.%06d\n", t->name, t->stack,
+                    t->stack_size,
+#if CONFIG_POISON_STACK
+                    stack_used,
+#endif
+                    t->prio, task_state_to_char(t->state),
                     t->time / 1000000, t->time % 1000000);
   }
 }

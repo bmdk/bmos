@@ -129,12 +129,26 @@ bmos_task_t *task_init(task_fun_t *tf, void *ta, const char *name,
   }
 
   if (!stack) {
+    /* ensure alignment to double word */
+    stack_size = ALIGN(stack_size, 3);
+
     stack = malloc(stack_size);
     if (!stack) {
       xprintf("no memory for stack allocation");
       return NULL;
     }
   }
+
+#if CONFIG_POISON_STACK
+  {
+    unsigned int i;
+    unsigned int *sp_int = (unsigned int *)stack;
+
+    for (i = 0; i < stack_size >> 2; i++)
+      *sp_int++ = POISON_VAL;
+  }
+#endif
+
   sp = hw_task_init(tf, ta, (unsigned char *)stack + stack_size);
 
   t->sp = sp;
