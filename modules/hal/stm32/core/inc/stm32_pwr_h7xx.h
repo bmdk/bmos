@@ -37,6 +37,9 @@ void stm32_pwr_wkup_en(unsigned int n, int en);
 #define PWR_CR3_LDOEN BIT(1)
 #define PWR_CR3_SDEN BIT(2)
 #define PWR_CR3_SCUEN BIT(2)
+#define PWR_CR3_SDLEVEL(_v_) (((_v_) & 0x3) << 4)
+#define PWR_CR3_SDLEVEL_1V8 PWR_CR3_SDLEVEL(1)
+#define PWR_CR3_SDLEVEL_2V5 PWR_CR3_SDLEVEL(2)
 
 void stm32_pwr_power(unsigned int val);
 void stm32_pwr_vos(unsigned int vos);
