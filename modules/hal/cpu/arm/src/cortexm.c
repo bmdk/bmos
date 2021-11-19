@@ -109,6 +109,7 @@ void hal_cpu_init()
 
 void systick_init()
 {
+  SYSTICK->ctrl = 0;
   SYSTICK->load = hal_cpu_clock / 1000 - 1;
   SYSTICK->val = 0;
   SYSTICK->ctrl = SYSTICK_CTRL_CLKSOURCE | SYSTICK_CTRL_TICKINT |
@@ -301,9 +302,12 @@ void set_low_power(int en)
     SCB->scr &= ~BIT(2);
 }
 
+#define SCB_AIRCR_KEY (0x05faUL << 16)
+#define SCB_AIRCR_SYSRESETREQ BIT(2)
+
 void hal_cpu_reset()
 {
-  SCB->aircr = (0x5fa << 16) | BIT(2);
+  SCB->aircr = SCB_AIRCR_KEY | SCB_AIRCR_SYSRESETREQ;
 }
 
 #if 0

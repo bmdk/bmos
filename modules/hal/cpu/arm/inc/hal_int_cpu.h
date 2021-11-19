@@ -15,6 +15,16 @@ static inline void set_psp(void *psp)
   asm volatile ("msr psp, %0\n" : : "r" (psp));
 }
 
+static inline void set_basepri(unsigned int pri)
+{
+  asm volatile ("msr basepri, %0\n" : : "r" (pri));
+}
+
+static inline void set_faultmask(unsigned int msk)
+{
+  asm volatile ("msr faultmask, %0\n" : : "r" (msk));
+}
+
 static inline unsigned int interrupt_disable()
 {
   unsigned int ret;
