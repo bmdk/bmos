@@ -247,7 +247,7 @@ void tusb_cdc_init();
 
 int main()
 {
-  interrupt_disable();
+  INTERRUPT_OFF();
   hal_cpu_init();
   hal_board_init();
   hal_time_init();
