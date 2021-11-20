@@ -163,8 +163,7 @@ void queue_info(char opt, int debug)
 
     bmos_reg_printf(debug, "%-10s %c   %5d %s\n", q->name, type, count,
                     q->pool_data ? "pool" : "");
-#if 1
-    /* COPY!! */
+
     if (opt == 'd') {
 #define N_MSGS 32
       bmos_msg_t *d[N_MSGS], *m;
@@ -191,7 +190,6 @@ void queue_info(char opt, int debug)
                         m->queue ? m->queue->name : "none", m->len);
       }
     }
-#endif
   }
 }
 
