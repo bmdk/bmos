@@ -149,6 +149,24 @@ static void adc_dma_irq(void *data)
   }
 }
 
+static void adc_seq(stm32_adc_t *a, unsigned int num, unsigned int chan)
+{
+    unsigned int n = num % 6;
+    unsigned int reg = 2 - (num / 6);
+
+    reg_set_field(&a->sqr[reg], 5, n * 5, chan);
+}
+
+static void adc_srate(stm32_adc_t *a, unsigned int chan, unsigned int rate)
+{
+  unsigned int n, reg;
+
+  n = chan % 10;
+  reg = 1 - chan / 10;
+
+  reg_set_field(&a->smpr[reg], 3, n * 3, rate);
+}
+
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
                             unsigned int cnt)
 {
@@ -179,15 +197,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 #endif
 
   for (i = 0; i < cnt; i++) {
-    unsigned int n = i % 6;
-    unsigned int reg = 2 - (i / 6);
-
-    reg_set_field(&a->sqr[reg], 5, n * 5, reg_seq[i]);
-
-    n = (reg_seq[i]) % 10;
-    reg = 1 - (reg_seq[i]) / 10;
-
-    reg_set_field(&a->smpr[reg], 3, n * 3, 7);
+    adc_seq(a, i, reg_seq[i]);
+    adc_srate(a, reg_seq[i], 7);
   }
 
   reg_set_field(&a->sqr[0], 4, 20, cnt - 1);
