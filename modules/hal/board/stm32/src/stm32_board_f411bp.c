@@ -121,6 +121,8 @@ void pin_init()
   gpio_init_attr(GPIO(1, 9),
                  GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN | GPIO_FLAG_PULL_PU,
                                  GPIO_SPEED_HIG, 4, GPIO_ALT));
+
+  enable_apb2(8); /* ADC1 */
 }
 
 #define USART1_BASE (void *)0x40011000

@@ -41,6 +41,8 @@ static void pin_init(void)
   enable_apb2(3);  /* GPIOB */
   enable_apb2(4);  /* GPIOC */
 
+  enable_apb2(9);  /* ADC */
+
   enable_apb2(11); /* TIM1 */
 
   enable_apb2(14); /* USART1 */

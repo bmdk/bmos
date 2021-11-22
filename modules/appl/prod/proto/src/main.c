@@ -261,6 +261,7 @@ void task_net();
 void task_led();
 void task_can();
 void tusb_cdc_init();
+void adc_init();
 
 int main()
 {
@@ -286,6 +287,10 @@ int main()
 
 #if BLINK_TASK
   task_init(blink_task, NULL, "blink", 2, 0, 128);
+#endif
+
+#if CONFIG_ENABLE_ADC
+  adc_init();
 #endif
 
   shell_info_init(&shell_info, "sh1rx", 0);

@@ -225,6 +225,7 @@ XCFLAGS.f411bp += -DSTM32_F411BP
 XCFLAGS.f411bp += -mcpu=cortex-m4
 STACK_END.f411bp = 0x20020000
 #XCFLAGS.f411bp += -DWS2811
+XCFLAGS.f411bp += -DCONFIG_ENABLE_ADC
 XCFLAGS.f411bp += -DI2C_DEMO
 XCFLAGS.f411bp += -DDISP
 XCFLAGS.f411bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
@@ -510,6 +511,7 @@ FILES.f1xx += stm32_hal_bdma.o
 FILES.f1xx += stm32_pwr_f1xx.o
 FILES.f1xx += stm32_rcc_f1.o
 FILES.f1xx += stm32_usart_a.o
+FILES.f1xx += stm32_hal_adc_fxxx.o
 
 FILES.f3xx += stm32_exti_fxxx.o
 FILES.f3xx += stm32_flash_f1.o
@@ -549,6 +551,8 @@ FILES.f411bp += fb.o
 FILES.f411bp += ssd1306_fonts.o
 FILES.f411bp += i2c_test.o
 FILES.f411bp += ws2811.o
+FILES.f411bp += stm32_hal_adc_fxxx.o
+FILES.f411bp += adc.o
 
 FILES.tusb += stm32_usbd.o
 FILES.tusb += tusb_cdc.o
@@ -697,6 +701,7 @@ FILES.l432 += stm32_hal_bdma.o
 FILES.l432 += stm32_hal_rtc.o
 FILES.l432 += stm32_hal_spi.o
 FILES.l432 += stm32_board_l432.o
+FILES.l432 += stm32_hal_adc.o
 FILES.l432 += ws2811.o
 
 FILES.l452 += stm32_hal_bdma.o

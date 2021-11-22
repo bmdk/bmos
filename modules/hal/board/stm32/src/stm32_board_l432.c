@@ -83,6 +83,9 @@ void pin_init()
 
   /* DMA 2 */
   enable_ahb1(1);
+
+  /* ADC */
+  enable_ahb2(13);
 }
 
 #define USART1_BASE (void *)0x40013800

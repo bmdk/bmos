@@ -42,6 +42,8 @@ static void pin_init(void)
   enable_apb2(3);  /* GPIOB */
   enable_apb2(4);  /* GPIOC */
 
+  enable_apb2(9);  /* ADC */
+
   enable_apb2(11); /* TIM1 */
 
   enable_apb2(14); /* USART1 */
@@ -72,6 +74,7 @@ struct pll_params_t pll_params = {
   .ppre1   = RCC_F1_PPRE_2,
   .ppre2   = RCC_F1_PPRE_1,
   .hpre    = RCC_F1_HPRE_1,
+  .adcpre  = RCC_F1_ADCPRE_6,
   .latency = 2
 };
 
