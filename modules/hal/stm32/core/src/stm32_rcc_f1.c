@@ -123,11 +123,12 @@ void clock_init_hs(const struct pll_params_t *p)
 
   //XASSERT(p->pllm > 1);
   reg_set_field(&RCC->cfgr2, 4, 0, p->plln - 1);
-  reg_set_field(&RCC->cfgr, 4, 18, p->pllm - 2);
+  reg_set_field(&RCC->cfgr, 4, 4, p->hpre);
   reg_set_field(&RCC->cfgr, 3, 8, p->ppre1);
   reg_set_field(&RCC->cfgr, 3, 11, p->ppre2);
-  reg_set_field(&RCC->cfgr, 4, 4, p->hpre);
+  reg_set_field(&RCC->cfgr, 2, 14, p->adcpre);
   reg_set_field(&RCC->cfgr, 1, 16, pllsrc);
+  reg_set_field(&RCC->cfgr, 4, 18, p->pllm - 2);
 
   RCC->cr |= RCC_CR_PLLON;
   while ((RCC->cr & RCC_CR_PLLRDY) == 0)

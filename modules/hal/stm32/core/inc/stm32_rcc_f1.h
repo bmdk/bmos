@@ -26,6 +26,11 @@
 #define RCC_F1_CLK_HSE 1
 #define RCC_F1_CLK_HSE_OSC 2
 
+#define RCC_F1_ADCPRE_2 0
+#define RCC_F1_ADCPRE_4 1
+#define RCC_F1_ADCPRE_6 2
+#define RCC_F1_ADCPRE_8 3
+
 #define RCC_F1_PPRE_1 0
 #define RCC_F1_PPRE_2 4
 #define RCC_F1_PPRE_4 5
@@ -49,6 +54,7 @@ struct pll_params_t {
   unsigned char ppre1;
   unsigned char ppre2;
   unsigned char hpre;
+  unsigned char adcpre;
   unsigned char latency;
 };
 
