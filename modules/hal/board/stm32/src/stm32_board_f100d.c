@@ -78,7 +78,8 @@ struct pll_params_t pll_params = {
   .pllm  = 3,
   .ppre1 = RCC_F1_PPRE_1,
   .ppre2 = RCC_F1_PPRE_1,
-  .hpre  = RCC_F1_HPRE_1
+  .hpre  = RCC_F1_HPRE_1,
+  .adcpre = RCC_F1_ADCPRE_2
 };
 
 unsigned int hal_cpu_clock = CLOCK;
