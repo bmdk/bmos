@@ -33,6 +33,7 @@
 #define FAST_LOG_ITEMS_LEN 128
 unsigned char fast_log_mask[FAST_LOG_ITEMS_LEN];
 unsigned char fast_log_enabled;
+int fast_log_stop_count = -1;
 
 typedef struct fast_log_entry_t {
   unsigned int tus;
@@ -58,6 +59,9 @@ void fast_log(const char *fmt, unsigned long v1, unsigned long v2)
   fle_t   *e;
 
   saved = interrupt_disable();
+  if ((fast_log_stop_count > 0) && (--fast_log_stop_count == 0))
+    fast_log_enable(0);
+
   idx = fast_log_index;
   fast_log_index = (fast_log_index + 1) & FAST_LOG_MASK;
   interrupt_enable(saved);
