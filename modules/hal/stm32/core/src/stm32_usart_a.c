@@ -222,7 +222,7 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
 
   usart_set_baud(usart, baud, u->clock, u->flags);
 
-  duart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | \
+  usart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | \
                USART_CR1_IDLEIE | USART_CR1_TE | USART_CR1_RE;
 
   circ_buf_init(&u->cb, MSGDATA_POW2);
