@@ -29,6 +29,7 @@ void led_set(unsigned int n, unsigned int v);
 
 #define STM32_UART_LP BIT(0)
 #define STM32_UART_FIFO BIT(1)
+#define STM32_UART_SINGLE_WIRE BIT(2)
 
 void debug_uart_init(void *base, unsigned int baud,
                      unsigned int clock, unsigned int flags);

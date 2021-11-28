@@ -56,6 +56,8 @@ typedef struct {
 #define USART_CR1_TXEIE BIT(7)  /* TX int enable */
 #define USART_CR1_UE BIT(13)    /* usart enable */
 
+#define USART_CR3_HDSEL BIT(3)  /* Single wire half duplex */
+
 static volatile stm32_usart_a_t *duart;
 
 static int usart_tx_done(volatile stm32_usart_a_t *usart)
@@ -221,6 +223,9 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
   volatile stm32_usart_a_t *usart = u->base;
 
   usart_set_baud(usart, baud, u->clock, u->flags);
+
+  if (u->flags & STM32_UART_SINGLE_WIRE)
+    usart->cr3 |= USART_CR3_HDSEL;
 
   usart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | \
                USART_CR1_IDLEIE | USART_CR1_TE | USART_CR1_RE;
