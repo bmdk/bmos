@@ -35,6 +35,8 @@ typedef struct {
 #if BMOS
 bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
                         unsigned int op);
+
+void uart_set_baud(uart_t *u, unsigned int baud);
 #endif
 
 extern uart_t debug_uart;

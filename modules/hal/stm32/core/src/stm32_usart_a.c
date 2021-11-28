@@ -106,15 +106,22 @@ void debug_uart_init(void *base, unsigned int baud, unsigned int clock,
 }
 
 #if BMOS
-static void usart_set_baud(volatile stm32_usart_a_t *usart,
-                           unsigned int baud, unsigned int clock,
-                           unsigned int flags)
+static void _usart_set_baud(volatile stm32_usart_a_t *usart,
+                            unsigned int baud, unsigned int clock,
+                            unsigned int flags)
 {
   unsigned int divider;
 
   divider = (clock + (baud / 2)) / baud;
 
   usart->brr = divider;
+}
+
+void uart_set_baud(uart_t *u, unsigned int baud)
+{
+  volatile stm32_usart_a_t *usart = u->base;
+
+  _usart_set_baud(usart, baud, u->clock, u->flags);
 }
 
 static void usart_tx(uart_t *u)
@@ -222,7 +229,7 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
 {
   volatile stm32_usart_a_t *usart = u->base;
 
-  usart_set_baud(usart, baud, u->clock, u->flags);
+  _usart_set_baud(usart, baud, u->clock, u->flags);
 
   if (u->flags & STM32_UART_SINGLE_WIRE)
     usart->cr3 |= USART_CR3_HDSEL;
