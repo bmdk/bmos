@@ -58,36 +58,44 @@ struct _stm32_i2c_t {
 
 #define I2C_SR1_START BIT(0)
 #define I2C_SR1_ADDR BIT(1)
+#define I2C_SR1_RXNE BIT(6)
 #define I2C_SR1_TXE BIT(7)
-#define I2C_SR1_RXNE BIT(8)
 
 #define FREQ 48 /* MHz */
+#define I2C_FREQ 100 /* kHz */
 
 void i2c_init(volatile stm32_i2c_t *i2c)
 {
+  unsigned int div;
+
   i2c->cr1 &= ~I2C_CR1_PE;
 
-  i2c->ccr = I2C_CCR_CCR(0x1f);
+  div = (FREQ * 1000) / 2 / I2C_FREQ;
+
+  i2c->ccr = I2C_CCR_CCR(div);
   i2c->cr2 = I2C_CR2_FREQ(FREQ);
   i2c->trise = FREQ + 1;
 
   i2c->cr1 |= I2C_CR1_PE;
 }
 
+#define TIMEOUT_US 100000
+
 static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
                           const void *bufp, unsigned int buflen)
 {
   const char *buf = bufp;
   int sr1, sr2;
-  unsigned int timeout;
+  unsigned int start;
 
-  timeout = 1000000;
+  start = hal_time_us();
+
   i2c->cr1 |= I2C_CR1_START;
   for (;;) {
     sr1 = i2c->sr1;
     if (sr1 & I2C_SR1_START)
       break;
-    if (--timeout == 0) {
+    if (hal_time_us() - start > TIMEOUT_US) {
       xprintf("S TO sr1 %08x\n", sr1);
       return -1;
     }
@@ -95,12 +103,12 @@ static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
 
   i2c->dr = ((addr & 0x7f) << 1) | 0;
 
-  timeout = 1000000;
+  start = hal_time_us();
   for (;;) {
     sr1 = i2c->sr1;
     if (sr1 & I2C_SR1_ADDR)
       break;
-    if (--timeout == 0) {
+    if (hal_time_us() - start > TIMEOUT_US) {
 #if 0
       xprintf("A TO sr1 %08x\n", sr1);
 #endif
@@ -112,7 +120,7 @@ static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
     xprintf("sr1 %08x sr2 %08x\n", sr1, sr2);
 
   while (buflen) {
-    unsigned int timeout = 1000000;
+    start = hal_time_us();
     i2c->dr = *buf++;
 
     for (;;) {
@@ -121,7 +129,7 @@ static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
       if (sr1 & I2C_SR1_TXE)
         break;
 
-      if (--timeout == 0) {
+      if (hal_time_us() - start > TIMEOUT_US) {
         xprintf("W TO sr1 %08x\n", sr1);
         return -1;
       }
@@ -140,15 +148,15 @@ static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
 {
   char *buf = bufp;
   int sr1, sr2;
-  unsigned int timeout;
+  unsigned int start;
 
-  timeout = 1000000;
+  start = hal_time_us();
   i2c->cr1 |= I2C_CR1_START;
   for (;;) {
     sr1 = i2c->sr1;
     if (sr1 & I2C_SR1_START)
       break;
-    if (--timeout == 0) {
+    if (hal_time_us() - start > TIMEOUT_US) {
       xprintf("S TO sr1 %08x\n", sr1);
       return -1;
     }
@@ -156,22 +164,28 @@ static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
 
   i2c->dr = ((addr & 0x7f) << 1) | 1;
 
-  timeout = 1000000;
+  start = hal_time_us();
   for (;;) {
     sr1 = i2c->sr1;
     if (sr1 & I2C_SR1_ADDR)
       break;
-    if (--timeout == 0) {
+    if (hal_time_us() - start > TIMEOUT_US) {
       xprintf("A TO sr1 %08x\n", sr1);
       return -1;
     }
   }
+
+  if (buflen <= 1)
+    i2c->cr1 &= ~I2C_CR1_ACK;
+  else
+    i2c->cr1 |= I2C_CR1_ACK;
+
   sr2 = i2c->sr2;
   if (0)
     xprintf("sr1 %08x sr2 %08x\n", sr1, sr2);
 
   while (buflen) {
-    unsigned int timeout = 1000000;
+    start = hal_time_us();
 
     for (;;) {
       sr1 = i2c->sr1;
@@ -179,7 +193,7 @@ static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
       if (sr1 & I2C_SR1_RXNE)
         break;
 
-      if (--timeout == 0) {
+      if (hal_time_us() - start > TIMEOUT_US) {
         xprintf("R TO sr1 %08x\n", sr1);
         return -1;
       }
@@ -188,6 +202,11 @@ static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
     *buf++ = i2c->dr;
 
     buflen--;
+
+    if (buflen == 1)
+      i2c->cr1 &= ~I2C_CR1_ACK;
+    else
+      i2c->cr1 |= I2C_CR1_ACK;
   }
 
   i2c->cr1 |= I2C_CR1_STOP;
