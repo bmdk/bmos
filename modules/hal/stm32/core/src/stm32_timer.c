@@ -31,23 +31,23 @@
 #include "stm32_timer.h"
 
 typedef struct {
-  unsigned int cr1;
-  unsigned int cr2;
-  unsigned int smcr;
-  unsigned int dier;
-  unsigned int sr;
-  unsigned int egr;
-  unsigned int ccmr[2];
-  unsigned int ccer;
-  unsigned int cnt;
-  unsigned int psc;
-  unsigned int arr;
-  unsigned int rcr;
-  unsigned int ccr[4];
-  unsigned int bdtr;
-  unsigned int dcr;
-  unsigned int dmar;
-  unsigned int or[2];
+  reg32_t cr1;
+  reg32_t cr2;
+  reg32_t smcr;
+  reg32_t dier;
+  reg32_t sr;
+  reg32_t egr;
+  reg32_t ccmr[2];
+  reg32_t ccer;
+  reg32_t cnt;
+  reg32_t psc;
+  reg32_t arr;
+  reg32_t rcr;
+  reg32_t ccr[4];
+  reg32_t bdtr;
+  reg32_t dcr;
+  reg32_t dmar;
+  reg32_t or[2];
 } stm32_timer_t;
 
 #define CR1_CEN BIT(0)
@@ -57,19 +57,21 @@ typedef struct {
 #define BDTR_MOE BIT(15);
 
 /* Change the timer prescaler value while preserving the timer value
-   This is useful when dynamically adjusting the master clock for power saving so the
-   timer can continue to count at the same rate even though it's input clock is changed.
+   This is useful when dynamically adjusting the master clock for power
+   saving so the timer can continue to count at the same rate even though
+   its input clock is changed.
  */
 static void timer_presc(void *base, unsigned int presc)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
   unsigned int ocnt;
 
   t->cr1 &= ~CR1_CEN;
   /* save the current counter value */
   ocnt = t->cnt;
   t->psc = presc - 1;
-  /* this is needed to load the new prescaler value but it also resets the counter value */
+  /* this is needed to load the new prescaler value but it also
+     resets the counter value */
   t->egr = EGR_UG;
   t->cr1 = CR1_CEN;
   /* restore the the saved counter */
@@ -78,7 +80,7 @@ static void timer_presc(void *base, unsigned int presc)
 
 void timer_init(void *base, unsigned int presc)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   t->cr1 &= ~CR1_CEN;
   t->cnt = 0;
@@ -157,7 +159,7 @@ void hal_time_init(void)
 
 unsigned int timer_get(void *base)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   return t->cnt;
 }
@@ -166,7 +168,7 @@ int timer_init_compare(void *base, unsigned int presc, unsigned int max,
                        const unsigned int *compare, unsigned int compare_len)
 {
   unsigned int i;
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   if (compare_len > 4)
     return -1;
@@ -186,7 +188,7 @@ int timer_init_compare(void *base, unsigned int presc, unsigned int max,
 
 void timer_set_compare(void *base, unsigned int num, unsigned int v)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   if (num >= 4)
     return;
@@ -198,7 +200,7 @@ void timer_set_compare(void *base, unsigned int num, unsigned int v)
 
 int timer_mode(void *base, int output, unsigned int mode)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
   unsigned int reg = 0;
 
   if (output > 4)
@@ -216,7 +218,7 @@ int timer_mode(void *base, int output, unsigned int mode)
 
 int timer_output_en(void *base, int en)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   if (en)
     t->bdtr |= BIT(15);
@@ -230,7 +232,7 @@ void timer_init_pwm(void *base, unsigned int presc, unsigned int max,
                     const unsigned int *compare, unsigned int compare_len)
 {
   unsigned int ccer_val = 0, i;
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   if (timer_init_compare(base, presc, max, compare, compare_len) < 0)
     return;
@@ -250,7 +252,7 @@ void timer_init_dma(void *base, unsigned int presc, unsigned int max,
                     int update_en)
 {
   unsigned int ccer_val = 0, dier_val = 0, i;
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   if (timer_init_compare(base, presc, max, compare, compare_len) < 0)
     return;
@@ -272,14 +274,14 @@ void timer_init_dma(void *base, unsigned int presc, unsigned int max,
 
 void timer_enable(void *base)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   t->cr1 |= CR1_CEN;
 }
 
 void timer_stop(void *base)
 {
-  volatile stm32_timer_t *t = (volatile stm32_timer_t *)base;
+  stm32_timer_t *t = (stm32_timer_t *)base;
 
   t->ccer = 0;
   t->dier = 0;
