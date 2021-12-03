@@ -70,8 +70,17 @@ typedef struct {
 
 void set_low_power(int en);
 
-void trigger_pendsv(void);
-void clear_pendsv(void);
 void systick_init();
 
+#define SCB ((volatile scb_t *)SCB_BASE)
+
+static inline void trigger_pendsv()
+{
+  SCB->icsr = BIT(28);
+}
+
+static inline void clear_pendsv()
+{
+  SCB->icsr = BIT(27);
+}
 #endif

@@ -52,7 +52,6 @@
 #define CFSR_IACCVIOL BIT(0)
 
 #define SYSTICK ((volatile systick_t *)SYSTICK_BASE)
-#define SCB ((volatile scb_t *)SCB_BASE)
 #define NVIC ((volatile nvic_t *)NVIC_BASE)
 
 static void dump_stack_frame(stack_frame_t *sf)
@@ -320,12 +319,3 @@ int cmd_ccr(int argc, char *argv[])
 SHELL_CMD(ccr, cmd_ccr);
 #endif
 
-void trigger_pendsv()
-{
-  SCB->icsr = BIT(28);
-}
-
-void clear_pendsv()
-{
-  SCB->icsr = BIT(27);
-}
