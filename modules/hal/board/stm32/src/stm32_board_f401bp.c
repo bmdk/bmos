@@ -129,7 +129,7 @@ static const struct pll_params_t pll_params = {
   .hpre  = 0,
   .ppre1 = RCC_A_PPRE_2,
   .ppre2 = RCC_A_PPRE_1,
-  .acr   = 5
+  .acr   = 2
 };
 
 unsigned int hal_cpu_clock = 84000000;
