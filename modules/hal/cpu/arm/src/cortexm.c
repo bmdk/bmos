@@ -51,8 +51,8 @@
 #define CFSR_DACCVIOL BIT(1)
 #define CFSR_IACCVIOL BIT(0)
 
-#define SYSTICK ((volatile systick_t *)SYSTICK_BASE)
-#define NVIC ((volatile nvic_t *)NVIC_BASE)
+#define SYSTICK ((systick_t *)SYSTICK_BASE)
+#define NVIC ((nvic_t *)NVIC_BASE)
 
 static void dump_stack_frame(stack_frame_t *sf)
 {

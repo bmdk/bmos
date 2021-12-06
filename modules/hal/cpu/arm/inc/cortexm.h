@@ -3,10 +3,13 @@
 
 #include "common.h"
 
+#define DWT_BASE 0xE0001000UL
 #define SCS_BASE 0xE000E000UL
 #define SYSTICK_BASE (SCS_BASE + 0x10UL)
 #define NVIC_BASE (SCS_BASE + 0x100UL)
 #define SCB_BASE (SCS_BASE + 0xD00UL)
+#define CP_BASE (SCS_BASE + 0xD88UL)
+#define FPU_BASE (SCS_BASE + 0xF34UL)
 
 typedef struct {
   unsigned int r0;
@@ -31,43 +34,52 @@ typedef struct {
 } sw_stack_frame_t;
 
 typedef struct {
-  unsigned int ctrl;
-  unsigned int load;
-  unsigned int val;
-  unsigned int calib;
+  reg32_t ctrl;
+  reg32_t load;
+  reg32_t val;
+  reg32_t calib;
 } systick_t;
 
 typedef struct {
-  unsigned int cpuid;
-  unsigned int icsr;
-  unsigned int vtor;
-  unsigned int aircr;
-  unsigned int scr;
-  unsigned int ccr;
-  unsigned int shpr[3];
-  unsigned int shcsr;
-  unsigned int cfsr;
-  unsigned int hfsr;
-  unsigned int pad[1];
-  unsigned int mmfar;
-  unsigned int bfar;
-  unsigned int afsr;
+  reg32_t cpuid;
+  reg32_t icsr;
+  reg32_t vtor;
+  reg32_t aircr;
+  reg32_t scr;
+  reg32_t ccr;
+  reg32_t shpr[3];
+  reg32_t shcsr;
+  reg32_t cfsr;
+  reg32_t hfsr;
+  reg32_t pad[1];
+  reg32_t mmfar;
+  reg32_t bfar;
+  reg32_t afsr;
 } scb_t;
 
 typedef struct {
-  unsigned int iser[8];
-  unsigned int pad0[24];
-  unsigned int icer[8];
-  unsigned int pad1[24];
-  unsigned int ispr[8];
-  unsigned int pad2[24];
-  unsigned int icpr[8];
-  unsigned int pad3[24];
-  unsigned int iabr[8];
-  unsigned int pad4[56];
-  unsigned int ip[240];
-  unsigned int pad5[644];
-  unsigned int stir;
+  reg32_t fpccr;
+  reg32_t fpcar;
+  reg32_t fpdscr;
+} fpu_t;
+
+#define FPCCR_LSPEN BIT(30)
+#define FPCCR_ASPEN BIT(31)
+
+typedef struct {
+  reg32_t iser[8];
+  reg32_t pad0[24];
+  reg32_t icer[8];
+  reg32_t pad1[24];
+  reg32_t ispr[8];
+  reg32_t pad2[24];
+  reg32_t icpr[8];
+  reg32_t pad3[24];
+  reg32_t iabr[8];
+  reg32_t pad4[56];
+  reg32_t ip[240];
+  reg32_t pad5[644];
+  reg32_t stir;
 } nvic_t;
 
 typedef struct {
@@ -87,13 +99,13 @@ typedef struct {
   } event[4];
 } dwt_t;
 
-#define DWT ((dwt_t *)0xE0001000)
+#define DWT ((dwt_t *)DWT_BASE)
+#define SCB ((scb_t *)SCB_BASE)
+#define FPC ((fpu_t *)FPU_BASE)
 
 void set_low_power(int en);
 
 void systick_init();
-
-#define SCB ((volatile scb_t *)SCB_BASE)
 
 static inline void trigger_pendsv()
 {
