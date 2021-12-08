@@ -339,7 +339,7 @@ void _waiters_remove(bmos_task_list_t *waiters, bmos_task_t *c)
       t->next_waiter = 0;
       break;
     }
-    t = t->next;
+    t = t->next_waiter;
   }
 }
 
