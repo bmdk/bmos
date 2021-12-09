@@ -34,6 +34,7 @@
 #include "debug_ser.h"
 #include "fast_log.h"
 #include "hal_board.h"
+#include "hal_common.h"
 #include "hal_gpio.h"
 #include "hal_int.h"
 #include "hal_time.h"
@@ -249,6 +250,7 @@ int main()
 {
   INTERRUPT_OFF();
   hal_cpu_init();
+  hal_init();
   hal_board_init();
   hal_time_init();
   fast_log_init("TIS");

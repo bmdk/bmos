@@ -25,6 +25,9 @@
 #include "xassert.h"
 
 #include "hal_board.h"
+#if ARCH_STM32
+#include "stm32_flash.h"
+#endif
 
 extern unsigned int _fsdata, _rsdata, _redata, _sbss, _ebss, _stack_end;
 extern unsigned int _flash_start, _flash_end, _ram_start, _end;
@@ -127,4 +130,11 @@ void *_sbrk(int count)
   xprintf("%08x %d %d\n", cur, count, ALIGN(count, 3));
 #endif
   return (void *)cur;
+}
+
+void hal_init(void)
+{
+#if ARCH_STM32
+  stm32_flash_cache_enable(1);
+#endif
 }

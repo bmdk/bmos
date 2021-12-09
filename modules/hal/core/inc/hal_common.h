@@ -64,4 +64,6 @@ static inline void bit_en(volatile unsigned int *reg, unsigned int n, int en)
 
 int bl_enter(void);
 
+void hal_init();
+
 #endif
