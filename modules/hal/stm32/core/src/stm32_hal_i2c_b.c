@@ -61,7 +61,7 @@ struct _stm32_i2c_t {
 #define I2C_SR1_RXNE BIT(6)
 #define I2C_SR1_TXE BIT(7)
 
-#define FREQ 48 /* MHz */
+#define FREQ 48      /* MHz */
 #define I2C_FREQ 100 /* kHz */
 
 void i2c_init(volatile stm32_i2c_t *i2c)
