@@ -224,8 +224,10 @@ void schedule(void)
       if ((t->prio == c->prio) && c->next && (c->next->prio == c->prio)) {
         c = c->next;
         while (c && (c->prio == t->prio)) {
-          if (c->state == TASK_STATE_RUN)
+          if (c->state == TASK_STATE_RUN) {
             t = c;
+            break;
+          }
           c = c->next;
         }
       }
