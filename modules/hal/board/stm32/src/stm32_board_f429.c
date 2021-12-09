@@ -399,16 +399,16 @@ static const gpio_handle_t leds[] = { GPIO(6, 13), GPIO(6, 14) };
    30MHz AHB2
  */
 static const struct pll_params_t pll_params = {
-  .src   = RCC_A_CLK_HSE_OSC,
-  .pllr  = 0,
-  .pllp  = RCC_A_PLLP_2,
-  .pllq  = 5,
-  .plln  = 120,
-  .pllm  = 4,
-  .hpre  = 0,
-  .ppre1 = RCC_A_PPRE_4,
-  .ppre2 = RCC_A_PPRE_2,
-  .acr   = 5
+  .src     = RCC_A_CLK_HSE_OSC,
+  .pllr    = 0,
+  .pllp    = RCC_A_PLLP_2,
+  .pllq    = 5,
+  .plln    = 120,
+  .pllm    = 4,
+  .hpre    = 0,
+  .ppre1   = RCC_A_PPRE_4,
+  .ppre2   = RCC_A_PPRE_2,
+  .latency = 5
 };
 
 unsigned int hal_cpu_clock = 120000000;

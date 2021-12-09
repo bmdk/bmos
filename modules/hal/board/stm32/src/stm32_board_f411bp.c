@@ -121,16 +121,16 @@ static const led_flag_t led_flags[] = { LED_FLAG_INV };
    96MHz APB2
  */
 static const struct pll_params_t pll_params = {
-  .src   = RCC_A_CLK_HSE_OSC,
-  .pllr  = 0,
-  .pllp  = RCC_A_PLLP_2,
-  .pllq  = 4,
-  .plln  = 192,
-  .pllm  = 25,
-  .hpre  = 0,
-  .ppre1 = RCC_A_PPRE_2,
-  .ppre2 = RCC_A_PPRE_1,
-  .acr   = 3
+  .src     = RCC_A_CLK_HSE_OSC,
+  .pllr    = 0,
+  .pllp    = RCC_A_PLLP_2,
+  .pllq    = 4,
+  .plln    = 192,
+  .pllm    = 25,
+  .hpre    = 0,
+  .ppre1   = RCC_A_PPRE_2,
+  .ppre2   = RCC_A_PPRE_1,
+  .latency = 3
 };
 
 unsigned int hal_cpu_clock = 96000000;

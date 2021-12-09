@@ -23,6 +23,7 @@
 #include "hal_common.h"
 #include "stm32_hal.h"
 #include "stm32_rcc_b.h"
+#include "stm32_flash.h"
 
 typedef struct {
   unsigned int cr;
@@ -85,7 +86,6 @@ typedef struct {
 #define FLASH_BASE 0x40022000
 #endif
 
-#define FLASH_ACR ((volatile unsigned int *)FLASH_BASE)
 #define RCC ((volatile stm32_rcc_t *)RCC_BASE)
 
 #define RCC_CR_PLLRDY BIT(25)
@@ -197,7 +197,7 @@ static void _clock_init(const struct pll_params_t *p)
   while ((RCC->cr & RCC_CR_PLLRDY) == 0)
     ;
 
-  reg_set_field(FLASH_ACR, 4, 0, p->acr);
+  stm32_flash_latency(p->latency);
 
 #ifdef STM32_WBXX
   reg_set_field(RCC_EXTCFGR, 4, 4, 8);
@@ -222,7 +222,7 @@ void clock_init_low(void)
   while (RCC->cr & RCC_CR_HSERDY)
     ;
 
-  reg_set_field(FLASH_ACR, 4, 0, 0);
+  stm32_flash_latency(0);
 }
 
 #define RCC_BDCR_LSEON BIT(0)

@@ -124,12 +124,12 @@ uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
 static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7), GPIO(2, 7) };
 
 static const struct pll_params_t pll_params = {
-  .flags  = PLL_FLAG_PLLREN,
-  .pllsrc = RCC_PLLCFGR_PLLSRC_MSI,
-  .pllm   = 1,
-  .plln   = 40,
-  .pllr   = PLLR_DIV_2,
-  .acr    = 4
+  .flags   = PLL_FLAG_PLLREN,
+  .pllsrc  = RCC_PLLCFGR_PLLSRC_MSI,
+  .pllm    = 1,
+  .plln    = 40,
+  .pllr    = PLLR_DIV_2,
+  .latency = 4
 };
 
 unsigned int hal_cpu_clock = 80000000;

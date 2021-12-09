@@ -21,6 +21,7 @@
 
 #include "common.h"
 #include "hal_common.h"
+#include "stm32_flash.h"
 #include "stm32_pwr.h"
 #include "stm32_rcc_a.h"
 
@@ -60,7 +61,6 @@ typedef struct {
   unsigned int dckcfgr2;
 } stm32_rcc_t;
 
-#define FLASH_ACR ((volatile unsigned int *)0x40023c00)
 #define RCC ((volatile stm32_rcc_t *)0x40023800)
 
 #define RCC_CR_PLLSAIRDY BIT(29)
@@ -137,7 +137,7 @@ void clock_init_hs(const struct pll_params_t *p)
   while ((RCC->cr & RCC_CR_PLLRDY) == 0)
     ;
 
-  reg_set_field(FLASH_ACR, 4, 0, p->acr);
+  stm32_flash_latency(p->latency);
 
   RCC->cfgr = CFGR(p->rtcpre, p->ppre2, p->ppre1, p->hpre, RCC_CFGR_SW_PLL);
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)

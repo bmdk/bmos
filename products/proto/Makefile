@@ -365,7 +365,9 @@ FILES.h745nucleo += stm32_fdcan.o
 FILES.h745nucleo += fdcan.o
 
 FILES.f7xx += stm32_pwr_f7xx.o
+FILES.f7xx += stm32_flash.o
 FILES.f4xx += stm32_pwr_f4xx.o
+FILES.f4xx += stm32_flash.o
 FILES.fxxx += stm32_exti_fxxx.o
 
 FILES.f1xx += stm32_exti_fxxx.o
@@ -585,6 +587,7 @@ FILES.l4r += stm32_board_l4r.o
 FILES.l4r += stm32_wdog.o
 FILES.l4r += stm32_pwr_lxxx.o
 FILES.l4r += stm32_exti_lxxx.o
+FILES.l4r += stm32_flash.o
 
 FILES.g474n += $(FILES.g4xx)
 FILES.g474n += stm32_hal_rtc.o
@@ -610,6 +613,7 @@ FILES.u575n += stm32_hal_gpdma.o
 FILES.u575n += stm32_fdcan.o
 FILES.u575n += fdcan.o
 FILES.u575n += stm32_board_u575n.o
+FILES.u575n += stm32_flash.o
 
 FILES.wb55n += $(FILES.wbxx)
 FILES.wb55n += stm32_hal_rtc.o

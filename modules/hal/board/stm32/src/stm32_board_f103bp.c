@@ -66,13 +66,13 @@ static const gpio_handle_t leds[] = { GPIO(2, 13) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV };
 
 struct pll_params_t pll_params = {
-  .src   = RCC_F1_CLK_HSE_OSC,
-  .plln  = 1,
-  .pllm  = 9,
-  .ppre1 = RCC_F1_PPRE_2,
-  .ppre2 = RCC_F1_PPRE_1,
-  .hpre  = RCC_F1_HPRE_1,
-  .acr   = 2
+  .src     = RCC_F1_CLK_HSE_OSC,
+  .plln    = 1,
+  .pllm    = 9,
+  .ppre1   = RCC_F1_PPRE_2,
+  .ppre2   = RCC_F1_PPRE_1,
+  .hpre    = RCC_F1_HPRE_1,
+  .latency = 2
 };
 
 unsigned int hal_cpu_clock = CLOCK;

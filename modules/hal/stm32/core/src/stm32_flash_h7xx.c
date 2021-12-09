@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "common.h"
+#include "hal_common.h"
 #include "hal_int.h"
 #include "io.h"
 #include "shell.h"
@@ -99,6 +100,16 @@ static void flash_error_decode(unsigned int sr)
 }
 
 #define FLASH ((volatile stm32_flash_h7xx_t *)0x52002000)
+
+void stm32_flash_latency(unsigned int val)
+{
+  reg_set_field(&FLASH->acr, 4, 0, val);
+}
+
+/* No flash specific cache on H7 */
+void stm32_flash_cache_enable(unsigned int en)
+{
+}
 
 static void flash_lock()
 {

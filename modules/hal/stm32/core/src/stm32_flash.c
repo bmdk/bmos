@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "common.h"
+#include "hal_common.h"
 #include "hal_int.h"
 #include "io.h"
 #include "shell.h"
@@ -88,6 +89,10 @@ typedef struct {
 } stm32_flash_t;
 #endif
 
+#define FLASH_ACR_PRFTEN BIT(8)
+#define FLASH_ACR_ICEN BIT(9)
+#define FLASH_ACR_DCEN BIT(10)
+
 #define FLASH_CR_LOCK BIT(31)
 #define FLASH_CR_OPTSTRT BIT(17)
 #define FLASH_CR_STRT BIT(16)
@@ -121,6 +126,19 @@ typedef struct {
 #elif FLASH_TYPE2 || FLASH_TYPE3
 #define FLASH ((stm32_flash_t *)0x40022000)
 #endif
+
+void stm32_flash_latency(unsigned int val)
+{
+  reg_set_field(&FLASH->acr, 4, 0, val);
+}
+
+void stm32_flash_cache_enable(unsigned int en)
+{
+  if (en)
+    FLASH->acr |= FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN;
+  else
+    FLASH->acr &= ~(FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN);
+}
 
 static void flash_unlock()
 {

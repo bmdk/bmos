@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 #include "common.h"
+#include "hal_common.h"
 #include "hal_int.h"
 #include "io.h"
 #include "shell.h"
@@ -56,6 +57,21 @@ typedef struct {
 #define FLASH_OPTKEYR_KEY2 0x4c5d6e7f
 
 #define FLASH ((stm32_flash_t *)0x40022000)
+
+#define FLASH_ACR_PRFTBE BIT(4)
+
+void stm32_flash_latency(unsigned int val)
+{
+  reg_set_field(&FLASH->acr, 3, 0, val);
+}
+
+void stm32_flash_cache_enable(unsigned int en)
+{
+  if (en)
+    FLASH->acr |= FLASH_ACR_PRFTBE;
+  else
+    FLASH->acr &= ~FLASH_ACR_PRFTBE;
+}
 
 static void flash_unlock()
 {

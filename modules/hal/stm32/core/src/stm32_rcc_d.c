@@ -23,10 +23,10 @@
 #include "hal_common.h"
 #include "stm32_hal.h"
 #include "stm32_rcc_d.h"
+#include "stm32_flash.h"
 
 #if STM32_UXXX
 #define RCC_BASE 0x46020C00
-#define FLASH_ACR ((reg32_t *)0x40022000)
 #else
 #error define RCC_BASE
 #endif
@@ -233,7 +233,7 @@ static void pll1_set(const struct pll_params_t *params)
   while ((RCC->cr & RCC_CR_PLL1RDY) == 0)
     ;
 
-  reg_set_field(FLASH_ACR, 4, 0, params->acr);
+  stm32_flash_latency(params->latency);
 
   reg_set_field(&RCC->cfgr[0], 2, 0, RCC_CFGR_SW_PLL1);
   while (((RCC->cfgr[0] >> 2) & 0x3) != RCC_CFGR_SW_PLL1)

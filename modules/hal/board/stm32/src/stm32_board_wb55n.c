@@ -69,12 +69,12 @@ uart_t debug_uart = { "debug", USART1_BASE, APB1_CLOCK, 36 };
 static const gpio_handle_t leds[] = { GPIO(1, 0), GPIO(1, 1), GPIO(1, 5) };
 
 static const struct pll_params_t pll_params = {
-  .flags  = PLL_FLAG_PLLREN,
-  .pllsrc = RCC_PLLCFGR_PLLSRC_HSE,
-  .pllm   = 4,
-  .plln   = 16,
-  .pllr   = 2,
-  .acr    = 3
+  .flags   = PLL_FLAG_PLLREN,
+  .pllsrc  = RCC_PLLCFGR_PLLSRC_HSE,
+  .pllm    = 4,
+  .plln    = 16,
+  .pllr    = 2,
+  .latency = 3
 };
 
 unsigned int hal_cpu_clock = 64000000;

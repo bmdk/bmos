@@ -27,8 +27,8 @@ struct pll_params_t {
   unsigned char ppre2;
   unsigned char hpre;
 #endif
-  /* FLASH_ACR */
-  unsigned char acr;
+  /* FLASH latency */
+  unsigned char latency;
 };
 
 void clock_init(const struct pll_params_t *params);

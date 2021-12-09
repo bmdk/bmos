@@ -1,6 +1,8 @@
 #ifndef CORTEXM_H
 #define CORTEXM_H
 
+#include "common.h"
+
 #define SCS_BASE 0xE000E000UL
 #define SYSTICK_BASE (SCS_BASE + 0x10UL)
 #define NVIC_BASE (SCS_BASE + 0x100UL)
