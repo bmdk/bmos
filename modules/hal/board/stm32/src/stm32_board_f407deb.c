@@ -45,6 +45,8 @@ void pin_init()
   enable_ahb1(1); /* GPIOB */
   enable_ahb1(2); /* GPIOC */
 
+  enable_apb2(14); /* SYSCFG */
+
   /* USART 1 */
   enable_apb2(4);
 
@@ -89,6 +91,29 @@ void pin_init()
   stm32_syscfg_set_exti(0, 0);
 }
 
+#if APPL
+static void eth_pin_init()
+{
+  enable_ahb1(25); /* ETHMACEN */
+  enable_ahb1(26); /* ETHMACTXEN */
+  enable_ahb1(27); /* ETHMACRXEN */
+  enable_ahb1(28); /* ETHMACPTPEN */
+
+  stm32_syscfg_eth_phy(1);
+
+  /* RMII pins */
+  gpio_init_attr(GPIO(0, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* CLK */
+  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* MDIO */
+  gpio_init_attr(GPIO(0, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* CRS_DV */
+  gpio_init_attr(GPIO(1, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* TX_EN */
+  gpio_init_attr(GPIO(1, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* TXD0 */
+  gpio_init_attr(GPIO(1, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* TXD1 */
+  gpio_init_attr(GPIO(2, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* MDC */
+  gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* RXD0 */
+  gpio_init_attr(GPIO(2, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* RXD1 */
+}
+#endif
+
 #define USART1_BASE (void *)0x40011000
 #define USART2_BASE (void *)0x40004400
 #define APB1_CLOCK 42000000
@@ -98,6 +123,7 @@ void pin_init()
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 #endif
 
+/* led 2 does not work when ethernet is enabled mapped to CRS_DV */
 static const gpio_handle_t leds[] = { GPIO(0, 6), GPIO(0, 7) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV, LED_FLAG_INV };
 
@@ -129,5 +155,8 @@ void hal_board_init()
   clock_init(&pll_params);
   backup_domain_protect(0);
   clock_init_ls();
+#if APPL
+  eth_pin_init();
+#endif
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 }

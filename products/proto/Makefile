@@ -214,6 +214,7 @@ XCFLAGS.f407deb += -DSTM32_F4XX
 XCFLAGS.f407deb += -DSTM32_F407DEB
 XCFLAGS.f407deb += -mcpu=cortex-m4
 STACK_END.f407deb = 0x20020000
+LWIP.f407deb = y
 
 XCFLAGS.f407debm += -DSTM32_F407
 XCFLAGS.f407debm += -DSTM32_F4XX
@@ -525,6 +526,7 @@ FILES.f407deb += stm32_usart_a.o
 FILES.f407deb += stm32_rcc_a.o
 FILES.f407deb += stm32_board_f407deb.o
 FILES.f407deb += stm32_hal_dma.o
+FILES.f407deb += stm32_eth.o
 FILES.f407deb += $(FILES.f4xx)
 FILES.f407deb += $(FILES.fxxx)
 
@@ -570,7 +572,6 @@ FILES.f767 += stm32_eth.o
 FILES.f767 += stm32_board_f767.o
 FILES.f767 += $(FILES.f7xx)
 FILES.f767 += $(FILES.fxxx)
-
 
 FILES.h723n += $(FILES.h7xx)
 FILES.h735dk += $(FILES.h7xx)

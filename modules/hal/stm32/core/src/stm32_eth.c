@@ -26,6 +26,8 @@
 #include "hal_time.h"
 #include "io.h"
 #include "shell.h"
+#include "xslog.h"
+#include "fast_log.h"
 
 #if CONFIG_LWIP
 #include "lwip/netif.h"
@@ -249,7 +251,9 @@ void poll_rx_desc(eth_ctx_t *eth_ctx, struct netif *nif)
 #endif
 
     p = pbuf_alloc(PBUF_RAW, rem, PBUF_POOL);
-    if (p) {
+    if (!p) {
+      xslog(LOG_ERR, "could not allocate rx buffer %d\n", rem);
+    } else {
       err_t err;
 
       for (q = p; q && (rem > 0); q = q->next) {
@@ -266,7 +270,7 @@ void poll_rx_desc(eth_ctx_t *eth_ctx, struct netif *nif)
 
       err = nif->input(p, nif);
       if (err != ERR_OK) {
-        xprintf("lwip input error");
+        xslog(LOG_ERR, "lwip input error\n");
         pbuf_free(p);
       }
     }
@@ -303,6 +307,8 @@ static void eth_irq(void *data)
 #endif
 
   dmasr = ETH->dma.sr;
+
+  FAST_LOG('n', "eth_irq %08x\n", dmasr, 0);
   ETH->dma.sr = 0xffffffff;
 
 #if 0
@@ -320,7 +326,7 @@ static void eth_irq(void *data)
 
 #endif
   if (dmasr & ETH_DMASR_TPSS)
-    xprintf("tx process stopped\n");
+    xslog(LOG_ERR, "tx process stopped\n");
 
 #if 0
   if (dmasr & ETH_DMASR_TBUS)
@@ -328,9 +334,9 @@ static void eth_irq(void *data)
 
 #endif
   if (dmasr & ETH_DMASR_RBUS)
-    xprintf("no rx buffer\n");
+    xslog(LOG_ERR, "no rx buffer\n");
   if (dmasr & ETH_DMASR_RPSS)
-    xprintf("rx process stopped\n");
+    xslog(LOG_ERR, "rx process stopped\n");
 
 #if 0
   if (dmasr & ETH_DMASR_AIS)
@@ -340,7 +346,7 @@ static void eth_irq(void *data)
 
 #endif
   if (dmasr & ETH_DMASR_FBES) {
-    xprintf("%s: eth bus error: %s %s\n",
+    xslog(LOG_ERR, "%s: eth bus error: %s %s\n",
             (dmasr & BIT(23)) ? "tx" : "rx",
             (dmasr & BIT(24)) ? "read" : "write",
             (dmasr & BIT(25)) ? "desc" : "data");
@@ -349,16 +355,14 @@ static void eth_irq(void *data)
 
 static eth_ctx_t eth_ctx;
 
-void phy_reset();
+int phy_reset(void);
 
 int hal_eth_init()
 {
   unsigned int i;
+  int speed;
   eth_des_t *d;
 
-  //ETH->mac.cr = BIT(14)|BIT(11); /* 100M full duplex */
-  //ETH->mac.cr = BIT(11); /* 10M full duplex */
-  //ETH->mac.cr = 0;
   ETH->dma.ier = 0;
 
   /* reset the dma */
@@ -368,9 +372,20 @@ int hal_eth_init()
 
   ETH->mac.miiar = ETH_MACMIIAR_CR(1);
 
-  //ETH->mac.cr = 0;
-  phy_reset();
-  ETH->mac.cr = BIT(14) | BIT(11);
+  /* wait for phy autonegotiate and set negotiated speed */
+  speed = phy_reset();
+  if (speed < 0)
+    return -1;
+
+  if (speed & 1)
+    ETH->mac.cr |= BIT(14);
+  else
+    ETH->mac.cr &= ~BIT(14);
+
+  if (speed & 2)
+    ETH->mac.cr |= BIT(11);
+  else
+    ETH->mac.cr &= ~BIT(11);
 
   for (i = 0; i < N_RX_DES; i++) {
     d = &rx_des[i];
@@ -416,14 +431,14 @@ int phy_read(unsigned int phy, unsigned int reg)
     hal_delay_us(100);
   }
   if (count == 0)
-    xprintf("timeout waiting for phy\n");
+    xslog(LOG_ERR, "timeout waiting for phy\n");
 
   return ETH->mac.miidr & 0xffff;
 }
 
 void phy_write(unsigned int phy, unsigned int reg, unsigned int val)
 {
-  int count = 1000;
+  int count = 10;
 
   ETH->mac.miidr = val & 0xffff;
 
@@ -435,31 +450,46 @@ void phy_write(unsigned int phy, unsigned int reg, unsigned int val)
     hal_delay_us(100);
   }
   if (count == 0)
-    xprintf("timeout waiting for phy\n");
+    xslog(LOG_ERR, "timeout waiting for phy\n");
 }
 
-void phy_reset()
-{
-  unsigned int count;
+#define PHY_ADDR 1
 
-  phy_write(0, 0, BIT(15)); /* reset phy */
+int phy_reset(void)
+{
+  unsigned int count, reg;
+
+  phy_write(PHY_ADDR, 0, BIT(15)); /* reset phy */
 
   hal_delay_us(100);
-  while (phy_read(0, 0) & BIT(15))
+  while (phy_read(PHY_ADDR, 0) & BIT(15))
     ;
 
   hal_delay_us(100);
 
-  phy_write(0, 0, BIT(13) | BIT(9) | BIT(8));
-  count = 5000;
-  while ((phy_read(0, 0) & BIT(9)) && count) {
+  // Restart and enable auto-negotiate
+  phy_write(PHY_ADDR, 0, BIT(12) | BIT(9));
+  count = 50;
+  while ((phy_read(PHY_ADDR, 0) & BIT(9)) && count) {
     hal_delay_us(100);
     count--;
   }
   if (count == 0) {
-    xprintf("timeout\n");
-    return;
+    xslog(LOG_INFO, "phy read timeout\n");
+    return -1;
   }
+  count = 50;
+  while (count > 0) {
+    reg = phy_read(PHY_ADDR, 31);
+    if (reg & BIT(12))
+      break;
+    count --;
+  }
+  if (count == 0)
+    return -1;
+
+  xslog(LOG_INFO, "eth 10%s:%s-duplex", (reg & BIT(3)) ? "0": "", (reg & BIT(4)) ? "full" : "half");
+  return (reg >> 3) & 0x3;
 }
 
 int cmd_eth(int argc, char *argv[])
@@ -472,7 +502,7 @@ int cmd_eth(int argc, char *argv[])
   switch (argv[1][0]) {
   case 'r':
     for (i = 0; i < 32; i++) {
-      v = phy_read(0, i);
+      v = phy_read(PHY_ADDR, i);
       xprintf("%02x: %04x\n", i, v);
     }
     break;
@@ -501,14 +531,10 @@ static err_t hal_eth_send(struct netif *netif, struct pbuf *p)
     len += l;
   }
 
-#if 0
-  xprintf("tx %d\n", len);
-#endif
-
   d = &tx_des[idx];
 
   if ((d->des[0] & ETH_TDES0_OWN) != 0) {
-    xprintf("No free tx buffer %08x\n", d->des[0]);
+    xslog(LOG_ERR, "No free tx buffer %08x\n", d->des[0]);
     return -1;
   }
 
