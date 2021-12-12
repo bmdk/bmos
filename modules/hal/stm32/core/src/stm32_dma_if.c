@@ -12,8 +12,7 @@ dma_cont_data_t dma_cont_data[] = {
   { &stm32_dma_controller,  (void *)0x40020400 },
   { &stm32_bdma_controller, (void *)0x58025400 },
 };
-#elif STM32_F429 || STM32_F411 || STM32_F401 || \
-  STM32_F4XX || STM32_F746 || STM32_F767
+#elif STM32_F4XX || STM32_F7XX
 dma_cont_data_t dma_cont_data[] = {
   { &stm32_dma_controller, (void *)0x40026000 },
   { &stm32_dma_controller, (void *)0x40026400 },
