@@ -84,4 +84,6 @@
 
 #define MEM_ALIGNMENT 4
 
+#define LWIP_TCP_KEEPALIVE 1
+
 #endif /* LWIP_HDR_LWIPOPTS_H */

@@ -133,6 +133,8 @@ static err_t telnet_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 
   shell_init(&sh, "> ");
 
+  pcb->keep_intvl = 1000;
+
   tcp_recv(pcb, telnet_recv);
 
   return ERR_OK;
