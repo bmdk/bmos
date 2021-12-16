@@ -18,10 +18,10 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 # IN THE SOFTWARE.
 
-ifeq ($(PROG),)
+BUILD_DIR = build
+ROOT ?= $(shell pwd)/../..
 
-export BUILD_DIR = build
-export ROOT ?= $(shell pwd)/../..
+ifeq ($(PROG),)
 
 PROG += f030demo
 PROG += f072n
