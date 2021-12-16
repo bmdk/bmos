@@ -92,7 +92,8 @@ typedef struct {
 } stm32_gpio_t;
 #endif
 
-#if STM32_L4R || STM32_L4XX || STM32_G4XX || STM32_WBXX || STM32_F0XX
+#if STM32_L4R || STM32_L4XX || STM32_G4XX || STM32_WBXX || STM32_F0XX || \
+  STM32_F3XX
 #define GPIO_BASE 0x48000000
 #elif STM32_G0XX
 #define GPIO_BASE 0x50000000

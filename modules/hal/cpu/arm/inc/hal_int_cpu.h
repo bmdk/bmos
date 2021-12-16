@@ -36,6 +36,11 @@ static inline void set_psp(void *psp)
   asm volatile ("msr psp, %0\n" : : "r" (psp));
 }
 
+static inline void set_msp(void *msp)
+{
+  asm volatile ("msr msp, %0\n" : : "r" (msp));
+}
+
 static inline void set_basepri(unsigned int pri)
 {
   asm volatile ("msr basepri, %0\n" : : "r" (pri));

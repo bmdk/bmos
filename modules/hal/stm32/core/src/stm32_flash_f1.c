@@ -92,7 +92,7 @@ static void clear_status()
   FLASH->sr = 0xffff;
 }
 
-#if STM32_F072
+#if STM32_F072 || STM32_F3XX
 #define PAGE_SIZE 2048
 #else
 #define PAGE_SIZE 1024

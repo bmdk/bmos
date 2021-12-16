@@ -29,6 +29,7 @@ PROG += f100d
 PROG += f103deb
 PROG += f103bp
 PROG += f103n
+PROG += f303rt
 PROG += f401bp
 PROG += f401bp64
 PROG += f411bp
@@ -209,6 +210,15 @@ XCFLAGS.f103n += -DCONFIG_N_INTS=68
 XCFLAGS.f103n += -DCONFIG_TIMER_16BIT=1
 XCFLAGS.f103n += -mcpu=cortex-m3
 STACK_END.f103n = 0x20005000
+
+XCFLAGS.f303rt += -DSTM32_F3XX
+XCFLAGS.f303rt += -DSTM32_F303RT -DSTM32_F303
+XCFLAGS.f303rt += -DCONFIG_SYSLOG_NUM_LINES=32
+XCFLAGS.f303rt += -DCONFIG_FAST_LOG_SHIFT=4
+XCFLAGS.f303rt += -DCONFIG_MALLOC_CHUNK_POW2=6
+XCFLAGS.f303rt += -DCONFIG_N_INTS=60
+XCFLAGS.f303rt += -mcpu=cortex-m4
+STACK_END.f303rt = 0x2000a000
 
 XCFLAGS.f411bp += -DSTM32_F411 -DSTM32_F4XX
 XCFLAGS.f411bp += -DSTM32_F411BP
@@ -501,6 +511,14 @@ FILES.f1xx += stm32_pwr_f1xx.o
 FILES.f1xx += stm32_rcc_f1.o
 FILES.f1xx += stm32_usart_a.o
 
+FILES.f3xx += stm32_exti_fxxx.o
+FILES.f3xx += stm32_flash_f1.o
+FILES.f3xx += stm32_hal_bdma.o
+FILES.f3xx += stm32_hal_rtc.o
+FILES.f3xx += stm32_pwr_f1xx.o
+FILES.f3xx += stm32_rcc_f1.o
+FILES.f3xx += stm32_usart_b.o
+
 #FILES.f100d += stm32_hal_rtc.o # Needs new driver
 FILES.f100d += stm32_board_f100d.o
 XSLOG.f100d += xslog_simple.o
@@ -513,8 +531,12 @@ XSLOG.f103deb = xslog_simple.o
 FILES.f103bp += stm32_board_f103bp.o
 FILES.f103bp += $(FILES.f1xx)
 
+
 FILES.f103n += stm32_board_f103n.o
 FILES.f103n += $(FILES.f1xx)
+
+FILES.f303rt += stm32_board_f303rt.o
+FILES.f303rt += $(FILES.f3xx)
 
 FILES.f411bp += stm32_hal_rtc.o
 FILES.f411bp += stm32_usart_a.o

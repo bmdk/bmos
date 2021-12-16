@@ -187,6 +187,16 @@ int cmd_devid(int argc, char *argv[])
   case 0x430:
     idstr = "F103 x";
     break;
+#elif STM32_F3XX
+  case 0x422:
+    idstr = "F303xB/C,F358";
+    break;
+  case 0x438:
+    idstr = "F303x6/8,F328";
+    break;
+  case 0x446:
+    idstr = "F303xD/E,F398xE";
+    break;
 #elif STM32_F4XX
   case 0x413:
     idstr = "F405/407/415/417";
@@ -267,7 +277,7 @@ SHELL_CMD(devid, cmd_devid);
 #define FLASH_SIZE 0x0BFA07A0
 #elif STM32_F1XX
 #define FLASH_SIZE 0x1FFFF7E0
-#elif STM32_F0XX
+#elif STM32_F0XX || STM32_F3XX
 #define FLASH_SIZE 0x1FFFF7CC
 #elif STM32_G0XX || STM32_G4XX || STM32_L4XX || STM32_WBXX || STM32_L4R
 #define FLASH_SIZE 0x1FFF75E0

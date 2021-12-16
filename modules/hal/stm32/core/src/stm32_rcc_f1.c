@@ -36,11 +36,11 @@ typedef struct {
   reg32_t apb1enr;
   reg32_t bdcr;
   reg32_t csr;
-#if STM32_F0XX
+#if STM32_F0XX || STM32_F3XX
   reg32_t ahbrstr;
 #endif
   reg32_t cfgr2;
-#if STM32_F0XX
+#if STM32_F0XX || STM32_F3XX
   reg32_t cfgr3;
   reg32_t cr2;
 #endif
@@ -90,6 +90,23 @@ void enable_ahb1(unsigned int n)
 
 #define PLL_CFGR_PLLSRC_HSI 0
 #define PLL_CFGR_PLLSRC_HSE 1
+
+void clock_uninit(void)
+{
+  RCC->cr |= RCC_CR_HSION;
+  while ((RCC->cr & RCC_CR_HSIRDY) == 0)
+    asm volatile ("nop");
+
+  reg_set_field(&RCC->cfgr, 2, 0, RCC_CFGR_SW_HSI);
+  while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_HSI)
+    asm volatile ("nop");
+
+  reg_set_field(&RCC->cfgr, 3, 8, 0);
+  reg_set_field(&RCC->cfgr, 3, 11, 0);
+  reg_set_field(&RCC->cfgr, 4, 4, 0);
+
+  stm32_flash_latency(0);
+}
 
 void clock_init_hs(const struct pll_params_t *p)
 {
