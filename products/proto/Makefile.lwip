@@ -1,0 +1,46 @@
+MODULES += prot/net/lwip/core
+MODULES += prot/net/lwip/core_ipv4
+MODULES += prot/net/lwip/netif
+MODULES += prot/net/lwip/httpd
+
+MODULES += prot/net/lwip/apps/test
+
+#core
+FILES.lwip += altcp_alloc.o
+FILES.lwip += altcp.o
+FILES.lwip += altcp_tcp.o
+FILES.lwip += def.o
+FILES.lwip += dns.o
+FILES.lwip += inet_chksum.o
+FILES.lwip += init.o
+FILES.lwip += ip.o
+FILES.lwip += mem.o
+FILES.lwip += memp.o
+FILES.lwip += netif.o
+FILES.lwip += pbuf.o
+FILES.lwip += raw.o
+FILES.lwip += stats.o
+FILES.lwip += sys.o
+FILES.lwip += tcp.o
+FILES.lwip += tcp_in.o
+FILES.lwip += tcp_out.o
+FILES.lwip += timeouts.o
+FILES.lwip += udp.o
+
+#core ipv4
+FILES.lwip += autoip.o
+FILES.lwip += dhcp.o
+FILES.lwip += etharp.o
+FILES.lwip += icmp.o
+FILES.lwip += igmp.o
+FILES.lwip += ip4_addr.o
+FILES.lwip += ip4.o
+FILES.lwip += ip4_frag.o
+
+FILES.lwip += ethernet.o
+
+FILES.lwip += integ.o
+
+FILES.lwip += fs.o httpd.o
+
+FILES.lwip += lwip_test.o

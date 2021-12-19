@@ -82,7 +82,7 @@ XCFLAGS.h735dk += -DSTM32_H7XX
 XCFLAGS.h735dk += -DSTM32_H735DK
 STACK_END.h735dk = 0x20020000
 XCFLAGS.h735dk += -mcpu=cortex-m7
-XCFLAGS.h735dk += -DCONFIG_LWIP -DLWIP_DEBUG
+LWIP.h735dk = y
 
 XCFLAGS.h743wa += -DSTM32_H7XX
 XCFLAGS.h743wa += -DSTM32_H743WA
@@ -92,17 +92,17 @@ XCFLAGS.h743wa += -mcpu=cortex-m7
 XCFLAGS.h743nucleo += -DSTM32_H7XX
 STACK_END.h743nucleo = 0x20020000
 XCFLAGS.h743nucleo += -mcpu=cortex-m7
-XCFLAGS.h743nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
+LWIP.h743nucleo = y
 
 XCFLAGS.h723n += -DSTM32_H7XX -DSTM32_H723N
 STACK_END.h723n = 0x20020000
 XCFLAGS.h723n += -mcpu=cortex-m7
-XCFLAGS.h723n += -DCONFIG_LWIP -DLWIP_DEBUG
+LWIP.h723n = y
 
 XCFLAGS.h745nucleo += -DSTM32_H7XX -DSTM32_H745N
 STACK_END.h745nucleo = 0x20020000
 XCFLAGS.h745nucleo += -mcpu=cortex-m7
-XCFLAGS.h745nucleo += -DCONFIG_LWIP -DLWIP_DEBUG
+LWIP.h745nucleo = y
 
 XCFLAGS.l4r += -DSTM32_L4R
 XCFLAGS.l4r += -mcpu=cortex-m4
@@ -170,12 +170,12 @@ STACK_END.f469d = 0x20030000
 XCFLAGS.f746 += -DSTM32_F746 -DSTM32_F7XX -DSTM32_LCD
 XCFLAGS.f746 += -mcpu=cortex-m7
 STACK_END.f746 = 0x20050000
-XCFLAGS.f746 += -DCONFIG_LWIP -DLWIP_DEBUG
+LWIP.f746 = y
 
 XCFLAGS.f767 += -DSTM32_F767 -DSTM32_F7XX
 XCFLAGS.f767 += -mcpu=cortex-m7
 STACK_END.f767 = 0x20080000
-XCFLAGS.f767 += -DCONFIG_LWIP -DLWIP_DEBUG
+LWIP.f767 = y
 
 XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
 XCFLAGS.l432 += -mcpu=cortex-m4
@@ -262,18 +262,18 @@ MODULES += std
 
 MODULES += lib/graph/fb
 
-MODULES += prot/net/lwip/core
-MODULES += prot/net/lwip/core_ipv4
-MODULES += prot/net/lwip/netif
-MODULES += prot/net/lwip/httpd
-
-MODULES += prot/net/lwip/apps/test
-
 MODULES += prot/usb/tusb/if
 MODULES += prot/usb/tusb/tusb
 
 ifneq ($(CONFIG_NEWLIB), y)
 MODULES += lib/libc_min
+endif
+
+ifeq ($(LWIP.$(PROG)), y)
+include Makefile.lwip
+XCFLAGS += -DCONFIG_LWIP -DLWIP_DEBUG
+FILES += lwip.o
+FILES += $(FILES.lwip)
 endif
 
 XCFLAGS += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
@@ -341,13 +341,11 @@ FILES.h7xx += i2c_test.o
 FILES.h7xx += hd44780.o
 
 FILES.h723n += stm32_board_h723n.o
-FILES.h723n += lwip.o
 FILES.h723n += stm32_fdcan.o
 FILES.h723n += fdcan.o
 
 FILES.h735dk += stm32_lcd.o
 FILES.h735dk += stm32_board_h735dk.o
-FILES.h735dk += lwip.o
 FILES.h735dk += stm32_fdcan.o
 FILES.h735dk += fdcan.o
 
@@ -357,10 +355,8 @@ FILES.h743wa += spi_test.o
 FILES.h743wa += st7735.o
 
 FILES.h743nucleo += stm32_board_h743nucleo.o
-FILES.h743nucleo += lwip.o
 
 FILES.h745nucleo += stm32_board_h745nucleo.o
-FILES.h745nucleo += lwip.o
 FILES.h745nucleo += stm32_fdcan.o
 FILES.h745nucleo += fdcan.o
 
@@ -462,7 +458,6 @@ FILES.f746 += stm32_hal_rtc.o
 FILES.f746 += stm32_board_f746.o
 FILES.f746 += stm32_eth.o
 FILES.f746 += stm32_lcd.o
-FILES.f746 += lwip.o
 FILES.f746 += $(FILES.f7xx)
 FILES.f746 += $(FILES.fxxx)
 
@@ -472,50 +467,9 @@ FILES.f767 += stm32_rcc_a.o
 FILES.f767 += stm32_hal_rtc.o
 FILES.f767 += stm32_eth.o
 FILES.f767 += stm32_board_f767.o
-FILES.f767 += lwip.o
 FILES.f767 += $(FILES.f7xx)
 FILES.f767 += $(FILES.fxxx)
 
-
-#core
-FILES.lwip += altcp_alloc.o
-FILES.lwip += altcp.o
-FILES.lwip += altcp_tcp.o
-FILES.lwip += def.o
-FILES.lwip += dns.o
-FILES.lwip += inet_chksum.o
-FILES.lwip += init.o
-FILES.lwip += ip.o
-FILES.lwip += mem.o
-FILES.lwip += memp.o
-FILES.lwip += netif.o
-FILES.lwip += pbuf.o
-FILES.lwip += raw.o
-FILES.lwip += stats.o
-FILES.lwip += sys.o
-FILES.lwip += tcp.o
-FILES.lwip += tcp_in.o
-FILES.lwip += tcp_out.o
-FILES.lwip += timeouts.o
-FILES.lwip += udp.o
-
-#core ipv4
-FILES.lwip += autoip.o
-FILES.lwip += dhcp.o
-FILES.lwip += etharp.o
-FILES.lwip += icmp.o
-FILES.lwip += igmp.o
-FILES.lwip += ip4_addr.o
-FILES.lwip += ip4.o
-FILES.lwip += ip4_frag.o
-
-FILES.lwip += ethernet.o
-
-FILES.lwip += integ.o
-
-FILES.lwip += fs.o httpd.o
-
-FILES.lwip += lwip_test.o
 
 FILES.h7xx += $(FILES.lwip)
 FILES.f767 += $(FILES.lwip)
