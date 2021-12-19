@@ -19,19 +19,19 @@
  * IN THE SOFTWARE.
  */
 
-#include "stm32_hal_spi.h"
 #include "common.h"
+#include "stm32_hal_spi.h"
 
 typedef struct {
-  unsigned int cr1;
-  unsigned int cr2;
-  unsigned int sr;
-  unsigned int dr;
-  unsigned int crcpr;
-  unsigned int rxcrcr;
-  unsigned int txcrcr;
-  unsigned int i2scfgr;
-  unsigned int i2spr;
+  reg32_t cr1;
+  reg32_t cr2;
+  reg32_t sr;
+  reg32_t dr;
+  reg32_t crcpr;
+  reg32_t rxcrcr;
+  reg32_t txcrcr;
+  reg32_t i2scfgr;
+  reg32_t i2spr;
 } stm32_spi_t;
 
 #define STM32_SPI_CR1_BIDIMODE BIT(15)
@@ -52,34 +52,100 @@ typedef struct {
 
 void stm32_hal_spi_init(stm32_hal_spi_t *s)
 {
-  volatile stm32_spi_t *spi = s->base;
+  stm32_spi_t *spi = s->base;
 
   spi->cr1 &= ~STM32_SPI_CR1_SPE;
   spi->cr1 = STM32_SPI_CR1_SSM | STM32_SPI_CR1_SSI | \
              STM32_SPI_CR1_BR(3) | STM32_SPI_CR1_MSTR;
   spi->cr2 = ((((unsigned int)s->wordlen - 1) & 0xf) << 8);
   spi->cr1 |= STM32_SPI_CR1_SPE;
+
+  gpio_set(s->cs, 1);
+  gpio_init(s->cs, GPIO_OUTPUT);
 }
 
-void stm32_hal_spi_write(stm32_hal_spi_t *s, unsigned int data)
+static void _stm32_hal_spi_write(stm32_hal_spi_t *s, unsigned int data)
 {
-  volatile stm32_spi_t *spi = s->base;
+  stm32_spi_t *spi = s->base;
+
+  /* discard any not read data */
+  if (spi->sr & STM32_SPI_SR_RXNE)
+    (void)spi->dr;
 
   while ((spi->sr & STM32_SPI_SR_TXE) == 0)
     asm volatile ("nop");
 
   spi->dr = data & 0xffff;
+}
 
-#if 0
-  while ((spi->sr & STM32_SPI_SR_TXE) == 0)
+static void _stm32_hal_spi_wait_done(stm32_hal_spi_t *s)
+{
+  stm32_spi_t *spi = s->base;
+
+  while (!(spi->sr & STM32_SPI_SR_RXNE))
     asm volatile ("nop");
-#endif
+}
+
+static unsigned int _stm32_hal_spi_read(stm32_hal_spi_t *s)
+{
+  stm32_spi_t *spi = s->base;
+  unsigned int dummy = 0xffff;
+
+  if (spi->sr & STM32_SPI_SR_RXNE)
+    (void)spi->dr;
+
+  _stm32_hal_spi_write(s, dummy);
+  _stm32_hal_spi_wait_done(s);
+
+  return spi->dr & 0xffff;
+}
+
+void stm32_hal_spi_write(stm32_hal_spi_t *s, unsigned int data)
+{
+  gpio_set(s->cs, 0);
+
+  _stm32_hal_spi_write(s, data);
+  _stm32_hal_spi_wait_done(s);
+
+  gpio_set(s->cs, 1);
 }
 
 void stm32_hal_spi_wait_done(stm32_hal_spi_t *s)
 {
-  volatile stm32_spi_t *spi = s->base;
+  _stm32_hal_spi_wait_done(s);
+}
 
-  while ((spi->sr & STM32_SPI_SR_BSY))
-    asm volatile ("nop");
+void stm32_hal_spi_write_buf(stm32_hal_spi_t *s, void *data, unsigned int len)
+{
+  unsigned char *cdata = (unsigned char *)data;
+  unsigned int i;
+
+  gpio_set(s->cs, 0);
+
+  for (i = 0; i < len; i++) {
+    _stm32_hal_spi_write(s, *cdata++);
+    _stm32_hal_spi_wait_done(s);
+  }
+
+  gpio_set(s->cs, 1);
+}
+
+void stm32_hal_spi_wrd_buf(stm32_hal_spi_t *s, void *wdata, unsigned int wlen,
+                           void *rdata, unsigned int rlen)
+{
+  unsigned char *cdata = (unsigned char *)wdata;
+  unsigned int i;
+
+  gpio_set(s->cs, 0);
+
+  for (i = 0; i < wlen; i++) {
+    _stm32_hal_spi_write(s, *cdata++);
+    _stm32_hal_spi_wait_done(s);
+  }
+
+  cdata = (unsigned char *)rdata;
+  for (i = 0; i < rlen; i++)
+    *cdata++ = _stm32_hal_spi_read(s) & 0xff;
+
+  gpio_set(s->cs, 1);
 }
