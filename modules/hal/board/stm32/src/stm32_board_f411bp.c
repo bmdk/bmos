@@ -66,6 +66,26 @@ void pin_init()
   gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, \
                                               GPIO_SPEED_VHI, 10, GPIO_ALT));
 
+  /* SPI1 */
+  enable_apb2(12);
+
+  gpio_init(GPIO(0, 4), GPIO_OUTPUT);                                       /* CS / NSS */
+  gpio_init_attr(GPIO(0, 5), GPIO_ATTR_STM32(0, \
+                                             GPIO_SPEED_VHI, 5, GPIO_ALT)); /* SCK */
+  gpio_init_attr(GPIO(0, 6), GPIO_ATTR_STM32(0, \
+                                             GPIO_SPEED_VHI, 5, GPIO_ALT)); /* MISO */
+  gpio_init_attr(GPIO(0, 7), GPIO_ATTR_STM32(0, \
+                                             GPIO_SPEED_VHI, 5, GPIO_ALT)); /* MOSI */
+
+#if CONFIG_LWIP
+  /* External interrupt for ENC28J60 on PA3 */
+  gpio_init(GPIO(0, 3), GPIO_INPUT);
+  stm32_syscfg_set_exti(0, 3);
+  stm32_exti_irq_set_edge_rising(3, 0);
+  stm32_exti_irq_set_edge_falling(3, 1);
+  stm32_exti_irq_enable(3, 1);
+#endif
+
   /* TIM1 */
   enable_apb2(0);
 
