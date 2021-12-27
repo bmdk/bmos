@@ -29,19 +29,17 @@
 
 #include "stm32_hal_i2c.h"
 
-typedef volatile unsigned int vint_t;
-
 struct _stm32_i2c_t {
-  vint_t cr1;
-  vint_t cr2;
-  vint_t oar1;
-  vint_t oar2;
-  vint_t dr;
-  vint_t sr1;
-  vint_t sr2;
-  vint_t ccr;
-  vint_t trise;
-  vint_t fltr;
+  reg32_t cr1;
+  reg32_t cr2;
+  reg32_t oar1;
+  reg32_t oar2;
+  reg32_t dr;
+  reg32_t sr1;
+  reg32_t sr2;
+  reg32_t ccr;
+  reg32_t trise;
+  reg32_t fltr;
 };
 
 #define I2C_CR1_PE BIT(0)
@@ -64,7 +62,7 @@ struct _stm32_i2c_t {
 #define FREQ 48      /* MHz */
 #define I2C_FREQ 100 /* kHz */
 
-void i2c_init(volatile stm32_i2c_t *i2c)
+void i2c_init(stm32_i2c_t *i2c)
 {
   unsigned int div;
 
@@ -81,7 +79,7 @@ void i2c_init(volatile stm32_i2c_t *i2c)
 
 #define TIMEOUT_US 100000
 
-static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+static int _i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
                           const void *bufp, unsigned int buflen)
 {
   const char *buf = bufp;
@@ -143,7 +141,7 @@ static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+static int _i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
                          void *bufp, unsigned int buflen)
 {
   char *buf = bufp;
@@ -215,7 +213,7 @@ static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
 }
 
 
-int i2c_write_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
                        void *wbufp, unsigned int wbuflen,
                        void *rbufp, unsigned int rbuflen)
 {
@@ -228,7 +226,7 @@ int i2c_write_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
                   const void *bufp, unsigned int buflen)
 {
   return _i2c_write_buf(i2c, addr, bufp, buflen);

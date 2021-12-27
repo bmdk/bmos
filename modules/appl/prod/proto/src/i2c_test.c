@@ -35,15 +35,16 @@
 #include "stm32_hal_i2c.h"
 
 #if STM32_F411BP
-#define I2C ((volatile stm32_i2c_t *)I2C1_BASE)
+#define I2C ((stm32_i2c_t *)I2C1_BASE)
 #elif STM32_G4XX
-#define I2C ((volatile stm32_i2c_t *)I2C1_BASE)
+#define I2C ((stm32_i2c_t *)I2C1_BASE)
 #elif STM32_H7XX
-#define I2C ((volatile stm32_i2c_t *)I2C2_BASE)
+#define I2C ((stm32_i2c_t *)I2C2_BASE)
 #else
-#define I2C ((volatile stm32_i2c_t *)I2C4_BASE)
+#define I2C ((stm32_i2c_t *)I2C4_BASE)
 #endif
 
+#if DISP
 #define SSD1306_SETCONTRAST 0x81
 #define SSD1306_DISPLAYALLON_RESUME 0xA4
 #define SSD1306_DISPLAYALLON 0xA5
@@ -283,6 +284,7 @@ void task_i2c_clock()
     task_delay(2000);
   }
 }
+#endif
 
 static int i2c_cmd(int argc, char *argv[])
 {
@@ -291,8 +293,10 @@ static int i2c_cmd(int argc, char *argv[])
   int err, len, i;
   unsigned char wbuf;
 
+#if DISP
   if (!fb)
     fb = fb_init(128, 64, 1, 0);
+#endif
 
   switch (argv[1][0]) {
   case 'i':
@@ -303,9 +307,6 @@ static int i2c_cmd(int argc, char *argv[])
     buf[0] = 0x5a;
     err = i2c_write_buf(I2C, 0x3c, buf, 1);
     xprintf("err %d\n", err);
-    break;
-  case 'd':
-    disp_init();
     break;
   case 'w':
     if (argc < 4)
@@ -354,6 +355,10 @@ static int i2c_cmd(int argc, char *argv[])
         xprintf("addr %02x\n", addr);
     }
     break;
+#if DISP
+  case 'd':
+    disp_init();
+    break;
   case 'f':
     if (argc < 3)
       return -1;
@@ -391,6 +396,7 @@ static int i2c_cmd(int argc, char *argv[])
     disp_char_w(fb, 96, 0, 19);
     fb_to_i2cdisp(fb);
     break;
+#endif
   }
 
   return 0;

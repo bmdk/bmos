@@ -24,11 +24,11 @@
 
 typedef struct _stm32_i2c_t stm32_i2c_t;
 
-void i2c_init(volatile stm32_i2c_t *i2c);
-int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+void i2c_init(stm32_i2c_t *i2c);
+int i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
                   const void *bufp, unsigned int buflen);
 
-int i2c_write_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
                        void *wbufp, unsigned int wbuflen,
                        void *rbufp, unsigned int rbuflen);
 

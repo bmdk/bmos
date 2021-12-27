@@ -30,17 +30,17 @@
 #include "stm32_hal_i2c.h"
 
 struct _stm32_i2c_t {
-  unsigned int cr1;
-  unsigned int cr2;
-  unsigned int oar1;
-  unsigned int oar2;
-  unsigned int timingr;
-  unsigned int timoutr;
-  unsigned int isr;
-  unsigned int icr;
-  unsigned int pecr;
-  unsigned int rxdr;
-  unsigned int txdr;
+  reg32_t cr1;
+  reg32_t cr2;
+  reg32_t oar1;
+  reg32_t oar2;
+  reg32_t timingr;
+  reg32_t timoutr;
+  reg32_t isr;
+  reg32_t icr;
+  reg32_t pecr;
+  reg32_t rxdr;
+  reg32_t txdr;
 };
 
 #define I2C_CR1_PE BIT(0)
@@ -70,7 +70,7 @@ struct _stm32_i2c_t {
 #define I2C_ISR_TXIS BIT(1)
 #define I2C_ISR_TXE BIT(0)
 
-void i2c_init(volatile stm32_i2c_t *i2c)
+void i2c_init(stm32_i2c_t *i2c)
 {
   i2c->cr1 &= ~I2C_CR1_PE;
 
@@ -81,7 +81,7 @@ void i2c_init(volatile stm32_i2c_t *i2c)
   i2c->cr1 |= I2C_CR1_PE;
 }
 
-static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+static int _i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
                           const void *bufp, unsigned int buflen)
 {
   const char *buf = bufp;
@@ -119,7 +119,7 @@ static int _i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+static int _i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
                          void *bufp, unsigned int buflen)
 {
   char *buf = bufp;
@@ -159,7 +159,7 @@ static int _i2c_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
 }
 
 
-int i2c_write_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
                        void *wbufp, unsigned int wbuflen,
                        void *rbufp, unsigned int rbuflen)
 {
@@ -172,7 +172,7 @@ int i2c_write_read_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-int i2c_write_buf(volatile stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
                   const void *bufp, unsigned int buflen)
 {
   return _i2c_write_buf(i2c, addr, bufp, buflen);
