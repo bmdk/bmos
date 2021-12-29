@@ -286,6 +286,10 @@ WEAK int bl_enter(void)
 
   xputs("\nPress return to enter bootloader\n");
 
+  for (;;)
+    if (debug_getc() < 0)
+      break;
+
   while (xtime_ms() - start < 1500) {
     c = debug_getc();
     if (c == '\r')
