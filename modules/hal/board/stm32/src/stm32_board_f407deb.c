@@ -104,7 +104,7 @@ static const led_flag_t led_flags[] = { LED_FLAG_INV, LED_FLAG_INV };
 /* 8MHz crystal input
    84MHz CPU clock
    42MHz AHB1
-   168MHz AHB2
+   84MHz AHB2
  */
 static const struct pll_params_t pll_params = {
   .src     = RCC_A_CLK_HSE_OSC,
