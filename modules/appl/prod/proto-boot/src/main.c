@@ -172,6 +172,17 @@ static inline int _flash_erase(unsigned int start, unsigned int count)
 }
 #endif
 
+static wait_tx_done(unsigned int timeout_ms){
+  xtime_ms_t start = xtime_ms();
+
+  while (!debug_ser_tx_done()) {
+    if ((xtime_ms() - start) > timeout_ms) {
+      xprintf("TIMEOUT waiting for tx done\n");
+      break;
+    }
+  }
+}
+
 static int cmd_xmodem(int argc, char *argv[])
 {
   int err;
@@ -216,14 +227,8 @@ static int cmd_xmodem(int argc, char *argv[])
     }
   }
 
-  start = xtime_ms();
   /* make sure we flush the last character */
-  while (!debug_ser_tx_done()) {
-    if ((xtime_ms() - start) > 2000) {
-      xprintf("TIMEOUT waiting for tx done\n");
-      break;
-    }
-  }
+  wait_tx_done(2000);
 
   if (err == 0)
     boot();
@@ -285,6 +290,8 @@ WEAK int bl_enter(void)
   xtime_ms_t start = xtime_ms();
 
   xputs("\nPress return to enter bootloader\n");
+
+  wait_tx_done(20);
 
   for (;;)
     if (debug_getc() < 0)
