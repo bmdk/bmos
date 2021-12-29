@@ -19,6 +19,8 @@
  * IN THE SOFTWARE.
  */
 
+/* this supports the RCC on U5XX devices */
+
 #include "common.h"
 #include "hal_common.h"
 #include "stm32_hal.h"
