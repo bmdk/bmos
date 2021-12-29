@@ -172,7 +172,7 @@ static inline int _flash_erase(unsigned int start, unsigned int count)
 }
 #endif
 
-static wait_tx_done(unsigned int timeout_ms){
+static void wait_tx_done(unsigned int timeout_ms){
   xtime_ms_t start = xtime_ms();
 
   while (!debug_ser_tx_done()) {
