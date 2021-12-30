@@ -70,11 +70,19 @@ void fast_log(const char *fmt, unsigned long v1, unsigned long v2)
   e->v2 = v2;
 }
 
+static void dputs(int debug, const char *str)
+{
+  if (debug)
+    debug_puts(str);
+  else
+    xputs(str);
+}
+
 void fast_log_dump(unsigned int ent, int debug)
 {
   unsigned int i;
   char line[64];
-  int ofs;
+  int count;
   unsigned int last = 0, lastidx;
 
   if (ent > FAST_LOG_SIZE)
@@ -93,12 +101,12 @@ void fast_log_dump(unsigned int ent, int debug)
     if (e->tus == 0)
       continue;
 
-    ofs = snprintf(line, sizeof(line), "%6u(%04u) ", e->tus, e->tus - last);
-    snprintf(line + ofs, sizeof(line) - ofs, e->fmt, e->v1, e->v2);
-    if (debug)
-      debug_puts(line);
-    else
-      xputs(line);
+    snprintf(line, sizeof(line), "%6u(%04u) ", e->tus, e->tus - last);
+    dputs(debug, line);
+    count = snprintf(line, sizeof(line), e->fmt, e->v1, e->v2);
+    dputs(debug, line);
+    if (line[count - 1] != '\n')
+      dputs(debug, "\n");
     last = e->tus;
   }
 }
