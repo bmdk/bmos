@@ -34,13 +34,13 @@
 #define MSGDATA_LEN (1 << MSGDATA_POW2)
 
 typedef struct {
-  unsigned int sr;
-  unsigned int dr;
-  unsigned int brr;
-  unsigned int cr1;
-  unsigned int cr2;
-  unsigned int cr3;
-  unsigned int gtpr;
+  reg32_t sr;
+  reg32_t dr;
+  reg32_t brr;
+  reg32_t cr1;
+  reg32_t cr2;
+  reg32_t cr3;
+  reg32_t gtpr;
 } stm32_usart_a_t;
 
 #define UART_SR_ORE BIT(3)
@@ -58,14 +58,14 @@ typedef struct {
 
 #define USART_CR3_HDSEL BIT(3)  /* Single wire half duplex */
 
-static volatile stm32_usart_a_t *duart;
+static stm32_usart_a_t *duart;
 
-static int usart_tx_done(volatile stm32_usart_a_t *usart)
+static int usart_tx_done(stm32_usart_a_t *usart)
 {
   return usart->sr & UART_SR_TC;
 }
 
-static void usart_putc(volatile stm32_usart_a_t *usart, int ch)
+static void usart_putc(stm32_usart_a_t *usart, int ch)
 {
   while (!(usart->sr & UART_SR_TXE))
     ;
@@ -73,7 +73,7 @@ static void usart_putc(volatile stm32_usart_a_t *usart, int ch)
   usart->dr = ch & 0xff;
 }
 
-static int usart_xgetc(volatile stm32_usart_a_t *usart)
+static int usart_xgetc(stm32_usart_a_t *usart)
 {
   if (usart->sr & UART_SR_RXNE)
     return (int)(usart->dr & 0xff);
@@ -99,14 +99,14 @@ int debug_ser_tx_done(void)
 void debug_uart_init(void *base, unsigned int baud, unsigned int clock,
                      unsigned int flags)
 {
-  duart = (volatile stm32_usart_a_t *)base;
+  duart = (stm32_usart_a_t *)base;
 
   duart->brr = (clock + baud / 2) / baud;
   duart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | USART_CR1_TE | USART_CR1_RE;
 }
 
 #if BMOS
-static void _usart_set_baud(volatile stm32_usart_a_t *usart,
+static void _usart_set_baud(stm32_usart_a_t *usart,
                             unsigned int baud, unsigned int clock,
                             unsigned int flags)
 {
@@ -119,14 +119,14 @@ static void _usart_set_baud(volatile stm32_usart_a_t *usart,
 
 void uart_set_baud(uart_t *u, unsigned int baud)
 {
-  volatile stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = u->base;
 
   _usart_set_baud(usart, baud, u->clock, u->flags);
 }
 
 static void usart_tx(uart_t *u)
 {
-  volatile stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = u->base;
   bmos_op_msg_t *m;
   unsigned int len;
   unsigned char *data;
@@ -185,7 +185,7 @@ static void sendcb(uart_t *u)
 static void usart_isr(void *data)
 {
   uart_t *u = (uart_t *)data;
-  volatile stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = u->base;
   unsigned int isr;
 
   isr = usart->sr;
@@ -219,7 +219,7 @@ static void usart_isr(void *data)
 static void _put(void *p)
 {
   uart_t *u = (uart_t *)p;
-  volatile stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = u->base;
 
   usart->cr1 |= USART_CR1_TXEIE;
 }
@@ -227,7 +227,7 @@ static void _put(void *p)
 bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
                         unsigned int op)
 {
-  volatile stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = u->base;
 
   _usart_set_baud(usart, baud, u->clock, u->flags);
 
