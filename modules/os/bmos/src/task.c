@@ -273,11 +273,7 @@ void *_pendsv_handler(void *sp)
 {
   unsigned int now;
 
-  clear_pendsv();
-
   CURRENT->sp = sp;
-
-  XASSERT(NEXT);
 
   now = hal_time_us();
 
@@ -287,7 +283,6 @@ void *_pendsv_handler(void *sp)
   FAST_LOG('T', "task switch '%s' -> '%s'\n", CURRENT->name, NEXT->name);
 
   CURRENT = NEXT;
-  NEXT = NULL;
 
   sched_info.count_switch++;
 
