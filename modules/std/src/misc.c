@@ -32,7 +32,7 @@
 void sem_info(char opt, int debug);
 void pool_info(char opt, int debug);
 void queue_info(char opt, int debug);
-void task_info(int debug);
+void task_info(char opt, int debug);
 #endif
 
 void xdump(void)
@@ -41,7 +41,7 @@ void xdump(void)
 
 #if BMOS
   debug_printf("\nTASKS\n");
-  task_info(1);
+  task_info(0, 1);
 
   debug_printf("\nSEMAPHORES\n");
   sem_info('d', 1);
