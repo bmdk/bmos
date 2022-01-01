@@ -35,7 +35,7 @@ void xvslog(int priority, const char *format, va_list ap)
   xtime_ms_t ts = xtime_ms();
 
   xprintf("%5d.%03d: ", ts / 1000, ts % 1000);
-  xprintf(format, ap);
+  xvprintf(format, ap);
   xprintf("\n");
 }
 
