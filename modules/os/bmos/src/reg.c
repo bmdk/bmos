@@ -47,7 +47,7 @@ typedef struct {
 
 static reg_t reg_list[BMOS_REG_TYPE_COUNT];
 
-static void bmos_reg_printf(unsigned int debug, const char *fmt, ...)
+static void bmos_reg_printf(int debug, const char *fmt, ...)
 {
   va_list ap;
 
