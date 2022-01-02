@@ -94,6 +94,8 @@ void irq_register(const char *name, irq_handler_t *handler, void *data,
   c->name = name;
   irq_stats_reset(num);
 
+  /* clear any pending interrupts */
+  irq_ack(num);
   irq_enable(num, 1);
 }
 
