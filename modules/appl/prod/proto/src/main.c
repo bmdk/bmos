@@ -264,6 +264,7 @@ int main()
   xslog(LOG_INFO, "starting");
 
 #if BUTTON_INT
+  stm32_exti_irq_ack(BUTTON_EXTI);
   irq_register("ext", button_int, 0, BUTTON_IRQ);
 #endif
 
