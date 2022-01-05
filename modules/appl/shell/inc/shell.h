@@ -22,16 +22,26 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#ifndef CONFIG_SHELL_HIST
+#define CONFIG_SHELL_HIST 1
+#endif
+
+#ifndef CONFIG_SHELL_TAB_COMPLETE
+#define CONFIG_SHELL_TAB_COMPLETE 1
+#endif
+
 typedef int shell_cmd_t (int argc, char *argv[]);
 
 #define MAX_LINE 64
 #define MAX_ESC 8
 #define MAX_HIST 6
 
+#if CONFIG_SHELL_HIST
 typedef struct {
   char lines[MAX_HIST][MAX_LINE + 1];
   unsigned char count;
 } sh_hist_t;
+#endif
 
 typedef struct {
   char line[MAX_LINE + 1];
@@ -44,8 +54,10 @@ typedef struct {
 
 typedef struct {
   cmdline_t cmdline;
+#if CONFIG_SHELL_HIST
   sh_hist_t hist;
   signed char hist_pos;
+#endif
   const char *prompt;
 } shell_t;
 

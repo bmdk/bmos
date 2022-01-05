@@ -48,6 +48,7 @@ static int _isprint(int c)
 
 #define CMD_PER_LINE 6
 
+#if CONFIG_SHELL_HIST
 static void history_init(sh_hist_t *hist)
 {
   hist->count = 0;
@@ -77,6 +78,7 @@ static void history_insert(sh_hist_t *hist, const char *line)
 
   strcpy(hist->lines[0], line);
 }
+#endif
 
 static void cmdline_init(cmdline_t *cmdline)
 {
@@ -87,6 +89,7 @@ static void cmdline_init(cmdline_t *cmdline)
   cmdline->escpos = 0;
 }
 
+#if CONFIG_SHELL_TAB_COMPLETE || SHELL_CONFIG_HIST
 static void cmdline_set(cmdline_t *cmdline, const char *str)
 {
   int len = strlen(str);
@@ -97,6 +100,7 @@ static void cmdline_set(cmdline_t *cmdline, const char *str)
   cmdline->escseq = 0;
   cmdline->escpos = 0;
 }
+#endif
 
 static void cmdline_ins(cmdline_t *cmdline, int c)
 {
@@ -107,18 +111,22 @@ static void cmdline_ins(cmdline_t *cmdline, int c)
 
 static void shell_history_edit(shell_t *shell)
 {
+#if CONFIG_SHELL_HIST
   if (shell->hist_pos >= 0) {
     const char *h = history_get(&shell->hist, shell->hist_pos);
     cmdline_set(&shell->cmdline, h);
     shell->hist_pos = -1;
   }
+#endif
 }
 
 void shell_init(shell_t *shell, const char *prompt)
 {
   cmdline_init(&shell->cmdline);
+#if CONFIG_SHELL_HIST
   history_init(&shell->hist);
   shell->hist_pos = -1;
+#endif
   shell->prompt = prompt;
 
   xputs(prompt);
@@ -223,13 +231,14 @@ int matchlen(const char *a, const char *b)
   }
 }
 
+#if CONFIG_SHELL_TAB_COMPLETE
 typedef struct {
   const char *first;
   unsigned int max_len;
 } cmd_match_t;
 
 
-int count_matching(const char *line, unsigned int len)
+static int count_matching(const char *line, unsigned int len)
 {
   cmd_ent_t *ent;
   unsigned int i;
@@ -248,7 +257,7 @@ int count_matching(const char *line, unsigned int len)
   return count;
 }
 
-int tab_complete(const char *line, unsigned int len, cmd_match_t *match)
+static int tab_complete(const char *line, unsigned int len, cmd_match_t *match)
 {
   cmd_ent_t *ent;
   unsigned int i, l, count, oc = 0;
@@ -287,12 +296,15 @@ int tab_complete(const char *line, unsigned int len, cmd_match_t *match)
 
   return count;
 }
+#endif
 
 void shell_input(shell_t *shell, int c)
 {
   cmdline_t *cmdline = &shell->cmdline;
   int i;
+#if CONFIG_SHELL_HIST
   const char *h;
+#endif
 
   if (cmdline->escseq == 1) {
     if (c == '[')
@@ -307,6 +319,7 @@ void shell_input(shell_t *shell, int c)
       } else if (cmdline->escpos == 0) {
         switch (c) {
         case 'A':
+#if CONFIG_SHELL_HIST
           if (shell->hist.count > 0) {
             if (shell->hist_pos < shell->hist.count - 1)
               shell->hist_pos++;
@@ -314,8 +327,10 @@ void shell_input(shell_t *shell, int c)
             if (h)
               xprintf(ANSI_SEQ_ERASE "\r%s%s", shell->prompt, h);
           }
+#endif
           break;
         case 'B':
+#if CONFIG_SHELL_HIST
           if (shell->hist_pos > 0) {
             shell->hist_pos--;
             h = history_get(&shell->hist, shell->hist_pos);
@@ -325,6 +340,7 @@ void shell_input(shell_t *shell, int c)
             shell->hist_pos = -1;
             xprintf(ANSI_SEQ_ERASE "\r%s%s", shell->prompt, cmdline->line);
           }
+#endif
           break;
         case 'C':
           if (cmdline->pos < cmdline->len) {
@@ -359,6 +375,7 @@ void shell_input(shell_t *shell, int c)
       cmdline_del_char(cmdline);
     }
   } else if (c == '\t') {
+#if CONFIG_SHELL_TAB_COMPLETE
     {
       int count;
       cmd_match_t match;
@@ -376,11 +393,14 @@ void shell_input(shell_t *shell, int c)
         xprintf(ANSI_SEQ_ERASE "\r%s%s", shell->prompt, cmdline->line);
       }
     }
+#endif
   } else if (c == '\r') {
     shell_history_edit(shell);
     xputs("\r\n");
+#if CONFIG_SHELL_HIST
     history_insert(&shell->hist, cmdline->line);
     shell->hist_pos = -1;
+#endif
     run_command(cmdline->line);
     cmdline_init(cmdline);
     xputs(shell->prompt);
