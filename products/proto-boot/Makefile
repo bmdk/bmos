@@ -31,6 +31,7 @@ PROG += f103bp
 PROG += f103n
 PROG += f411bp
 PROG += f401bp
+PROG += f4d
 PROG += f407deb
 PROG += f407debm
 PROG += g0b1n
@@ -159,6 +160,9 @@ STACK_END.f411bp = 0x20020000
 
 XCFLAGS.f401bp += -DSTM32_F401 -DSTM32_F4XX
 STACK_END.f401bp = 0x20010000
+
+XCFLAGS.f4d += -DSTM32_F407 -DSTM32_F4XX
+STACK_END.f4d = 0x20020000
 
 XCFLAGS.f407deb += -DSTM32_F407 -DSTM32_F4XX
 STACK_END.f407deb = 0x20020000
@@ -371,6 +375,12 @@ FILES.f401bp += stm32_rcc_a.o
 FILES.f401bp += stm32_board_f401bp.o
 FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
+
+FILES.f4d += stm32_usart_a.o
+FILES.f4d += stm32_rcc_a.o
+FILES.f4d += stm32_board_f4d.o
+FILES.f4d += $(FILES.f4xx)
+FILES.f4d += $(FILES.fxxx)
 
 FILES.f407deb += stm32_usart_a.o
 FILES.f407deb += stm32_rcc_a.o

@@ -32,6 +32,7 @@ PROG += f103n
 PROG += f401bp
 PROG += f401bp64
 PROG += f411bp
+PROG += f4d
 PROG += f407deb
 PROG += f407debm
 PROG += f429
@@ -206,8 +207,16 @@ XCFLAGS.f401bp += -DWS2811_STRING_GRB
 XCFLAGS.f401bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
 XCFLAGS.f401bp += -DSTM32F401xC
 
+
 STACK_END.f401bp64 = 0x20010000
 XCFLAGS.f401bp64 = $(XCFLAGS.f401bp)
+
+XCFLAGS.f4d += -DSTM32_F407
+XCFLAGS.f4d += -DSTM32_F4XX
+XCFLAGS.f4d += -DSTM32_F4D
+XCFLAGS.f4d += -mcpu=cortex-m4
+STACK_END.f4d = 0x20020000
+LWIP.f4d = y
 
 XCFLAGS.f407deb += -DSTM32_F407
 XCFLAGS.f407deb += -DSTM32_F4XX
@@ -520,6 +529,15 @@ FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
 
 FILES.f401bp64 += $(FILES.f401bp)
+
+FILES.f4d += stm32_hal_rtc.o
+FILES.f4d += stm32_usart_a.o
+FILES.f4d += stm32_rcc_a.o
+FILES.f4d += stm32_board_f4d.o
+FILES.f4d += stm32_hal_dma.o
+FILES.f4d += stm32_eth.o
+FILES.f4d += $(FILES.f4xx)
+FILES.f4d += $(FILES.fxxx)
 
 FILES.f407deb += stm32_hal_rtc.o
 FILES.f407deb += stm32_usart_a.o

@@ -453,7 +453,11 @@ void phy_write(unsigned int phy, unsigned int reg, unsigned int val)
     xslog(LOG_ERR, "timeout waiting for phy\n");
 }
 
+#if STM32_F4D
+#define PHY_ADDR 0
+#else
 #define PHY_ADDR 1
+#endif
 
 int phy_reset(void)
 {
