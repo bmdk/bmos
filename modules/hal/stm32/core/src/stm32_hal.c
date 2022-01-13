@@ -90,6 +90,10 @@ int cmd_devid(int argc, char *argv[])
   const char *idstr;
 
   switch (id) {
+  case 0x0:
+    /* errata 2.3 Debug registers cannot be read by user software */
+    idstr = "F103";
+    break;
   case 0x410:
     idstr = "F103 m";
     break;
