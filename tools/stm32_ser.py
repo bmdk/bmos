@@ -261,6 +261,37 @@ class stm32_ser:
             except:
                 pass
 
+    def cmd_erase(self, page_list):
+        self.send_cmd(CMD_ERASE)
+
+        size = len(page_list)
+
+        wdata = struct.pack(">B", size - 1)
+
+        for i in range(0, size):
+            wdata += struct.pack(">B", page_list[i])
+
+        self._write_data(wdata)
+
+        for i in range(0, 8):
+            try:
+                self.get_ack()
+            except:
+                pass
+
+    def cmd_erase_mass(self):
+        self.send_cmd(CMD_ERASE)
+
+        wdata = struct.pack(">B", 0xff)
+
+        self._write_data(wdata)
+
+        for i in range(0, 8):
+            try:
+                self.get_ack()
+            except:
+                pass
+
 def usage(name):
     sys.stderr.write("syntax: %s [-b <base address>] "
                      "[-e <erase count>] <serdev> <image>\n" % name)
@@ -268,6 +299,8 @@ def usage(name):
 
 
 def main():
+    extended_erase = False
+
     progname = sys.argv[0]
 
     addr = 0x8000000
@@ -306,9 +339,15 @@ def main():
 
     get_res = s.cmd_get()
     erase_cmd = get_res[7]
-    if erase_cmd != CMD_ERASE_EXTENDED:
-        sys.stderr.write("FIXME: Only extended erase supported\n")
+    if erase_cmd == CMD_ERASE_EXTENDED:
+        sys.stderr.write("Extended Erase\n")
+        extended_erase = True
+    elif erase_cmd == CMD_ERASE:
+        sys.stderr.write("Erase\n")
+    else:
+        sys.stderr.write("Erase type %02x not supported\n" % erase_cmd)
         sys.exit(1)
+
 
     ident = s.cmd_get_id()
     if len(ident) != 2:
@@ -321,10 +360,16 @@ def main():
 
     if n_erase > 0:
         sys.stderr.write("Erasing %d block(s)\n" % n_erase)
-        s.cmd_erase_ext(range(0, n_erase))
+        if extended_erase:
+            s.cmd_erase_ext(range(0, n_erase))
+        else:
+            s.cmd_erase(range(0, n_erase))
     elif n_erase == -1:
         sys.stderr.write("Mass Erase\n")
-        s.cmd_erase_ext_special(CMD_ERASE_MASS)
+        if extended_erase:
+            s.cmd_erase_ext_special(CMD_ERASE_MASS)
+        else:
+            s.cmd_erase_mass()
 
     sys.stderr.write("Writing\n")
     s.cmd_write(addr, data, True)
