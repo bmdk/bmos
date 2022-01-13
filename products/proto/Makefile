@@ -26,6 +26,7 @@ export ROOT ?= $(shell pwd)/../..
 PROG += f100d
 PROG += f103bp
 PROG += f401bp
+PROG += f401bp64
 PROG += f411bp
 PROG += f407deb
 PROG += f407debm
@@ -138,15 +139,18 @@ XCFLAGS.f411bp += -DDISP
 XCFLAGS.f411bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
 XCFLAGS.f411bp += -DSTM32F411xE
 
+STACK_END.f401bp = 0x20018000
 XCFLAGS.f401bp += -DSTM32_F401 -DSTM32_F4XX
 XCFLAGS.f401bp += -DSTM32_F401BP
 XCFLAGS.f401bp += -mcpu=cortex-m4
-STACK_END.f401bp = 0x20018000
 XCFLAGS.f401bp += -DWS2811
 XCFLAGS.f401bp += -DWS2811_DISPLAY_32X8_CLOCK
 XCFLAGS.f401bp += -DWS2811_STRING_GRB
 XCFLAGS.f401bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
 XCFLAGS.f401bp += -DSTM32F401xC
+
+STACK_END.f401bp64 = 0x20010000
+XCFLAGS.f401bp64 = $(XCFLAGS.f401bp)
 
 XCFLAGS.f407deb += -DSTM32_F407
 XCFLAGS.f407deb += -DSTM32_F4XX
@@ -287,6 +291,7 @@ XCFLAGS.cmsisf4 += -I$(ROOT)/external/st/cmsis_device_f4/Include
 XCFLAGS.cmsish7 += -I$(ROOT)/external/st/cmsis_device_h7/Include
 
 XCFLAGS.f401bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
+XCFLAGS.f401bp64 += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
 XCFLAGS.f411bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
 
 XCFLAGS.h743wa += $(XCFLAGS.cmsis) $(XCFLAGS.cmsish7)
@@ -421,6 +426,8 @@ FILES.f401bp += fb.o
 FILES.f401bp += $(FILES.tusb)
 FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
+
+FILES.f401bp64 += $(FILES.f401bp)
 
 FILES.f407deb += stm32_hal_rtc.o
 FILES.f407deb += stm32_usart_a.o
