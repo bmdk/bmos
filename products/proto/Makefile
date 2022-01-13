@@ -23,6 +23,7 @@ ifeq ($(PROG),)
 export BUILD_DIR = build
 export ROOT ?= $(shell pwd)/../..
 
+PROG += f030demo
 PROG += f100d
 PROG += f103bp
 PROG += f401bp
@@ -108,6 +109,22 @@ LWIP.h745nucleo = y
 XCFLAGS.l4r += -DSTM32_L4R
 XCFLAGS.l4r += -mcpu=cortex-m4
 STACK_END.l4r = 0x200A0000
+
+XCFLAGS.f030demo += -DSTM32_F030 -DSTM32_F030DEMO -DSTM32_F0XX
+XCFLAGS.f030demo += -DCONFIG_FAST_LOG_ENABLE=0
+XCFLAGS.f030demo += -DCONFIG_N_INTS=31
+XCFLAGS.f030demo += -DCONFIG_TIMER_16BIT=1
+XCFLAGS.f030demo += -DCONFIG_BUTTON_INT=0
+XCFLAGS.f030demo += -DCONFIG_SHELL_HIST=2
+XCFLAGS.f030demo += -DCONFIG_SHELL_MAX_LINE_LEN=32
+XCFLAGS.f030demo += -DCONFIG_SHELL_TAB_COMPLETE=0
+XCFLAGS.f030demo += -DCONFIG_SHELL_HELP=0
+XCFLAGS.f030demo += -DCONFIG_STM32_HAL_COMMANDS=0
+XCFLAGS.f030demo += -DCONFIG_HAL_DMA_COMMANDS=0
+XCFLAGS.f030demo += -DCONFIG_SIMPLE_EXCEPTION_HANDLER=1
+XCFLAGS.f030demo += -mcpu=cortex-m0
+STACK_END.f030demo = 0x20001000
+APPL_FLASH_BASE.f030demo = 0x8000000
 
 XCFLAGS.f100d += -DSTM32_F1XX
 XCFLAGS.f100d += -DSTM32_F100D
@@ -373,6 +390,14 @@ FILES.f7xx += stm32_flash.o
 FILES.f4xx += stm32_pwr_f4xx.o
 FILES.f4xx += stm32_flash.o
 FILES.fxxx += stm32_exti_fxxx.o
+
+FILES.f0xx += stm32_usart_b.o
+FILES.f0xx += stm32_rcc_f1.o
+FILES.f0xx += stm32_flash_f1.o
+
+FILES.f030demo += stm32_board_f030demo.o
+XSLOG.f030demo += xslog_simple.o
+FILES.f030demo += $(FILES.f0xx)
 
 FILES.f1xx += stm32_exti_fxxx.o
 FILES.f1xx += stm32_flash_f1.o

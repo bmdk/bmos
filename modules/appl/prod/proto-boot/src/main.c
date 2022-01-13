@@ -40,6 +40,8 @@
 
 #if STM32_H7XX
 #define APP_BASE 0x08020000
+#elif STM32_F0XX
+#define APP_BASE 0x08002800
 #else
 #define APP_BASE 0x08008000
 #endif
@@ -62,7 +64,7 @@ typedef struct {
   { 4, 16 }, { 1, 64 }, { 7, 128 }
 #elif STM32_F7XX
 #define FLASH_BLKSIZE 32
-#elif STM32_F1XX
+#elif STM32_F1XX || STM32_F0XX
 #define FLASH_BLKSIZE 1
 #else
 #error define FLASH_BLKSIZE
@@ -194,6 +196,8 @@ static int cmd_xmodem(int argc, char *argv[])
 
 #if STM32_H7XX
   err = _flash_erase(128, 128);
+#elif STM32_F0XX
+  err = _flash_erase(10, 6);
 #else
   err = _flash_erase(32, 64);
 #endif

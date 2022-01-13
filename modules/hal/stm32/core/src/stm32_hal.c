@@ -82,6 +82,8 @@ void delay(unsigned int count)
 #define DBGMCU_IDCODE 0x5C001000
 #elif STM32_UXXX
 #define DBGMCU_IDCODE 0xE0044000
+#elif STM32_F0XX
+#define DBGMCU_IDCODE 0x40015800
 #else
 #define DBGMCU_IDCODE 0xE0042000
 #endif
@@ -140,6 +142,21 @@ int cmd_devid(int argc, char *argv[])
     break;
   case 0x435:
     idstr = "L43x/44x";
+    break;
+  case 0x440:
+    idstr = "F070x8";
+    break;
+  case 0x442:
+    idstr = "F030xC";
+    break;
+  case 0x444:
+    idstr = "F030x4/6";
+    break;
+  case 0x445:
+    idstr = "F070x6";
+    break;
+  case 0x448:
+    idstr = "F070xB";
     break;
   case 0x450:
     idstr = "H743/45/47/53/55/57/50";

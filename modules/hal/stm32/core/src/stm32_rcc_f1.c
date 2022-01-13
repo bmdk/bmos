@@ -36,7 +36,14 @@ typedef struct {
   reg32_t apb1enr;
   reg32_t bdcr;
   reg32_t csr;
+#if STM32_F0XX
+  reg32_t ahbrstr;
+#endif
   reg32_t cfgr2;
+#if STM32_F0XX
+  reg32_t cfgr3;
+  reg32_t cr2;
+#endif
 } stm32_rcc_f1_t;
 
 #define RCC ((stm32_rcc_f1_t *)(0x40021000))
