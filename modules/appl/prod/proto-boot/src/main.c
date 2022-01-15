@@ -241,8 +241,6 @@ static int cmd_xmodem(int argc, char *argv[])
 
 SHELL_CMD(xmodem, cmd_xmodem);
 
-void systick_init();
-
 typedef void call (void);
 
 #define APP_ENTRY(base) (call *)(*(unsigned int *)((base) + 4))
