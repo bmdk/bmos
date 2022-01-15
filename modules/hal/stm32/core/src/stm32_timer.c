@@ -30,6 +30,12 @@
 #include "shell.h"
 #include "stm32_timer.h"
 
+#if STM32_F0XX
+#define TIM_BASE TIM1_BASE
+#else
+#define TIM_BASE TIM2_BASE
+#endif
+
 typedef struct {
   reg32_t cr1;
   reg32_t cr2;
@@ -93,9 +99,9 @@ void timer_init(void *base, unsigned int presc)
 
 void hal_delay_us(unsigned int us)
 {
-  unsigned int now = timer_get(TIM2_BASE);
+  unsigned int now = timer_get(TIM_BASE);
 
-  while (timer_get(TIM2_BASE) - now < us)
+  while (timer_get(TIM_BASE) - now < us)
     ;
 }
 
@@ -109,7 +115,7 @@ void hal_time_us_update(void)
 
   saved = interrupt_disable();
 
-  now = timer_get(TIM2_BASE);
+  now = timer_get(TIM_BASE);
   hal_time_us_acc += (unsigned int)(unsigned short)(now - hal_time_us_last);
   hal_time_us_last = now;
 
@@ -125,36 +131,36 @@ unsigned int hal_time_us(void)
 #else
 unsigned int hal_time_us(void)
 {
-  return timer_get(TIM2_BASE);
+  return timer_get(TIM_BASE);
 }
 #endif
 
 #if STM32_F767
-#define TIM2_DIV 2
+#define TIM_DIV 2
 #elif STM32_H7XX
-#define TIM2_DIV 2
+#define TIM_DIV 2
 #elif STM32_L4XX
-#define TIM2_DIV 1
+#define TIM_DIV 1
 #elif STM32_G4XX
-#define TIM2_DIV 1
+#define TIM_DIV 1
 #else
-#define TIM2_DIV 1
+#define TIM_DIV 1
 #endif
 
 static unsigned int timer_calc_div(void)
 {
-  return (hal_cpu_clock / TIM2_DIV  + (1000000 / 2 - 1)) / 1000000;
+  return (hal_cpu_clock / TIM_DIV  + (1000000 / 2 - 1)) / 1000000;
 }
 
 void hal_time_reinit(void)
 {
-  timer_presc(TIM2_BASE, timer_calc_div());
+  timer_presc(TIM_BASE, timer_calc_div());
 }
 
 /* set up timer2 as a us timer */
 void hal_time_init(void)
 {
-  timer_init(TIM2_BASE, timer_calc_div());
+  timer_init(TIM_BASE, timer_calc_div());
 }
 
 unsigned int timer_get(void *base)
@@ -288,6 +294,7 @@ void timer_stop(void *base)
   t->cr1 &= ~CR1_CEN;
 }
 
+#if CONFIG_CMD_TIMER
 #if STM32_H7XX
 #define TIM_BASE TIM3_BASE
 #else
@@ -322,3 +329,4 @@ int cmd_timer(int argc, char *argv[])
 }
 
 SHELL_CMD(timer, cmd_timer);
+#endif
