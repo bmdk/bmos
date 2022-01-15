@@ -22,6 +22,10 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#ifndef CONFIG_SHELL_HELP
+#define CONFIG_SHELL_HELP 1
+#endif
+
 #ifndef CONFIG_SHELL_HIST
 #define CONFIG_SHELL_HIST 1
 #endif
