@@ -245,6 +245,7 @@ XLDFLAGS += -lc -lnosys
 XLDFLAGS += -specs=nano.specs
 else
 XLDFLAGS += -nostdlib
+XLDFLAGS += -lgcc
 endif
 ifeq ($(findstring $(PROG), h723n h743nucleo h745nucleo h735dk, h743wa),)
 XLDFLAGS += -T appl.ld

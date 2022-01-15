@@ -25,7 +25,12 @@
 .globl	reset_handler
 .type   reset_handler, %function
 reset_handler:
+#if __ARM_ARCH_6M__
+	ldr	r0, =_stack_end
+	mov	sp, r0
+#else
 	ldr	sp, =_stack_end
+#endif
 	bl	_data_init
 #if CONFIG_NEWLIB
 	bl	__libc_init_array

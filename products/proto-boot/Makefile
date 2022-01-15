@@ -186,6 +186,7 @@ XLDFLAGS += -lc -lnosys
 XLDFLAGS += -specs=nano.specs
 else
 XLDFLAGS += -nostdlib
+XLDFLAGS += -lgcc
 endif
 XLDFLAGS += -T boot.ld
 XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
