@@ -240,7 +240,7 @@ class stm32_ser:
         for i in range(0, 8):
             try:
                 self.get_ack()
-            except:
+            except Exception:
                 pass
 
     def cmd_erase_ext(self, page_list):
@@ -258,7 +258,7 @@ class stm32_ser:
         for i in range(0, 8):
             try:
                 self.get_ack()
-            except:
+            except Exception:
                 pass
 
     def cmd_erase(self, page_list):
@@ -276,7 +276,7 @@ class stm32_ser:
         for i in range(0, 8):
             try:
                 self.get_ack()
-            except:
+            except Exception:
                 pass
 
     def cmd_erase_mass(self):
@@ -289,8 +289,9 @@ class stm32_ser:
         for i in range(0, 8):
             try:
                 self.get_ack()
-            except:
+            except Exception:
                 pass
+
 
 def usage(name):
     sys.stderr.write("syntax: %s [-b <base address>] "
@@ -346,7 +347,6 @@ def main():
     else:
         sys.stderr.write("Erase type %02x not supported\n" % erase_cmd)
         sys.exit(1)
-
 
     ident = s.cmd_get_id()
     if len(ident) != 2:
