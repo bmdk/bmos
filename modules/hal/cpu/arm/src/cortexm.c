@@ -66,7 +66,7 @@ void hal_cpu_init()
 #if RAM_APPL
   SCB->vtor = 0x20000000;
 #else
-  SCB->vtor = 0x8008000;
+  SCB->vtor = APPL_FLASH_BASE;
 #endif
 #endif
 #else

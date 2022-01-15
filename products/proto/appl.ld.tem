@@ -3,7 +3,7 @@ ENTRY(reset_handler)
 MEMORY
 {
   RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 320K
-  FLASH (rx)      : ORIGIN = 0x8008000, LENGTH = 256K
+  FLASH (rx)      : ORIGIN = %APPL_FLASH_BASE%, LENGTH = 256K
 }
 
 SECTIONS

@@ -247,9 +247,9 @@ XLDFLAGS += -nostdlib
 XLDFLAGS += -lgcc
 endif
 ifeq ($(findstring $(PROG), h723n h743nucleo h745nucleo h735dk, h743wa),)
-XLDFLAGS += -T appl.ld
+LD_SCRIPT = $(OBJDIR)/appl.ld
 else
-XLDFLAGS += -T appl-h7xx.ld
+LD_SCRIPT = appl-h7xx.ld
 endif
 XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
 XLDFLAGS += -Wl,--gc-sections
@@ -481,10 +481,6 @@ FILES.f767 += $(FILES.f7xx)
 FILES.f767 += $(FILES.fxxx)
 
 
-FILES.h7xx += $(FILES.lwip)
-FILES.f767 += $(FILES.lwip)
-FILES.f746 += $(FILES.lwip)
-
 FILES.h723n += $(FILES.h7xx)
 FILES.h735dk += $(FILES.h7xx)
 FILES.h743wa += $(FILES.h7xx)
@@ -588,6 +584,14 @@ FILES.wb55usb += stm32_hal_rtc.o
 FILES.wb55usb += stm32_board_wb55usb.o
 CPU.f100d = cortex-m3
 
+ifdef APPL_FLASH_BASE.$(PROG)
+APPL_FLASH_BASE = $(APPL_FLASH_BASE.$(PROG))
+else
+APPL_FLASH_BASE = 0x8008000
+endif
+
+XCFLAGS += -DAPPL_FLASH_BASE=$(APPL_FLASH_BASE)
+
 ifdef XSLOG.$(PROG)
 FILES += $(XSLOG.$(PROG))
 else
@@ -607,8 +611,11 @@ $(BUILD_DIR) $(OBJDIR):
 OFILES = $(addprefix $(OBJDIR)/,$(FILES))
 $(OFILES): | $(OBJDIR)
 
-$(BUILD_DIR)/$(PROG).elf: $(OFILES) |$(BUILD_DIR)
-	 $(XCC) -o $@ $^ $(XLDFLAGS)
+$(OBJDIR)/appl.ld: appl.ld.tem | $(OBJDIR)
+	sed s/%APPL_FLASH_BASE%/$(APPL_FLASH_BASE)/g < $< > $@
+
+$(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
+	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
 
 $(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
 	 $(XOBJCOPY) -O binary -R .eth -R .framebuf $^ $@
