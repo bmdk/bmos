@@ -229,10 +229,6 @@ FILES += xmodem.o
 FILES += stm32_timer.o
 FILES += xslog_simple.o
 
-ifeq ($(findstring $(PROG), f100d f103bp h723n h743nucleo h745nucleo h735dk, h743wa),)
-FILES += stm32_flash.o
-endif
-
 ifneq ($(CONFIG_NEWLIB), y)
 FILES += libc.o
 endif
@@ -259,8 +255,10 @@ FILES.h735dk += stm32_board_h735dk.o
 FILES.h735dk += $(FILES.h7xx)
 
 FILES.f7xx += stm32_pwr_f7xx.o
+FILES.f7xx += stm32_flash.o
 
 FILES.f4xx += stm32_pwr_f4xx.o
+FILES.f4xx += stm32_flash.o
 
 FILES.fxxx += stm32_exti_fxxx.o
 
@@ -330,6 +328,7 @@ FILES.l4xx += stm32_rcc_b.o
 FILES.l4xx += stm32_hal_rtc.o
 FILES.l4xx += stm32_pwr_lxxx.o
 FILES.l4xx += stm32_exti_lxxx.o
+FILES.l4xx += stm32_flash.o
 
 FILES.l432 += $(FILES.l4xx)
 FILES.l432 += stm32_board_l432.o
@@ -346,12 +345,14 @@ FILES.l4r += stm32_usart_b.o
 FILES.l4r += stm32_rcc_b.o
 FILES.l4r += stm32_board_l4r.o
 FILES.l4r += stm32_pwr_lxxx.o
+FILES.l4r += stm32_flash.o
 
 FILES.uxxx += stm32_usart_b.o
 FILES.uxxx += stm32_rcc_d.o
 FILES.uxxx += stm32_exti_uxxx.o
 FILES.uxxx += stm32_pwr_uxxx.o
 FILES.uxxx += stm32_hal_rtc.o
+FILES.uxxx += stm32_flash.o
 #FILES.uxxx += stm32_pwr_lxxx.o
 
 FILES.u575n += $(FILES.uxxx)
@@ -362,6 +363,7 @@ FILES.wbxx += stm32_rcc_b.o
 FILES.wbxx += stm32_hal_rtc.o
 FILES.wbxx += stm32_pwr_lxxx.o
 FILES.wbxx += stm32_exti_lxxx.o
+FILES.wbxx += stm32_flash.o
 
 FILES.wb55n += $(FILES.wbxx)
 FILES.wb55n += stm32_board_wb55n.o
@@ -374,6 +376,7 @@ FILES.g4xx += stm32_rcc_b.o
 FILES.g4xx += stm32_hal_rtc.o
 FILES.g4xx += stm32_pwr_lxxx.o
 FILES.g4xx += stm32_exti_lxxx.o
+FILES.g4xx += stm32_flash.o
 
 FILES.g474n += $(FILES.g4xx)
 FILES.g474n += stm32_board_g474n.o
