@@ -50,6 +50,12 @@ vector_table:
 .word exception_handler
 .word systick_handler
 
-.rept 128
+#ifdef CONFIG_N_INTS
+#define N_INTS CONFIG_N_INTS
+#else
+#define N_INTS 128
+#endif
+
+.rept N_INTS
 .word interrupt_handler
 .endr
