@@ -88,7 +88,11 @@ void blink()
 #define BUTTON_IRQ 40
 #endif
 
+#ifndef CONFIG_BUTTON_INT
 #define BUTTON_INT 1
+#else
+#define BUTTON_INT CONFIG_BUTTON_INT
+#endif
 
 #if BUTTON_INT
 void button_int(void *data)
