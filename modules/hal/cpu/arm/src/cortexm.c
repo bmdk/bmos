@@ -54,14 +54,6 @@
 #define SYSTICK ((systick_t *)SYSTICK_BASE)
 #define NVIC ((nvic_t *)NVIC_BASE)
 
-static void dump_stack_frame(stack_frame_t *sf)
-{
-  debug_printf("  r0 : %08x r1 : %08x r2 : %08x r3 : %08x\n", sf->r0, sf->r1,
-               sf->r2, sf->r3);
-  debug_printf("  r12: %08x\n", sf->r12);
-  debug_printf("  pc : %08x lr : %08x sr : %08x\n", sf->pc, sf->lr, sf->xpsr);
-}
-
 void hal_cpu_init()
 {
   unsigned int i;
@@ -113,6 +105,21 @@ void systick_init()
   SYSTICK->val = 0;
   SYSTICK->ctrl = SYSTICK_CTRL_CLKSOURCE | SYSTICK_CTRL_TICKINT |
                   SYSTICK_CTRL_ENABLE;
+}
+
+void exception_handler(void) __attribute__((naked));
+
+#ifndef CONFIG_SIMPLE_EXCEPTION_HANDLER
+#define CONFIG_SIMPLE_EXCEPTION_HANDLER 0
+#endif
+
+#if !CONFIG_SIMPLE_EXCEPTION_HANDLER
+static void dump_stack_frame(stack_frame_t *sf)
+{
+  debug_printf("  r0 : %08x r1 : %08x r2 : %08x r3 : %08x\n", sf->r0, sf->r1,
+               sf->r2, sf->r3);
+  debug_printf("  r12: %08x\n", sf->r12);
+  debug_printf("  pc : %08x lr : %08x sr : %08x\n", sf->pc, sf->lr, sf->xpsr);
 }
 
 static void _exception_handler(sw_stack_frame_t *xsf, unsigned int exc_return)
@@ -178,7 +185,6 @@ static void _exception_handler(sw_stack_frame_t *xsf, unsigned int exc_return)
     ;
 }
 
-void exception_handler(void) __attribute__((naked));
 void exception_handler()
 {
   register sw_stack_frame_t *xsf;
@@ -209,6 +215,14 @@ void exception_handler()
 
   _exception_handler(xsf, exc_return);
 }
+#else
+void exception_handler()
+{
+  debug_printf("EXCEPTION");
+  for (;;)
+    ;
+}
+#endif
 
 void interrupt_handler()
 {
