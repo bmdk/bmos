@@ -282,9 +282,9 @@ class stm32_ser:
     def cmd_erase_mass(self):
         self.send_cmd(CMD_ERASE)
 
-        wdata = struct.pack(">B", 0xff)
+        wdata = b'\xff\x00'
 
-        self._write_data(wdata)
+        self.write(wdata)
 
         for i in range(0, 8):
             try:
@@ -340,10 +340,9 @@ def main():
     get_res = s.cmd_get()
     erase_cmd = get_res[7]
     if erase_cmd == CMD_ERASE_EXTENDED:
-        sys.stderr.write("Extended Erase\n")
         extended_erase = True
     elif erase_cmd == CMD_ERASE:
-        sys.stderr.write("Erase\n")
+        extended_erase = False
     else:
         sys.stderr.write("Erase type %02x not supported\n" % erase_cmd)
         sys.exit(1)
