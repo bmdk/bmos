@@ -89,7 +89,7 @@ static void cmdline_init(cmdline_t *cmdline)
   cmdline->escpos = 0;
 }
 
-#if CONFIG_SHELL_TAB_COMPLETE || SHELL_CONFIG_HIST
+#if CONFIG_SHELL_TAB_COMPLETE || CONFIG_SHELL_HIST
 static void cmdline_set(cmdline_t *cmdline, const char *str)
 {
   int len = strlen(str);
