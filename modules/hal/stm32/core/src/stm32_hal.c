@@ -73,6 +73,11 @@ void delay(unsigned int count)
     asm volatile ("nop");
 }
 
+#ifndef CONFIG_STM32_HAL_COMMANDS
+#define CONFIG_STM32_HAL_COMMANDS 1
+#endif
+
+#if CONFIG_HAL_COMMANDS
 #if STM32_H7XX
 #define DBGMCU_IDCODE 0x5C001000
 #elif STM32_UXXX
@@ -197,3 +202,4 @@ int cmd_led(int argc, char *argv[])
 }
 
 SHELL_CMD(led, cmd_led);
+#endif
