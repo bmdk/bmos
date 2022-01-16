@@ -20,6 +20,7 @@
  */
 
 #include <fast_log.h>
+#if CONFIG_FAST_LOG_ENABLE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -192,3 +193,4 @@ SHELL_CMD_H(fast_log, cmd_fast_log, "fast_log control\n\n"
             " e <item>|*: enable items\n"
             " s <count>: show entries"
             );
+#endif

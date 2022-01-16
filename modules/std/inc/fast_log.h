@@ -22,6 +22,11 @@
 #ifndef FAST_LOG_H_
 #define FAST_LOG_H_
 
+#ifndef CONFIG_FAST_LOG_ENABLE
+#define CONFIG_FAST_LOG_ENABLE 1
+#endif
+
+#if CONFIG_FAST_LOG_ENABLE
 extern unsigned char fast_log_mask[];
 extern unsigned char fast_log_enabled;
 
@@ -42,5 +47,15 @@ void fast_log(const char *fmt, unsigned long v1, unsigned long v2);
 void fast_log_dump(unsigned int ent, int debug);
 
 void fast_log_init(const char *enable);
+#else
+#define FAST_LOG(_m_, fmt, v1, v2)
+static inline void fast_log_init(const char *enable)
+{
+}
+
+static inline void fast_log_dump(unsigned int ent, int debug)
+{
+}
+#endif
 
 #endif
