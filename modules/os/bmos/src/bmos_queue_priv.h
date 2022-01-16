@@ -37,8 +37,8 @@ typedef struct {
 } queue_task_data_t;
 
 typedef struct {
-  unsigned int cnt;
-  unsigned int size;
+  unsigned short cnt;
+  unsigned short size;
 } bmos_pool_data_t;
 
 struct _bmos_queue_t {
