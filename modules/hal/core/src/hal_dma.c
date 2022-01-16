@@ -80,6 +80,11 @@ int dma_controller_reg(unsigned int num, dma_controller_t *cont, void *data)
 }
 #endif
 
+#ifndef CONFIG_HAL_DMA_COMMANDS
+#define CONFIG_HAL_DMA_COMMANDS 1
+#endif
+
+#if CONFIG_HAL_DMA_COMMANDS
 static void dma_memcpy(unsigned int num, void *src, void *dst, unsigned int n)
 {
   dma_attr_t attr;
@@ -167,3 +172,4 @@ int cmd_dma(int argc, char *argv[])
 }
 
 SHELL_CMD(dma, cmd_dma);
+#endif
