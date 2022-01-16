@@ -125,6 +125,7 @@ XCFLAGS.f030demo += -DCONFIG_SIMPLE_EXCEPTION_HANDLER=0
 XCFLAGS.f030demo += -mcpu=cortex-m0
 STACK_END.f030demo = 0x20001000
 APPL_FLASH_BASE.f030demo = 0x8000000
+OPTFLAGS.f030demo += -Os
 
 XCFLAGS.f100d += -DSTM32_F1XX
 XCFLAGS.f100d += -DSTM32_F100D
@@ -241,8 +242,6 @@ XCFLAGS += -DARCH_STM32
 XCFLAGS += -mthumb
 XCFLAGS += -Wall -Werror
 XCFLAGS += -Wno-error=strict-overflow
-#XCFLAGS += -Os
-XCFLAGS += -O2
 XCFLAGS += -mno-unaligned-access
 XCFLAGS += -ffunction-sections
 # generate dependency information
@@ -623,6 +622,14 @@ FILES += $(XSLOG.$(PROG))
 else
 FILES += xslog.o
 endif
+
+ifdef OPTFLAGS.$(PROG)
+OPTFLAGS = $(OPTFLAGS.$(PROG))
+else
+OPTFLAGS = -O2
+endif
+
+XCFLAGS += $(OPTFLAGS)
 
 FILES += $(FILES.$(PROG))
 
