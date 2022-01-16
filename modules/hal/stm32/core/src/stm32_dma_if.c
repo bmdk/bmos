@@ -49,6 +49,7 @@ dma_cont_data_t dma_cont_data[] = {
 };
 #elif STM32_F0XX
 dma_cont_data_t dma_cont_data[] = {
+  { &stm32_bdma_controller, (void *)0x40020000 },
 };
 #else
 #error Define dma controller configuration for this platform
