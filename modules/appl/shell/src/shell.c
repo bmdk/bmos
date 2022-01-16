@@ -302,6 +302,7 @@ void shell_input(shell_t *shell, int c)
 {
   cmdline_t *cmdline = &shell->cmdline;
   int i;
+
 #if CONFIG_SHELL_HIST
   const char *h;
 #endif

@@ -52,7 +52,7 @@ void pin_init()
                                               GPIO_SPEED_HIG, 1, GPIO_ALT));
 
   enable_apb2(11); /* TIM1 */
-  enable_ahb1(0); /* DMA */
+  enable_ahb1(0);  /* DMA */
   enable_apb1(28); /* PWR */
 }
 
