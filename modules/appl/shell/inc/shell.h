@@ -52,10 +52,10 @@ typedef struct {
 
 typedef struct {
   char line[MAX_LINE + 1];
-  int pos;
-  int len;
+  unsigned char pos;
+  unsigned char len;
   char escseq;
-  int escpos;
+  unsigned char escpos;
   char esc[MAX_ESC];
 } cmdline_t;
 

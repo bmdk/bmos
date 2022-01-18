@@ -105,7 +105,7 @@ static void cmdline_set(cmdline_t *cmdline, const char *str)
 static void cmdline_ins(cmdline_t *cmdline, int c)
 {
   cmdline->len++;
-  cmdline->line[cmdline->pos++] = c % 0xff;
+  cmdline->line[cmdline->pos++] = (c & 0xff);
   cmdline->line[cmdline->len] = '\0';
 }
 
