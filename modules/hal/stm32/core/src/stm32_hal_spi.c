@@ -73,7 +73,7 @@ static void _stm32_hal_spi_write(stm32_hal_spi_t *s, unsigned int data)
     (void)spi->dr;
 
   while ((spi->sr & STM32_SPI_SR_TXE) == 0)
-    asm volatile ("nop");
+    ;
 
   spi->dr = data & 0xffff;
 }
@@ -83,7 +83,7 @@ static void _stm32_hal_spi_wait_done(stm32_hal_spi_t *s)
   stm32_spi_t *spi = s->base;
 
   while (!(spi->sr & STM32_SPI_SR_RXNE))
-    asm volatile ("nop");
+    ;
 }
 
 static unsigned int _stm32_hal_spi_read(stm32_hal_spi_t *s)

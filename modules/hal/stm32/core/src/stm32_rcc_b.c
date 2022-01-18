@@ -176,7 +176,7 @@ static void _clock_init(const struct pll_params_t *p)
 
   RCC->cfgr = CFGR_LOW_VAL;
   while (((RCC->cfgr >> 2) & 0x3) != DEFAULT_CLOCK)
-    asm volatile ("nop");
+    ;
 
   RCC->cr &= ~RCC_CR_PLLON;
   while (RCC->cr & RCC_CR_PLLRDY)
@@ -207,14 +207,14 @@ static void _clock_init(const struct pll_params_t *p)
 
   RCC->cfgr = CFGR_HIGH_VAL;
   while (((RCC->cfgr >> 2) & 0x3) != HIGH_CLOCK)
-    asm volatile ("nop");
+    ;
 }
 
 void clock_init_low(void)
 {
   RCC->cfgr = CFGR_LOW_VAL;
   while (((RCC->cfgr >> 2) & 0x3) != DEFAULT_CLOCK)
-    asm volatile ("nop");
+    ;
 
   RCC->cr &= ~RCC_CR_PLLON;
   while ((RCC->cr & RCC_CR_PLLRDY))
@@ -243,7 +243,7 @@ void clock_init_ls()
   RCC->bdcr |= RCC_BDCR_LSEON;
 
   while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
-    asm volatile ("nop");
+    ;
 
   reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
 

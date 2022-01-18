@@ -97,11 +97,11 @@ void clock_init_hs(const struct pll_params_t *p)
 
   RCC->cr |= RCC_CR_HSION;
   while ((RCC->cr & RCC_CR_HSIRDY) == 0)
-    asm volatile ("nop");
+    ;
 
   reg_set_field(&RCC->cfgr, 2, 0, RCC_CFGR_SW_HSI);
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_HSI)
-    asm volatile ("nop");
+    ;
 
   if (p->src == RCC_F1_CLK_HSE)
     RCC->cr |= RCC_CR_HSEBYP;
@@ -118,7 +118,7 @@ void clock_init_hs(const struct pll_params_t *p)
     pllsrc = PLL_CFGR_PLLSRC_HSE;
     RCC->cr |= RCC_CR_HSEON;
     while ((RCC->cr & RCC_CR_HSERDY) == 0)
-      asm volatile ("nop");
+      ;
   }
 
   //XASSERT(p->pllm > 1);
@@ -137,7 +137,7 @@ void clock_init_hs(const struct pll_params_t *p)
 
   reg_set_field(&RCC->cfgr, 2, 0, RCC_CFGR_SW_PLL);
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
-    asm volatile ("nop");
+    ;
 }
 
 #define RCC_BDCR_LSEON BIT(0)
@@ -157,7 +157,7 @@ void clock_init_ls()
   RCC->bdcr |= RCC_BDCR_LSEON;
 
   while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
-    asm volatile ("nop");
+    ;
 
   reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
 

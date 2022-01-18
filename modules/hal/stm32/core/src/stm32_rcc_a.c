@@ -109,11 +109,11 @@ void clock_init_hs(const struct pll_params_t *p)
 
   RCC->cr |= RCC_CR_HSION;
   while ((RCC->cr & RCC_CR_HSIRDY) == 0)
-    asm volatile ("nop");
+    ;
 
   RCC->cfgr = CFGR(0, 0, 0, 0, RCC_CFGR_SW_HSI);
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_HSI)
-    asm volatile ("nop");
+    ;
 
   if (p->src == RCC_A_CLK_HSE)
     RCC->cr |= RCC_CR_HSEBYP;
@@ -130,7 +130,7 @@ void clock_init_hs(const struct pll_params_t *p)
     pllsrc = PLLSRC_HSE;
     RCC->cr |= RCC_CR_HSEON;
     while ((RCC->cr & RCC_CR_HSERDY) == 0)
-      asm volatile ("nop");
+      ;
   }
 
   RCC->pllcfgr = PLLCFGR(p->pllr, p->pllq, pllsrc, p->pllp, p->plln, p->pllm);
@@ -143,7 +143,7 @@ void clock_init_hs(const struct pll_params_t *p)
 
   RCC->cfgr = CFGR(p->rtcpre, p->ppre2, p->ppre1, p->hpre, RCC_CFGR_SW_PLL);
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
-    asm volatile ("nop");
+    ;
 }
 
 #define RCC_BDCR_LSEON BIT(0)
@@ -162,7 +162,7 @@ void clock_init_ls()
   RCC->bdcr |= RCC_BDCR_LSEON;
 
   while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
-    asm volatile ("nop");
+    ;
 
   reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
 

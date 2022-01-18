@@ -154,7 +154,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->cr |= CR_ADCAL;
 
   while (a->cr & CR_ADCAL)
-    asm volatile ("nop");
+    ;
 
   for (i = 0; i < cnt; i++) {
     unsigned int n = (i + 1) % 5;
@@ -176,7 +176,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->cr &= ~CR_ADSTART;
 
   while ((a->isr & ISR_ADRDY) == 0)
-    asm volatile ("nop");
+    ;
 
   a->isr = 0xffffffff;
 

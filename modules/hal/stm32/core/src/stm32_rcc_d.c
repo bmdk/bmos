@@ -365,7 +365,7 @@ void clock_init_ls()
   RCC->bdcr |= RCC_BDCR_LSEON;
 
   while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
-    asm volatile ("nop");
+    ;
 
   reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
 
