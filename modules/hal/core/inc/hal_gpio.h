@@ -24,10 +24,17 @@
 
 typedef unsigned int gpio_handle_t;
 
+#if ARCH_AVR
+#define GPIO(bank, pin) (((bank & 0xf) << 4) | ((pin) & 0xf))
+
+#define GPIO_BANK(gpio) ((gpio >> 4) & 0xf)
+#define GPIO_PIN(gpio) ((gpio) & 0xf)
+#else
 #define GPIO(bank, pin) (((bank & 0xffff) << 16) | ((pin) & 0xffff))
 
 #define GPIO_BANK(gpio) ((gpio >> 16) & 0xffff)
 #define GPIO_PIN(gpio) ((gpio) & 0xffff)
+#endif
 
 #define GPIO_INPUT 0
 #define GPIO_OUTPUT 1
