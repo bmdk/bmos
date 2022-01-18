@@ -21,24 +21,6 @@
 
 .syntax unified
 .thumb
-.section .text.reset_handler
-.globl	reset_handler
-.type   reset_handler, %function
-reset_handler:
-#if __ARM_ARCH_6M__
-	ldr	r0, =_stack_end
-	mov	sp, r0
-#else
-	ldr	sp, =_stack_end
-#endif
-	bl	_data_init
-#if CONFIG_NEWLIB
-	bl	__libc_init_array
-#endif
-	bl	main
-
-forever:
-	b forever
 
 .section .isr_vector,"a",%progbits
 vector_table:
@@ -65,6 +47,26 @@ vector_table:
 .word interrupt_handler
 .endr
 
+.section .text.reset_handler
+.globl	reset_handler
+.type   reset_handler, %function
+reset_handler:
+#if __ARM_ARCH_6M__
+	ldr	r0, =_stack_end
+	mov	sp, r0
+#else
+	ldr	sp, =_stack_end
+#endif
+	bl	_data_init
+#if CONFIG_NEWLIB
+	bl	__libc_init_array
+#endif
+	bl	main
+
+forever:
+	b forever
+
+.section .text.pendsv_handler
 .type   pendsv_handler, %function
 pendsv_handler:
       cpsid i
