@@ -22,8 +22,13 @@
 #ifndef XTIME_H
 #define XTIME_H
 
+#if ARCH_AVR
+typedef unsigned long xtime_ms_t;
+typedef signed long xtime_diff_ms_t;
+#else
 typedef unsigned int xtime_ms_t;
 typedef int xtime_diff_ms_t;
+#endif
 
 xtime_ms_t xtime_ms(void);
 

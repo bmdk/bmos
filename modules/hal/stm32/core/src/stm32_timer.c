@@ -97,7 +97,7 @@ void timer_init(void *base, unsigned int presc)
   t->cr1 = CR1_CEN;
 }
 
-void hal_delay_us(unsigned int us)
+void hal_delay_us(hal_time_us_t us)
 {
   unsigned int now = timer_get(TIM_BASE);
 
@@ -122,14 +122,14 @@ void hal_time_us_update(void)
   interrupt_enable(saved);
 }
 
-unsigned int hal_time_us(void)
+hal_time_us_t hal_time_us(void)
 {
   hal_time_us_update();
 
   return hal_time_us_acc;
 }
 #else
-unsigned int hal_time_us(void)
+hal_time_us_t hal_time_us(void)
 {
   return timer_get(TIM_BASE);
 }

@@ -80,7 +80,7 @@ void systick_hook(void)
   blink();
 }
 
-unsigned int hal_time_us()
+hal_time_us_t hal_time_us()
 {
   return time_us_32();
 }

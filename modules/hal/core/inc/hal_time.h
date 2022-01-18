@@ -22,12 +22,16 @@
 #ifndef HAL_TIME_H
 #define HAL_TIME_H
 
+#include <stdint.h>
+
 void hal_time_init(void);
 void hal_time_reinit(void);
 
-void hal_delay_us(unsigned int us);
+typedef uint32_t hal_time_us_t;
 
-unsigned int hal_time_us(void);
+void hal_delay_us(hal_time_us_t us);
+
+hal_time_us_t hal_time_us(void);
 
 #if CONFIG_TIMER_16BIT
 void hal_time_us_update(void);
