@@ -321,7 +321,8 @@ void free(void *ptr)
     count++; \
   } while (0)
 
-int printx(char *str, size_t size, int width, int zero, unsigned int val)
+static int printx(char *str, size_t size, int width,
+                  int zero, unsigned int val)
 {
   unsigned int count = 0;
 
@@ -351,7 +352,8 @@ end:
   return count;
 }
 
-int printu(char *str, size_t size, int width, int zero, unsigned int val)
+static int printu(char *str, size_t size, int width,
+                  int zero, unsigned int val)
 {
   unsigned int count = 0;
 
@@ -378,7 +380,7 @@ end:
   return count;
 }
 
-int printi(char *str, size_t size, int width, int zero, int val)
+static int printi(char *str, size_t size, int width, int zero, int val)
 {
   unsigned int count = 0;
 
