@@ -121,7 +121,9 @@ const char *dayname[] = { "NONE", "MON", "TUE", "WED",
 
 static void set_dividers(unsigned int prediv_a, unsigned int prediv_s)
 {
-  RTC->prer = ((prediv_a & 0x7f) << 16) | (prediv_s & 0x7fff);
+  if (prediv_a == 0 || prediv_s == 0)
+    return;
+  RTC->prer = (((prediv_a - 1) & 0x7f) << 16) | ((prediv_s - 1) & 0x7fff);
 }
 
 static void rtc_unlock(int init)
@@ -144,19 +146,28 @@ static void rtc_lock(int init)
   RTC->wpr = 0xff;
 }
 
-void rtc_init(int external)
-{
-  /* just use the defaults */
-  if (external)
-    return;
-
-  rtc_unlock(1);
+/* default dividers for 32768 Hz */
+#define DIV_A_32768 128
+#define DIV_S_32768 256
 
 #if STM32_F0XX
-  set_dividers(80, 500);  /* 40KHz */
+/* and possibly others with a 40KHz internal LS clock */
+#define DIV_A_INT 80
+#define DIV_S_INT 500
 #else
-  set_dividers(128, 250); /* 32KHz */
+/* default 32KHz internal LS clock */
+#define DIV_A_INT 128
+#define DIV_S_INT 250
 #endif
+
+void rtc_init(int external)
+{
+  rtc_unlock(1);
+
+  if (external)
+    set_dividers(DIV_A_32768, DIV_S_32768);
+  else
+    set_dividers(DIV_A_INT, DIV_S_INT);
 
   rtc_lock(1);
 }

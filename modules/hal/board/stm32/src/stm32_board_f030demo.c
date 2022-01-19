@@ -26,6 +26,7 @@
 #include "debug_ser.h"
 #include "hal_board.h"
 #include "hal_gpio.h"
+#include "hal_rtc.h"
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
@@ -89,9 +90,10 @@ void hal_board_init()
   pin_init();
   led_init_flags(leds, led_flags, ARRSIZ(leds));
   clock_init(&pll_params);
-#if 0
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
+  rtc_init(0);
 #endif
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 
