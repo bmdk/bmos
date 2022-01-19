@@ -21,6 +21,30 @@
 
 #include "crc_ccitt16.h"
 
+#if CONFIG_XMODEM_CRC_BITWISE
+unsigned int crc_ccitt16(unsigned int crc, const void *data,
+                         unsigned int data_len)
+{
+  const unsigned char *d = (const unsigned char *)data;
+  unsigned int i;
+  int bit;
+  unsigned char c;
+
+  while (data_len--) {
+    c = *d++;
+    for (i = 0x80; i > 0; i >>= 1) {
+      bit = crc & 0x8000;
+      if (c & i)
+        bit = !bit;
+      crc <<= 1;
+      if (bit)
+        crc ^= 0x1021;
+    }
+    crc &= 0xffff;
+  }
+  return crc & 0xffff;
+}
+#else
 static const unsigned short crc_table[256] = {
   0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
   0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
@@ -68,16 +92,5 @@ unsigned int crc_ccitt16(unsigned int crc, const void *data,
     d++;
   }
   return crc & 0xffff;
-}
-
-#ifdef MAIN
-#include <stdio.h>
-#include <string.h>
-
-int main(int argc, char *argv[])
-{
-  const char test[] = "1234567890";
-
-  printf("crc: %04x\n", crc_ccitt16(0x1d0f, test, strlen(test)));
 }
 #endif
