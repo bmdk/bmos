@@ -490,7 +490,7 @@ static int hal_eth_init()
   ETH->maccr = BIT(14) | BIT(13); /* 100Mbit Full Duplex */
   ETH->maccr |= BIT(1) | BIT(0);  /* enable tx and rx */
 
-  asm volatile ("dsb");
+  __DSB();
 
   ETH->dmacrxcr |= ETH_DMARXCR_ST; /* enable rx dma */
 
@@ -632,11 +632,11 @@ static err_t hal_eth_send(struct netif *netif, struct pbuf *p)
   if (idx >= N_TX_DES)
     idx = 0;
 
-  asm volatile ("dsb");
+  __DSB();
 
   ETH->dmactxdtpr = (unsigned int)&tx_des[idx];
 
-  asm volatile ("dsb");
+  __DSB();
 
   eth_ctx.curtx = idx;
 
