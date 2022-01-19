@@ -99,9 +99,30 @@ typedef struct {
 
 static xmodem_bd_t bd;
 
+static inline int _flash_erase(unsigned int start, unsigned int count);
+
+static int xmodem_flash_erase()
+{
+  int err;
+
+#if STM32_H7XX
+  err = _flash_erase(128, 128);
+#elif STM32_F0XX
+  err = _flash_erase(4, 12);
+#else
+  err = _flash_erase(32, 64);
+#endif
+
+  return err;
+}
+
 static int xmodem_block(void *block_ctx, void *data, unsigned int len)
 {
   xmodem_bd_t *bd = (xmodem_bd_t *)block_ctx;
+
+  if (bd->count == 0)
+    if (xmodem_flash_erase() < 0)
+      return -1;
 
   bd->count++;
   bd->len += len;
@@ -193,17 +214,6 @@ static int cmd_xmodem(int argc, char *argv[])
 
   memset(&bd, 0, sizeof(bd));
   bd.addr = APP_BASE;
-
-#if STM32_H7XX
-  err = _flash_erase(128, 128);
-#elif STM32_F0XX
-  err = _flash_erase(10, 6);
-#else
-  err = _flash_erase(32, 64);
-#endif
-
-  if (err < 0)
-    return err;
 
   xmdat.putc = debug_putc;
   xmdat.block = xmodem_block;
