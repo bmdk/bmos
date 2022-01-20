@@ -30,55 +30,55 @@
 
 #if STM32_UXXX
 typedef struct {
-  unsigned int tr;
-  unsigned int dr;
-  unsigned int ssr;
-  unsigned int isr;
-  unsigned int prer;
-  unsigned int wutr;
-  unsigned int cr;
-  unsigned int privcfgr;
-  unsigned int seccfgr;
-  unsigned int wpr;
-  unsigned int calr;
-  unsigned int shiftr;
-  unsigned int tstr;
-  unsigned int tsdr;
-  unsigned int tsssr;
-  unsigned int alrmar;
-  unsigned int alrmassr;
-  unsigned int alrmbr;
-  unsigned int alrmbssr;
-  unsigned int sr;
-  unsigned int msr;
-  unsigned int smsr;
-  unsigned int scr;
-  unsigned int alrabinr;
-  unsigned int alrbbinr;
+  reg32_t tr;
+  reg32_t dr;
+  reg32_t ssr;
+  reg32_t isr;
+  reg32_t prer;
+  reg32_t wutr;
+  reg32_t cr;
+  reg32_t privcfgr;
+  reg32_t seccfgr;
+  reg32_t wpr;
+  reg32_t calr;
+  reg32_t shiftr;
+  reg32_t tstr;
+  reg32_t tsdr;
+  reg32_t tsssr;
+  reg32_t alrmar;
+  reg32_t alrmassr;
+  reg32_t alrmbr;
+  reg32_t alrmbssr;
+  reg32_t sr;
+  reg32_t msr;
+  reg32_t smsr;
+  reg32_t scr;
+  reg32_t alrabinr;
+  reg32_t alrbbinr;
 } stm32_rtc_t;
 #else
 typedef struct {
-  unsigned int tr;
-  unsigned int dr;
-  unsigned int cr;
-  unsigned int isr;
-  unsigned int prer;
-  unsigned int wutr;
-  unsigned int calibr;
-  unsigned int alrmar;
-  unsigned int alrmbr;
-  unsigned int wpr;
-  unsigned int ssr;
-  unsigned int shiftr;
-  unsigned int tstr;
-  unsigned int tsdr;
-  unsigned int tsssr;
-  unsigned int calr;
-  unsigned int tafcr;
-  unsigned int alrmassr;
-  unsigned int alrmbssr;
-  unsigned int or;
-  unsigned int bkp[32];
+  reg32_t tr;
+  reg32_t dr;
+  reg32_t cr;
+  reg32_t isr;
+  reg32_t prer;
+  reg32_t wutr;
+  reg32_t calibr;
+  reg32_t alrmar;
+  reg32_t alrmbr;
+  reg32_t wpr;
+  reg32_t ssr;
+  reg32_t shiftr;
+  reg32_t tstr;
+  reg32_t tsdr;
+  reg32_t tsssr;
+  reg32_t calr;
+  reg32_t tafcr;
+  reg32_t alrmassr;
+  reg32_t alrmbssr;
+  reg32_t or;
+  reg32_t bkp[32];
 } stm32_rtc_t;
 #endif
 
@@ -90,7 +90,7 @@ typedef struct {
 #define RTC_BASE 0x40002800
 #endif
 
-#define RTC ((volatile stm32_rtc_t *)RTC_BASE)
+#define RTC ((stm32_rtc_t *)RTC_BASE)
 
 #define RTC_ISR_INIT BIT(7)
 
@@ -116,6 +116,51 @@ const char *dayname[] = { "NONE", "MON", "TUE", "WED",
                           "THU",  "FRI", "SAT", "SUN" };
 /* *INDENT-ON* */
 
+#define TYPE_32K 0
+#define TYPE_40K 1
+
+static void set_dividers(unsigned int prediv_a, unsigned int prediv_s)
+{
+  RTC->prer = ((prediv_a & 0x7f) << 16) | (prediv_s & 0x7fff);
+}
+
+static void rtc_unlock(int init)
+{
+  RTC->wpr = 0xca;
+  RTC->wpr = 0x53;
+
+  if (init) {
+    RTC->isr |= RTC_ISR_INIT;
+    while ((RTC->isr & RTC_ISR_INITF) == 0)
+      ;
+  }
+}
+
+static void rtc_lock(int init)
+{
+  if (init)
+    RTC->isr &= ~RTC_ISR_INIT;
+
+  RTC->wpr = 0xff;
+}
+
+void rtc_init(int external)
+{
+  /* just use the defaults */
+  if (external)
+    return;
+
+  rtc_unlock(1);
+
+#if STM32_F0XX
+  set_dividers(80, 500);  /* 40KHz */
+#else
+  set_dividers(128, 250); /* 32KHz */
+#endif
+
+  rtc_lock(1);
+}
+
 void rtc_set_time(rtc_time_t *t)
 {
   unsigned int tr, dr;
@@ -129,17 +174,12 @@ void rtc_set_time(rtc_time_t *t)
        ((((t->month / 10) << 4) + (t->month % 10)) << 8) +
        (((t->day / 10) << 4) + (t->day % 10));
 
-  RTC->wpr = 0xca;
-  RTC->wpr = 0x53;
-  RTC->isr |= RTC_ISR_INIT;
-
-  while ((RTC->isr & RTC_ISR_INITF) == 0)
-    ;
+  rtc_unlock(1);
 
   RTC->tr = tr;
   RTC->dr = dr;
 
-  RTC->isr &= ~RTC_ISR_INIT;
+  rtc_lock(1);
 }
 
 void rtc_get_time(rtc_time_t *t)
@@ -219,8 +259,7 @@ static int sub_cmd_rtc_set_dst(int argc, char *argv[])
   if (argc >= 1)
     en = atoi(argv[0]);
 
-  RTC->wpr = 0xca;
-  RTC->wpr = 0x53;
+  rtc_unlock(0);
 
   if (en)
     RTC->cr |= RTC_CR_ADD1H;
