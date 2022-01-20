@@ -217,7 +217,7 @@ static unsigned int invalid_interrupts;
 void __vector_default()
 {
   xprintf("invalid interrupt - ignored\n");
-  invalid_interrupts ++;
+  invalid_interrupts++;
 }
 
 void extint(unsigned char n, unsigned char type)
