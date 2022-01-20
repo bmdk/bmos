@@ -68,6 +68,7 @@ endif
 
 CONFIG_NEWLIB ?= n
 
+CPP = cpp
 XCC = $(TOOLCHAIN_PFX)arm-none-eabi-gcc
 XOBJCOPY = $(TOOLCHAIN_PFX)arm-none-eabi-objcopy
 
@@ -263,11 +264,7 @@ else
 XLDFLAGS += -nostdlib
 XLDFLAGS += -lgcc
 endif
-ifeq ($(findstring $(PROG), h723n h743nucleo h745nucleo h735dk, h743wa),)
 LD_SCRIPT = $(OBJDIR)/appl.ld
-else
-LD_SCRIPT = appl-h7xx.ld
-endif
 XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
 XLDFLAGS += -Wl,--gc-sections
 XLDFLAGS += $(XCFLAGS)
@@ -616,6 +613,9 @@ else
 APPL_FLASH_BASE = 0x8008000
 endif
 
+APPL_RAM_SIZE=256K
+APPL_FLASH_SIZE=256K
+
 XCFLAGS += -DAPPL_FLASH_BASE=$(APPL_FLASH_BASE)
 
 ifdef XSLOG.$(PROG)
@@ -646,7 +646,9 @@ OFILES = $(addprefix $(OBJDIR)/,$(FILES))
 $(OFILES): | $(OBJDIR)
 
 $(OBJDIR)/appl.ld: appl.ld.tem | $(OBJDIR)
-	sed s/%APPL_FLASH_BASE%/$(APPL_FLASH_BASE)/g < $< > $@
+	 $(CPP) -P -D __APPL_FLASH_SIZE=$(APPL_FLASH_SIZE) \
+	        -D __APPL_RAM_SIZE=$(APPL_RAM_SIZE) \
+	        -D __APPL_FLASH_BASE=$(APPL_FLASH_BASE) $< -o $@
 
 $(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
 	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
