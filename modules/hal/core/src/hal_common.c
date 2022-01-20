@@ -31,12 +31,28 @@
 
 extern unsigned int _fsdata, _rsdata, _redata, _sbss, _ebss, _stack_end;
 extern unsigned int _flash_start, _flash_end, _ram_start, _end;
+#if CONFIG_COPY_ISR
+extern unsigned int _isr_start, _isr_end;
+#endif
 
 static unsigned int sbrk_next = (unsigned int)&_end;
 
 void _data_init(void)
 {
   unsigned int *si, *s, *e;
+
+#if CONFIG_COPY_ISR
+  si = &_flash_start;
+  s = &_isr_start;
+
+  /* copy initialized data from flash to ram */
+  if (s != si) {
+    e = &_isr_end;
+
+    while (s < e)
+      *s++ = *si++;
+  }
+#endif
 
   si = &_fsdata;
   s = &_rsdata;

@@ -65,7 +65,11 @@ SECTIONS
     KEEP(*(.isr_vector))
     . = ALIGN(8);
     _isr_end = .;
+#if CONFIG_COPY_ISR
   } >RAM AT> FLASH
+#else
+  } >FLASH
+#endif
 
   .shell_reg :
   {

@@ -24,7 +24,6 @@
 
 #include "common.h"
 #include "debug_ser.h"
-#include "debug_ser.h"
 #include "hal_board.h"
 #include "hal_gpio.h"
 #include "hal_uart.h"
@@ -32,10 +31,10 @@
 #include "shell.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
-#include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
 #include "stm32_pwr.h"
+#include "stm32_pwr_f0xx.h"
 #include "stm32_rcc_f1.h"
 
 void pin_init()
@@ -54,6 +53,8 @@ void pin_init()
   enable_apb2(11); /* TIM1 */
   enable_ahb1(0);  /* DMA */
   enable_apb1(28); /* PWR */
+  enable_apb1(28); /* PWR */
+  enable_apb2(0);  /* SYSCFG */
 }
 
 #define USART1_BASE (void *)0x40013800
@@ -94,4 +95,8 @@ void hal_board_init()
   clock_init_ls();
 #endif
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
+
+#if APPL
+  stm32_memmap(SYSCFG_MEMMAP_SRAM);
+#endif
 }
