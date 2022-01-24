@@ -92,6 +92,12 @@ static void clear_status()
   FLASH->sr = 0xffff;
 }
 
+#if STM32_F072
+#define PAGE_SIZE 2048
+#else
+#define PAGE_SIZE 1024
+#endif
+
 int flash_erase(unsigned int start, unsigned int count)
 {
   unsigned int page;
@@ -104,7 +110,7 @@ int flash_erase(unsigned int start, unsigned int count)
   for (page = start; page < start + count; page++) {
 
     FLASH->cr |= FLASH_CR_PER;
-    FLASH->ar = 0x8000000 + page * 1024;
+    FLASH->ar = 0x8000000 + page * PAGE_SIZE;
     FLASH->cr |= FLASH_CR_STRT;
 
     while (FLASH->sr & FLASH_SR_BSY)
