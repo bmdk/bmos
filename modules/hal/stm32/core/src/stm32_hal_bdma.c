@@ -26,6 +26,10 @@
 
 #include "hal_dma_if.h"
 
+#if STM32_G0XX || STM32_G4XX
+#include "stm32_hal_dmamux.h"
+#endif
+
 #define CCR_CT BIT(16)
 #define CCR_DBM BIT(15)
 #define CCR_MEM2MEM BIT(14)
@@ -64,7 +68,12 @@ typedef struct {
 static void stm32_bdma_set_chan(void *base, unsigned int chan,
                                 unsigned int devid)
 {
-#if !STM32_F1XX
+#if STM32_G0XX || STM32_G4XX
+  if (base == (void *)0x40020400)
+    chan += 8;
+
+  stm32_dmamux_req(chan, devid);
+#elif !STM32_F1XX
   volatile stm32_bdma_t *d = base;
 
   reg_set_field(&d->cselr, 4, chan << 2, devid);

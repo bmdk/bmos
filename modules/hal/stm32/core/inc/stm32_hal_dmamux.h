@@ -22,7 +22,8 @@
 #ifndef STM32_DMAMUX_H
 #define STM32_DMAMUX_H
 
-void stm32_dmamux_req(unsigned int dmamux_num,
-                      unsigned int chan, unsigned int req);
+#define STM32_DMAMUX_CHAN(_N_, _CHAN_) (((_N_) << 4) | ( (_CHAN_) & 0xf)
+
+void stm32_dmamux_req(unsigned int chan, unsigned int req);
 
 #endif

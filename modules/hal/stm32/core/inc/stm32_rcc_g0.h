@@ -19,44 +19,33 @@
  * IN THE SOFTWARE.
  */
 
-#include "common.h"
-#include "stm32_hal_dmamux.h"
+#ifndef STM32_RCC_G0_H
+#define STM32_RCC_G0_H
 
-typedef struct {
-  reg32_t cr[16];
-  reg32_t pad1[16];
-  reg32_t sr;
-  reg32_t fr;
-  reg32_t pad2[30];
-  reg32_t gcr[4];
-  reg32_t gsr;
-  reg32_t gfr;
-} stm32_dmamux_t;
+struct pll_params_t {
+  unsigned char flags;
+  unsigned char pllsrc;
+  unsigned char pllm;
+  unsigned char plln;
+  unsigned char pllp;
+  unsigned char pllq;
+  unsigned char pllr;
+  /* FLASH latency */
+  unsigned char latency;
+};
 
-#ifdef STM32_H7XX
-#define DMAMUX { (void *)0x40020800, (void *)0x58025800 };
-#elif STM32_G0XX || STM32_G4XX
-#define DMAMUX { (void *)0x40020800 };
-#else
-#error Define dmamux for this platform
+void clock_init(const struct pll_params_t *pll_params);
+
+#define PLL_FLAG_PLLREN BIT(0)
+#define PLL_FLAG_PLLQEN BIT(1)
+#define PLL_FLAG_PLLPEN BIT(2)
+#define PLL_FLAG_BYPASS BIT(3)
+
+#define RCC_PLLCFGR_PLLSRC_NONE 0
+#define RCC_PLLCFGR_PLLSRC_HSI16 2
+#define RCC_PLLCFGR_PLLSRC_HSE 3
+
+void enable_io(unsigned int dev);
+void disable_io(unsigned int dev);
+
 #endif
-
-static stm32_dmamux_t *dmamux[] = DMAMUX;
-
-#define DMAMUX_CR_ID(_v_) ((_v_) & 0x7f)
-#define DMAMUX_CR_EGE BIT(9)
-
-void stm32_dmamux_req(unsigned int chan, unsigned int req)
-{
-  stm32_dmamux_t *d;
-  unsigned int dmamux_num = (chan >> 4) & 1;
-
-  if (dmamux_num >= ARRSIZ(dmamux))
-    return;
-
-  d = dmamux[dmamux_num];
-  chan &= 0xf;
-
-  d->cr[chan] &= ~DMAMUX_CR_EGE;
-  d->cr[chan] = DMAMUX_CR_EGE | DMAMUX_CR_ID(req);
-}

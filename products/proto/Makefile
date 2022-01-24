@@ -46,6 +46,7 @@ PROG += l432
 PROG += l452
 PROG += l496
 PROG += l4r
+PROG += g0b1n
 PROG += g474n
 PROG += g431kbn
 PROG += u575n
@@ -240,6 +241,12 @@ STACK_END.l452 = 0x20028000
 XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
 XCFLAGS.l496 += -mcpu=cortex-m4
 STACK_END.l496 = 0x20040000
+
+XCFLAGS.g0b1n += -DSTM32_G0B1 -DSTM32_G0B1N -DSTM32_G0XX
+XCFLAGS.g0b1n += -DCONFIG_N_INTS=32
+XCFLAGS.g0b1n += -DCONFIG_BUTTON_INT=0
+XCFLAGS.g0b1n += -mcpu=cortex-m0plus
+STACK_END.g0b1n = 0x20024000
 
 XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474N
 XCFLAGS.g474n += -mcpu=cortex-m4
@@ -541,10 +548,20 @@ FILES.h743wa += $(FILES.h7xx)
 FILES.h743nucleo += $(FILES.h7xx)
 FILES.h745nucleo += $(FILES.h7xx)
 
+FILES.g0xx += stm32_rcc_g0.o
+FILES.g0xx += stm32_usart_b.o
+FILES.g0xx += stm32_flash.o
+FILES.g0xx += stm32_hal_bdma.o
+FILES.g0xx += stm32_hal_dmamux.o
+
+FILES.g0b1n += $(FILES.g0xx)
+FILES.g0b1n += stm32_board_g0b1n.o
+
 FILES.g4xx += crc_ccitt16.o
 FILES.g4xx += stm32_exti_lxxx.o
 FILES.g4xx += stm32_flash.o
 FILES.g4xx += stm32_hal_bdma.o
+FILES.g4xx += stm32_hal_dmamux.o
 FILES.g4xx += stm32_pwr_lxxx.o
 FILES.g4xx += stm32_rcc_b.o
 FILES.g4xx += stm32_usart_b.o

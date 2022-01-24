@@ -66,6 +66,8 @@ typedef struct {
   { 4, 16 }, { 1, 64 }, { 7, 128 }
 #elif STM32_F7XX
 #define FLASH_BLKSIZE 32
+#elif STM32_G0XX
+#define FLASH_BLKSIZE 2
 #elif STM32_F072
 #define FLASH_BLKSIZE 2
 #elif STM32_F1XX || STM32_F0XX

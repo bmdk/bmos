@@ -32,6 +32,7 @@ PROG += f411bp
 PROG += f401bp
 PROG += f407deb
 PROG += f407debm
+PROG += g0b1n
 PROG += h723n
 PROG += h743wa
 PROG += h743nucleo
@@ -172,6 +173,11 @@ STACK_END.l452 = 0x20028000
 
 XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
 STACK_END.l496 = 0x20040000
+
+XCFLAGS.g0b1n += -DSTM32_G0B1 -DSTM32_G0B1N -DSTM32_G0XX
+XCFLAGS.g0b1n += -DCONFIG_N_INTS=31
+STACK_END.g0b1n = 0x20024000
+CPU.g0b1n = cortex-m0plus
 
 XCFLAGS.g474n += -DSTM32_G474N -DSTM32_G4XX
 STACK_END.g474n = 0x20020000
@@ -419,6 +425,13 @@ FILES.wb55n += stm32_board_wb55n.o
 
 FILES.wb55usb += $(FILES.wbxx)
 FILES.wb55usb += stm32_board_wb55usb.o
+
+FILES.g0xx += stm32_rcc_g0.o
+FILES.g0xx += stm32_usart_b.o
+FILES.g0xx += stm32_flash.o
+
+FILES.g0b1n += $(FILES.g0xx)
+FILES.g0b1n += stm32_board_g0b1n.o
 
 FILES.g4xx += stm32_usart_b.o
 FILES.g4xx += stm32_rcc_b.o
