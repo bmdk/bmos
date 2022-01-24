@@ -53,7 +53,6 @@ void pin_init()
   enable_apb2(11); /* TIM1 */
   enable_ahb1(0);  /* DMA */
   enable_apb1(28); /* PWR */
-  enable_apb1(28); /* PWR */
   enable_apb2(0);  /* SYSCFG */
 }
 
