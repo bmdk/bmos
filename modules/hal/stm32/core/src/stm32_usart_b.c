@@ -329,6 +329,19 @@ static void _put(void *p)
     usart->cr1 |= USART_CR1_TXEIE;
 }
 
+static void _put_pool(void *p)
+{
+  unsigned int saved;
+  uart_t *u = (uart_t *)p;
+
+  saved = interrupt_disable();
+
+  if (circ_buf_used(&u->cb) > 0)
+    sendcb(u);
+
+  interrupt_enable(saved);
+}
+
 bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
                         unsigned int op)
 {
@@ -365,6 +378,7 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
   XASSERT(u->txq);
 
   (void)queue_set_put_f(u->txq, _put, (void *)u);
+  (void)queue_set_put_f(u->pool, _put_pool, (void *)u);
 
   u->rxq = rxq;
   u->op = (unsigned short)op;
