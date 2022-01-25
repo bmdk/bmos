@@ -107,7 +107,7 @@ void stm32_get_udid(void *buf, unsigned int len)
 #define DBGMCU_IDCODE 0x5C001000
 #elif STM32_UXXX
 #define DBGMCU_IDCODE 0xE0044000
-#elif STM32_F0XX
+#elif STM32_F0XX || STM32_G0XX
 #define DBGMCU_IDCODE 0x40015800
 #else
 #define DBGMCU_IDCODE 0xE0042000
@@ -122,52 +122,27 @@ int cmd_devid(int argc, char *argv[])
   const char *idstr;
 
   switch (id) {
-  case 0x0:
-    /* errata 2.3 Debug registers cannot be read by user software */
-    idstr = "F103";
+#if STM32_H7XX
+  case 0x450:
+    idstr = "H743/45/47/53/55/57/50";
     break;
-  case 0x410:
-    idstr = "F103 m";
+  case 0x483:
+    idstr = "H72x/H73x";
     break;
-  case 0x412:
-    idstr = "F103 l";
+#elif STM32_G0XX
+  case 0x456:
+    idstr = "G05/6";
     break;
-  case 0x413:
-    idstr = "F405/407/415/417";
+  case 0x460:
+    idstr = "G07/8";
     break;
-  case 0x414:
-    idstr = "F103 h";
+  case 0x466:
+    idstr = "G05/6";
     break;
-  case 0x415:
-    idstr = "L475/476/486";
+  case 0x467:
+    idstr = "G0B/C";
     break;
-  case 0x418:
-    idstr = "F103 c";
-    break;
-  case 0x419:
-    idstr = "F42x/43x";
-    break;
-  case 0x420:
-    idstr = "F100 l/m";
-    break;
-  case 0x423:
-    idstr = "F401xB/C";
-    break;
-  case 0x428:
-    idstr = "F100 h";
-    break;
-  case 0x430:
-    idstr = "F103 x";
-    break;
-  case 0x433:
-    idstr = "F401xD/E";
-    break;
-  case 0x431:
-    idstr = "F411";
-    break;
-  case 0x435:
-    idstr = "L43x/44x";
-    break;
+#elif STM32_F0XX
   case 0x440:
     idstr = "F070x8";
     break;
@@ -183,11 +158,54 @@ int cmd_devid(int argc, char *argv[])
   case 0x448:
     idstr = "F070xB";
     break;
-  case 0x450:
-    idstr = "H743/45/47/53/55/57/50";
+#elif STM32_F1XX
+  case 0x0:
+    /* errata 2.3 Debug registers cannot be read by user software */
+    idstr = "F103";
     break;
-  case 0x451:
-    idstr = "F76x/77x";
+  case 0x410:
+    idstr = "F103 m";
+    break;
+  case 0x412:
+    idstr = "F103 l";
+    break;
+  case 0x414:
+    idstr = "F103 h";
+    break;
+  case 0x418:
+    idstr = "F103 c";
+    break;
+  case 0x420:
+    idstr = "F100 l/m";
+    break;
+  case 0x428:
+    idstr = "F100 h";
+    break;
+  case 0x430:
+    idstr = "F103 x";
+    break;
+#elif STM32_F4XX
+  case 0x413:
+    idstr = "F405/407/415/417";
+    break;
+  case 0x419:
+    idstr = "F42x/43x";
+    break;
+  case 0x423:
+    idstr = "F401xB/C";
+    break;
+  case 0x433:
+    idstr = "F401xD/E";
+    break;
+  case 0x431:
+    idstr = "F411";
+    break;
+#elif STM32_L4XX
+  case 0x415:
+    idstr = "L475/476/486";
+    break;
+  case 0x435:
+    idstr = "L43x/44x";
     break;
   case 0x461:
     idstr = "L496/4A6";
@@ -198,6 +216,19 @@ int cmd_devid(int argc, char *argv[])
   case 0x464:
     idstr = "L41x/42x";
     break;
+#elif STM32_U5XX
+  case 0x482:
+    idstr = "U575/585";
+    break;
+#elif STM32_WBXX
+  case 0x495:
+    idstr = "WB55xx/35xx";
+    break;
+#elif STM32_F7XX
+  case 0x451:
+    idstr = "F76x/77x";
+    break;
+#elif STM32_G4XX
   case 0x468:
     idstr = "G4 Cat 2";
     break;
@@ -207,15 +238,7 @@ int cmd_devid(int argc, char *argv[])
   case 0x479:
     idstr = "G4 Cat 4";
     break;
-  case 0x482:
-    idstr = "U575/585";
-    break;
-  case 0x483:
-    idstr = "H72x/H73x";
-    break;
-  case 0x495:
-    idstr = "WB55xx/35xx";
-    break;
+#endif
   default:
     idstr = "Unknown";
     break;
