@@ -40,6 +40,8 @@
 #include "stm32_hal_gpio.h"
 #include "stm32_timer.h"
 
+#include "ws2811_dma.h"
+
 #define WSPERIOD_NS 1250
 #define TIMER_CLOCK hal_cpu_clock
 
@@ -49,82 +51,36 @@
 #define WCPCCLOCKS(period_ns) \
   (WSCLOCKS * (period_ns) + WSPERIOD_NS / 2) / WSPERIOD_NS
 
-#if STM32_F411BP || STM32_F401BP
-
-/* the bit in the bank that is used */
-#define WSBIT 0
-/* the gpio bank (B) */
-#define WSGPIO 1
-#define WSIRQ 57
-#define DMANUM 1
-
-#define CHAN_TIM1_UP 5
-#define CHAN_TIM1_CH1 1
-#define CHAN_TIM1_CH2 2
-
-#define DEVID_TIM1_UP 6
-#define DEVID_TIM1_CH1 6
-#define DEVID_TIM1_CH2 6
-
-#elif STM32_U575N
-
-#define WSBIT 0
-#define WSGPIO 0
-#define WSIRQ 31 /* GPDMA1_CH2 */
-#define DMANUM 0
-
-#define CHAN_TIM1_UP 1
-#define CHAN_TIM1_CH1 2
-#define CHAN_TIM1_CH2 3
-
-#define DEVID_TIM1_CH1 42
-#define DEVID_TIM1_CH2 43
-#define DEVID_TIM1_UP 46
-
-#elif STM32_F100D || STM32_F103N
-
-#define WSGPIO 1
-#define WSBIT 0
-#define WSIRQ 12
-#define DMANUM 0
-
-#define CHAN_TIM1_UP 4
-#define CHAN_TIM1_CH1 1
-#define CHAN_TIM1_CH2 2
-
-#else
-
-#define WSGPIO 0
-#define WSBIT 0
-#define WSIRQ 12
-#define DMANUM 0
-
-#define CHAN_TIM1_UP 5
-#define CHAN_TIM1_CH1 1
-#define CHAN_TIM1_CH2 2
-
-#define DEVID_TIM1_UP 6
-#define DEVID_TIM1_CH1 6
-#define DEVID_TIM1_CH2 6
-
-#endif
-
 #define STM32_GPIO_ADDR_SET(port) (unsigned char *)(&STM32_GPIO(port)->bsrr)
 #if STM32_F1XX
 #define STM32_GPIO_ADDR_CLEAR(port) (unsigned char *)(&STM32_GPIO(port)->brr)
 #else
 #define STM32_GPIO_ADDR_CLEAR(port) (STM32_GPIO_ADDR_SET(port) + 2)
 #endif
-#define GPIO_ADDR_SET STM32_GPIO_ADDR_SET(WSGPIO)
-#define GPIO_ADDR_CLEAR STM32_GPIO_ADDR_CLEAR(WSGPIO)
 
-static unsigned char one = BIT(WSBIT);
-static unsigned int compare[2];
+void irq_ws2811(void *data)
+{
+  ws2811_dma_t *w = (ws2811_dma_t *)data;
 
-#define PIXELS 256
-static unsigned char buf[24 * PIXELS];
+  dma_irq_ack(w->dmanum, w->chan_tim_ch1);
+  FAST_LOG('W', "irq_ws2811\n", 0, 0);
+}
 
-static void ws2811_tx()
+void ws2811_dma_init(ws2811_dma_t *w, unsigned int pixels)
+{
+  w->one = BIT(w->wsbit);
+  w->compare[0] = WCPCCLOCKS(350);
+  w->compare[1] = WCPCCLOCKS(700);
+  w->buflen = 24 * pixels;
+  w->gpio_addr_set = (void *)STM32_GPIO_ADDR_SET(w->wsgpio);
+  w->gpio_addr_clear = (void *)STM32_GPIO_ADDR_CLEAR(w->wsgpio);
+
+  irq_register("ws2811", irq_ws2811, w, w->wsirq);
+
+  gpio_init(GPIO(w->wsgpio, w->wsbit), GPIO_OUTPUT);
+}
+
+void ws2811_dma_tx(ws2811_dma_t *w, unsigned char *buf)
 {
   dma_attr_t attr;
 
@@ -133,9 +89,9 @@ static void ws2811_tx()
   timer_stop(TIM1_BASE);
 
 #if !STM32_F1XX
-  dma_set_chan(DMANUM, CHAN_TIM1_UP, DEVID_TIM1_UP);
-  dma_set_chan(DMANUM, CHAN_TIM1_CH1, DEVID_TIM1_CH1);
-  dma_set_chan(DMANUM, CHAN_TIM1_CH2, DEVID_TIM1_CH2);
+  dma_set_chan(w->dmanum, w->chan_tim_up, w->devid_tim_up);
+  dma_set_chan(w->dmanum, w->chan_tim_ch1, w->devid_tim_ch1);
+  dma_set_chan(w->dmanum, w->chan_tim_ch2, w->devid_tim_ch2);
 #endif
 
   attr.ssiz = DMA_SIZ_1;
@@ -152,23 +108,26 @@ static void ws2811_tx()
   attr.dinc = 0;
   attr.irq = 0;
 
-  dma_trans(DMANUM, CHAN_TIM1_UP, &one, GPIO_ADDR_SET, 24 * PIXELS, attr);
+  dma_trans(w->dmanum, w->chan_tim_up, &w->one,
+            w->gpio_addr_set, w->buflen, attr);
 
   attr.sinc = 1;
   attr.irq = 1;
 
-  dma_trans(DMANUM, CHAN_TIM1_CH1, buf, GPIO_ADDR_CLEAR, 24 * PIXELS, attr);
+  dma_trans(w->dmanum, w->chan_tim_ch1, buf,
+            w->gpio_addr_clear, w->buflen, attr);
 
   attr.sinc = 0;
   attr.irq = 0;
 
-  dma_trans(DMANUM, CHAN_TIM1_CH2, &one, GPIO_ADDR_CLEAR, 24 * PIXELS, attr);
+  dma_trans(w->dmanum, w->chan_tim_ch2, &w->one,
+            w->gpio_addr_clear, w->buflen, attr);
 
-  dma_en(DMANUM, CHAN_TIM1_UP, 1);
-  dma_en(DMANUM, CHAN_TIM1_CH1, 1);
-  dma_en(DMANUM, CHAN_TIM1_CH2, 1);
+  dma_en(w->dmanum, w->chan_tim_up, 1);
+  dma_en(w->dmanum, w->chan_tim_ch1, 1);
+  dma_en(w->dmanum, w->chan_tim_ch2, 1);
 
-  timer_init_dma(TIM1_BASE, 1, WSCLOCKS - 1, compare, ARRSIZ(compare), 1);
+  timer_init_dma(TIM1_BASE, 1, WSCLOCKS - 1, w->compare, 2, 1);
 }
 
 #define MASK 0x01010101
@@ -178,7 +137,8 @@ static inline void wrint(unsigned int *a, unsigned int v, unsigned int string)
   *a = (*a & ~(MASK << string)) | ((v ^ MASK) << string);
 }
 
-void enc_col(unsigned int pix, unsigned int val, unsigned int string)
+void ws2811_dma_enc_col(unsigned char *buf, unsigned int pix,
+                        unsigned int val, unsigned int string)
 {
   unsigned int i;
   unsigned int idx = pix * 24;
@@ -205,25 +165,6 @@ void enc_col(unsigned int pix, unsigned int val, unsigned int string)
   }
 }
 
-unsigned int wheel(unsigned int pos)
-{
-  unsigned int val;
-
-  if (pos > 255)
-    val = 0;
-  else if (pos < 85)
-    val = ((pos * 3) << 16) + ((255 - pos * 3) << 8);
-  else if (pos < 170) {
-    pos -= 85;
-    val = ((255 - pos * 3) << 16) + pos * 3;
-  } else {
-    pos -= 170;
-    val = ((pos * 3) << 8) + (255 - pos * 3);
-  }
-
-  return val;
-}
-
 static unsigned int _scale(unsigned int v, unsigned int s)
 {
   return (v + s / 2) / s;
@@ -231,206 +172,9 @@ static unsigned int _scale(unsigned int v, unsigned int s)
 
 #define BYTE(_v_, _n_) (((_v_) >> ((_n_) << 3)) & 0xff)
 
-unsigned int scale(unsigned int v, unsigned int s)
+unsigned int ws2811_dma_scale(unsigned int v, unsigned int s)
 {
   return (_scale(BYTE(v, 2), s) << 16) +
          (_scale(BYTE(v, 1), s) << 8) +
          (_scale(BYTE(v, 0), s) << 0);
 }
-
-void irq_ws2811(void *data)
-{
-  dma_irq_ack(DMANUM, CHAN_TIM1_CH1);
-  FAST_LOG('W', "irq_ws2811\n", 0, 0);
-}
-
-static void compare_init()
-{
-  compare[0] = WCPCCLOCKS(350);
-  compare[1] = WCPCCLOCKS(700);
-}
-
-#if WS2811_DISPLAY_32X8_CLOCK
-#include <stdio.h>
-
-#include "hal_rtc.h"
-
-extern const char font1[];
-
-unsigned int colours[] =
-{ 0x010000, 0x010100, 0x000100, 0x000101, 0x000001, 0x010101, 0x010000,
-  0x010100 };
-
-void disp_char(fb_t *fb, int x, int y, char c)
-{
-  const char *b = &font1[2 + c * 8];
-  int i;
-
-  for (i = 0; i < 8; i++) {
-    unsigned ch = *(b + i);
-    unsigned int j;
-
-    for (j = 0; j < 8; j++) {
-      unsigned int v = (ch >> (8 - 1 - j)) & 1;
-
-      if (v)
-        fb_draw(fb, x + j, y + i, colours[i]);
-    }
-  }
-}
-
-void disp_str(fb_t *fb, int x, int y, char *s, unsigned int slen)
-{
-  unsigned int k;
-
-  for (k = 0; k < slen; k++)
-    disp_char(fb, k * 8 + x, y, s[k]);
-}
-
-void fb_to_ws2811disp(fb_t *fb)
-{
-  unsigned int x, y, h, w;
-  unsigned int *data;
-
-  w = fb_width(fb);
-  h = fb_height(fb);
-  data = fb_get(fb);
-
-  for (x = 0; x < w; x++) {
-    for (y = 0; y < h; y++) {
-      if (x % 2 == 0)
-        enc_col(x * h + y, data[x + y * w], WSBIT);
-      else
-        enc_col(x * h + (h - 1 - y), data[x + y * w], WSBIT);
-    }
-  }
-
-  ws2811_tx();
-}
-
-/* *INDENT-OFF* */
-static const char *dayname[] = {
- "THINGY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY",
- "FRIDAY", "SATURDAY", "SUNDAY"
-};
-/* *INDENT-ON* */
-
-static const char *get_dayname(unsigned int daynum)
-{
-  if (daynum > ARRSIZ(dayname))
-    daynum = 0;
-
-  return dayname[daynum];
-}
-
-void task_led(void *arg)
-{
-  unsigned int w = 32, h = 8;
-  char message[64];
-
-  compare_init();
-
-  irq_register("ws2811", irq_ws2811, 0, WSIRQ);
-
-  gpio_init(GPIO(WSGPIO, WSBIT), GPIO_OUTPUT);
-
-  fb_t *fb = fb_init(w, h, 24, 0);
-
-  for (;;) {
-    int i, len, ofs;
-    rtc_time_t t;
-
-    rtc_get_time(&t);
-
-    len = snprintf(message, sizeof(message), "%d%02d", t.hours, t.mins);
-    fb_clear(fb);
-
-    if (len == 3)
-      ofs = 4;
-    else
-      ofs = 0;
-
-    disp_str(fb, ofs, 0, message, len);
-
-    fb_to_ws2811disp(fb);
-
-    task_delay(2000);
-
-    rtc_get_time(&t);
-    if (t.hours <= 4 || t.hours >= 22)
-      snprintf(message, sizeof(message), "GOOD NIGHT");
-    else
-      snprintf(message, sizeof(message), "HAPPY %s", get_dayname(t.dayno));
-
-    len = strlen(message);
-
-    for (i = (int)(w); i >= -8 * len; i--) {
-      fb_clear(fb);
-
-      disp_str(fb, i, 0, message, len);
-
-      fb_to_ws2811disp(fb);
-
-      task_delay(100);
-    }
-  }
-}
-#else
-static void body_rainbow(void)
-{
-  unsigned int i, j, o;
-
-  for (j = 0; j < 256; j++) {
-
-    FAST_LOG('w', "ws2811 start\n", 0, 0);
-
-    for (i = 0; i < PIXELS; i++) {
-      o = i + j;
-      enc_col(i, scale(wheel(o & 255), 32), WSBIT);
-    }
-
-    FAST_LOG('w', "ws2811 end\n", 0, 0);
-
-    ws2811_tx();
-    task_delay(50);
-  }
-}
-
-#if 1
-#define COLS 0x808080, 0xff0000           /* red + white */
-#else
-#define COLS 0xffd700, 0x808080, 0x008000 /* green, white and gold */
-#endif
-
-static void body_colseq(void)
-{
-  static unsigned int col[] = { COLS };
-  unsigned int i, j, o;
-
-  for (j = 0; j < PIXELS; j++) {
-    for (i = 0; i < PIXELS; i++) {
-      o = (j + i) % ARRSIZ(col);
-      enc_col(i, scale(col[o], 10), 1);
-    }
-
-    ws2811_tx();
-    task_delay(2000);
-  }
-}
-
-void task_led(void *arg)
-{
-  compare_init();
-
-  irq_register("ws2811", irq_ws2811, 0, WSIRQ);
-
-  gpio_init(GPIO(WSGPIO, WSBIT), GPIO_OUTPUT);
-
-  for (;;) {
-    if (1)
-      body_rainbow();
-    else
-      body_colseq();
-  }
-}
-#endif
