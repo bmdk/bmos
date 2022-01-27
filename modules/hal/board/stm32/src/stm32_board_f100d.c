@@ -73,12 +73,12 @@ uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
 static const gpio_handle_t leds[] = { GPIO(2, 8), GPIO(2, 9) };
 
 struct pll_params_t pll_params = {
-  .src   = RCC_F1_CLK_HSE_OSC,
-  .plln  = 1,
-  .pllm  = 3,
-  .ppre1 = RCC_F1_PPRE_1,
-  .ppre2 = RCC_F1_PPRE_1,
-  .hpre  = RCC_F1_HPRE_1,
+  .src    = RCC_F1_CLK_HSE_OSC,
+  .plln   = 1,
+  .pllm   = 3,
+  .ppre1  = RCC_F1_PPRE_1,
+  .ppre2  = RCC_F1_PPRE_1,
+  .hpre   = RCC_F1_HPRE_1,
   .adcpre = RCC_F1_ADCPRE_2
 };
 
