@@ -130,6 +130,29 @@ void stm32_hal_spi_write_buf(stm32_hal_spi_t *s, void *data, unsigned int len)
   gpio_set(s->cs, 1);
 }
 
+void stm32_hal_spi_write_buf2(stm32_hal_spi_t *s, void *d1, unsigned int l1,
+                              void *d2, unsigned int l2)
+{
+  unsigned char *cdata;
+  unsigned int i;
+
+  gpio_set(s->cs, 0);
+
+  cdata = (unsigned char *)d1;
+  for (i = 0; i < l1; i++) {
+    _stm32_hal_spi_write(s, *cdata++);
+    _stm32_hal_spi_wait_done(s);
+  }
+
+  cdata = (unsigned char *)d2;
+  for (i = 0; i < l2; i++) {
+    _stm32_hal_spi_write(s, *cdata++);
+    _stm32_hal_spi_wait_done(s);
+  }
+
+  gpio_set(s->cs, 1);
+}
+
 void stm32_hal_spi_wrd_buf(stm32_hal_spi_t *s, void *wdata, unsigned int wlen,
                            void *rdata, unsigned int rlen)
 {

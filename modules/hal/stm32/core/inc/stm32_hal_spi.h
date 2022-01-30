@@ -35,6 +35,8 @@ void stm32_hal_spi_init(stm32_hal_spi_t *spi);
 void stm32_hal_spi_write(stm32_hal_spi_t *spi, unsigned int data);
 void stm32_hal_spi_wait_done(stm32_hal_spi_t *spi);
 void stm32_hal_spi_write_buf(stm32_hal_spi_t *s, void *data, unsigned int len);
+void stm32_hal_spi_write_buf2(stm32_hal_spi_t *s, void *d1, unsigned int l1,
+                              void *d2, unsigned int l2);
 void stm32_hal_spi_wrd_buf(stm32_hal_spi_t *s, void *wdata, unsigned int wlen,
                            void *rdata, unsigned int rlen);
 
