@@ -77,7 +77,7 @@ void delay(unsigned int count)
 #define CONFIG_STM32_HAL_COMMANDS 1
 #endif
 
-#if CONFIG_HAL_COMMANDS
+#if CONFIG_STM32_HAL_COMMANDS
 #if STM32_H7XX
 #define DBGMCU_IDCODE 0x5C001000
 #elif STM32_UXXX
