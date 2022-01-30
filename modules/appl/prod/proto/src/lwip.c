@@ -4,13 +4,26 @@
 #include "lwip/apps/httpd.h"
 #include "netif/etharp.h"
 #include "lwip/timeouts.h"
+#include "lwip/dhcp.h"
 #include "stm32_eth.h"
+#include "xslog.h"
+
+#include "shell.h"
+#include "io.h"
+
+#define BYTE(v, n) (((unsigned int)(v) >> (n << 3)) & 0xff)
 
 struct netif ethif;
 bmos_sem_t *eth_wakeup;
+static signed char has_addr;
 
+#if 0
 unsigned char _ipaddr[] = { 10, 80, 40, 11 };
 unsigned char _netmask[] = { 255, 255, 255, 0 };
+#else
+unsigned char _ipaddr[] = { 0, 0, 0, 0 };
+unsigned char _netmask[] = { 0, 0, 0, 0 };
+#endif
 unsigned char _gateway[] = { 0, 0, 0, 0 };
 
 int lwip_test_init(void);
@@ -34,6 +47,9 @@ void task_net()
   netif_set_default(&ethif);
   netif_set_up(&ethif);
 
+  has_addr = 0;
+  dhcp_start(&ethif);
+
   for (;;) {
     int err;
     err = sem_wait_ms(eth_wakeup, 1000);
@@ -41,5 +57,36 @@ void task_net()
 
     if (err < 0)
       sys_check_timeouts();
+
+    if (!has_addr && dhcp_supplied_address(&ethif)) {
+      xslog(LOG_INFO, "addr:%d.%d.%d.%d\n",
+            BYTE(ethif.ip_addr.addr, 0),
+            BYTE(ethif.ip_addr.addr, 1),
+            BYTE(ethif.ip_addr.addr, 2),
+            BYTE(ethif.ip_addr.addr, 3));
+      has_addr = 1;
+    }
   }
 }
+
+static int cmd_ip(int argc, char *argv[])
+{
+  int cmd = 'a';
+
+  if (argc > 1)
+    cmd = argv[1][0];
+
+  switch (cmd) {
+  case 'a':
+    xprintf("addr:%d.%d.%d.%d\n",
+            BYTE(ethif.ip_addr.addr, 0),
+            BYTE(ethif.ip_addr.addr, 1),
+            BYTE(ethif.ip_addr.addr, 2),
+            BYTE(ethif.ip_addr.addr, 3));
+    break;
+  }
+
+  return 0;
+}
+
+SHELL_CMD(ip, cmd_ip);
