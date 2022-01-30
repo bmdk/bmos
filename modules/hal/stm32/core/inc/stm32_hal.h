@@ -42,6 +42,8 @@ typedef unsigned char led_flag_t;
 void led_init_flags(const gpio_handle_t *led_list,
                     const led_flag_t *led_flags, unsigned int _nleds);
 
+void stm32_get_udid(void *buf, unsigned int len);
+
 void enable_ahb1(unsigned int dev);
 void enable_ahb2(unsigned int dev);
 void enable_ahb3(unsigned int dev);

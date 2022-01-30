@@ -20,6 +20,7 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "common.h"
 #include "hal_gpio.h"
@@ -77,8 +78,32 @@ void delay(unsigned int count)
 #define CONFIG_STM32_HAL_COMMANDS 1
 #endif
 
-#if CONFIG_STM32_HAL_COMMANDS
 #if STM32_H7XX
+#define UDID_ADDR 0x1FF1E800
+#elif STM32_G4XX || STM32_G0XX || STM32_L4XX
+#define UDID_ADDR 0x1FFF7590
+#elif STM32_F4XX
+#define UDID_ADDR 0x1FFF7A10
+#elif STM32_U5XX
+#define UDID_ADDR 0x0BFA0700
+#elif STM32_F0XX
+#define UDID_ADDR 0x1FFFF7AC
+#endif
+
+#ifdef UDID_ADDR
+void stm32_get_udid(void *buf, unsigned int len)
+{
+  if (len > 12)
+    len = 12;
+
+  memcpy(buf, (void *)UDID_ADDR, len);
+}
+#endif
+
+#if CONFIG_STM32_HAL_COMMANDS
+#if STM32_F030 || STM32_F070
+/* No unique id on F030/070 */
+#elif STM32_H7XX
 #define DBGMCU_IDCODE 0x5C001000
 #elif STM32_UXXX
 #define DBGMCU_IDCODE 0xE0044000
