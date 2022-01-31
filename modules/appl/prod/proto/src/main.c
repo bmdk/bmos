@@ -73,7 +73,10 @@ void blink()
   }
 }
 
-#if STM32_H7XX || STM32_F767 || STM32_L4XX || STM32_G4XX
+#if STM32_F103N
+#define BUTTON_EXTI 13
+#define BUTTON_IRQ 40
+#elif STM32_H7XX || STM32_F767 || STM32_L4XX || STM32_G4XX
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 40
 #elif STM32_UXXX

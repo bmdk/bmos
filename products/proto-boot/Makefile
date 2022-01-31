@@ -26,6 +26,7 @@ export ROOT ?= $(shell pwd)/../..
 PROG += f030demo
 PROG += f100d
 PROG += f103bp
+PROG += f103n
 PROG += f411bp
 PROG += f401bp
 PROG += f407deb
@@ -118,6 +119,10 @@ CPU.f100d = cortex-m3
 XCFLAGS.f103bp += -DSTM32_F103 -DSTM32_F103BP -DSTM32_F1XX
 STACK_END.f103bp = 0x20005000
 CPU.f103bp = cortex-m3
+
+XCFLAGS.f103n += -DSTM32_F103 -DSTM32_F103BP -DSTM32_F1XX
+STACK_END.f103n = 0x20005000
+CPU.f103n = cortex-m3
 
 XCFLAGS.f411bp += -DSTM32_F411 -DSTM32_F4XX
 STACK_END.f411bp = 0x20020000
@@ -291,6 +296,11 @@ FILES.f103bp += stm32_usart_a.o
 FILES.f103bp += stm32_rcc_f1.o
 FILES.f103bp += stm32_flash_f1.o
 FILES.f103bp += stm32_board_f103bp.o
+
+FILES.f103n += stm32_usart_a.o
+FILES.f103n += stm32_rcc_f1.o
+FILES.f103n += stm32_flash_f1.o
+FILES.f103n += stm32_board_f103n.o
 
 FILES.f411bp += stm32_usart_a.o
 FILES.f411bp += stm32_rcc_a.o
