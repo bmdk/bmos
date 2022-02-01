@@ -24,6 +24,7 @@
 #include "common.h"
 #include "xassert.h"
 
+#include "hal_common.h"
 #include "hal_board.h"
 #if ARCH_STM32
 #include "stm32_flash.h"
@@ -98,18 +99,24 @@ static int cmd_mem(int argc, char *argv[])
           (unsigned int)&_stack_end, (unsigned int)&_stack_end - sbrk_next);
 
   if (data_start != data_start_flash) {
-    xprintf("\n");
-    xprintf("flash: %08x - %08x: %6d\n", (unsigned int)&_flash_start,
+    xprintf("\nflash: %08x - %08x: %6d\n", (unsigned int)&_flash_start,
             (unsigned int)&_flash_end,
             (unsigned int)&_flash_end - (unsigned int)&_flash_start);
     xprintf("fdata: %08x - %08x: %6d\n", data_start_flash,
             data_start_flash + data_size, data_size);
   }
 
+  xprintf("\nfsize: %dk\n", hal_flash_size());
+
   return 0;
 }
 
 SHELL_CMD(mem, cmd_mem);
+
+WEAK unsigned int hal_flash_size(void)
+{
+  return 0;
+}
 
 static int cmd_hal(int argc, char *argv[])
 {

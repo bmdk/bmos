@@ -66,4 +66,6 @@ int bl_enter(void);
 
 void hal_init();
 
+unsigned int hal_flash_size(void);
+
 #endif

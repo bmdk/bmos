@@ -84,7 +84,7 @@ void delay(unsigned int count)
 #define UDID_ADDR 0x1FFF7590
 #elif STM32_F4XX
 #define UDID_ADDR 0x1FFF7A10
-#elif STM32_U5XX
+#elif STM32_UXXX
 #define UDID_ADDR 0x0BFA0700
 #elif STM32_F0XX
 #define UDID_ADDR 0x1FFFF7AC
@@ -227,6 +227,31 @@ int cmd_devid(int argc, char *argv[])
 }
 
 SHELL_CMD(devid, cmd_devid);
+
+#if STM32_F4XX
+#define FLASH_SIZE 0x1FFF7A22
+#elif STM32_F7XX
+#define FLASH_SIZE 0x1FF0F442
+#elif STM32_H7XX
+#define FLASH_SIZE 0x1FF1E880
+#elif STM32_UXXX
+#define FLASH_SIZE 0x0BFA07A0
+#elif STM32_F1XX
+#define FLASH_SIZE 0x1FFFF7E0
+#elif STM32_F0XX
+#define FLASH_SIZE 0x1FFFF7CC
+#elif STM32_G0XX || STM32_G4XX || STM32_L4XX || STM32_WBXX || STM32_L4R
+#define FLASH_SIZE 0x1FFF75E0
+#else
+#error X
+#endif
+
+#if FLASH_SIZE
+unsigned int hal_flash_size(void)
+{
+  return (unsigned int) *(unsigned short *)FLASH_SIZE;
+}
+#endif
 
 int cmd_led(int argc, char *argv[])
 {
