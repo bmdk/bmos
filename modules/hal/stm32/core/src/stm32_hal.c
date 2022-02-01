@@ -115,6 +115,7 @@ void stm32_get_udid(void *buf, unsigned int len)
 #define DBGMCU_IDCODE_ID(val) ((val) & 0xfff)
 #define DBGMCU_IDCODE_REV(val) ((val) >> 16 & 0xffff)
 
+#if DBGMCU_IDCODE
 int cmd_devid(int argc, char *argv[])
 {
   unsigned int val = *(unsigned int *)DBGMCU_IDCODE;
@@ -250,6 +251,7 @@ int cmd_devid(int argc, char *argv[])
 }
 
 SHELL_CMD(devid, cmd_devid);
+#endif
 
 #if STM32_F4XX
 #define FLASH_SIZE 0x1FFF7A22
