@@ -23,6 +23,7 @@
 #define STM32_GPIO_H
 
 #include "common.h"
+#include "hal_common.h"
 
 /* F1XX stuff */
 #define GPIO_ATTR_STM32F1(cnf, mode) \
@@ -86,8 +87,7 @@ typedef struct {
   reg32_t odr;
   reg32_t bsrr;
   reg32_t lckr;
-  reg32_t afrl;
-  reg32_t afrh;
+  reg32_t afr[2];
   reg32_t brr;
 } stm32_gpio_t;
 #endif
@@ -108,5 +108,30 @@ typedef struct {
 #endif
 
 #define STM32_GPIO(port) ((stm32_gpio_t *)(GPIO_BASE + (0x400 * (port))))
+
+#if !STM32_F1XX
+static inline void stm32_gpio_mode(stm32_gpio_t *gpio, unsigned int pin,
+                                   unsigned int mode)
+{
+  reg_set_field(&gpio->moder, 2, pin << 1, mode);
+}
+
+static inline void stm32_gpio_set_alt(gpio_handle_t gpio, unsigned int alt)
+{
+  unsigned int bank = GPIO_BANK(gpio);
+  unsigned int pin = GPIO_PIN(gpio);
+  stm32_gpio_t *gpio_reg = STM32_GPIO(bank);
+  reg32_t *reg = &gpio_reg->afr[0];
+
+  stm32_gpio_mode(gpio_reg, pin, GPIO_ALT);
+
+  if (pin >= 8) {
+    reg++;
+    pin -= 8;
+  }
+
+  reg_set_field(reg, 4, pin << 2, alt);
+}
+#endif
 
 #endif

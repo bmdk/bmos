@@ -38,12 +38,6 @@ void stm32_gpio_attr(stm32_gpio_t *gpio, unsigned int num, unsigned int attr)
   reg_set_field(&gpio->cr[reg], 4, num << 2, attr);
 }
 #else
-static void stm32_gpio_mode(stm32_gpio_t *gpio, unsigned int pin,
-                            unsigned int mode)
-{
-  reg_set_field(&gpio->moder, 2, pin << 1, mode);
-}
-
 static void stm32_gpio_otype(stm32_gpio_t *gpio, unsigned int pin,
                              unsigned int flags)
 {
@@ -68,14 +62,12 @@ static void stm32_gpio_ospeed(stm32_gpio_t *gpio, unsigned int pin,
 static void stm32_gpio_alt(stm32_gpio_t *gpio, unsigned int pin,
                            unsigned int mode)
 {
-  volatile unsigned int *reg;
+  reg32_t *reg = &gpio->afr[0];
 
   stm32_gpio_mode(gpio, pin, GPIO_ALT);
 
-  if (pin < 8)
-    reg = &gpio->afrl;
-  else {
-    reg = &gpio->afrh;
+  if (pin >= 8) {
+    reg++;
     pin -= 8;
   }
 
