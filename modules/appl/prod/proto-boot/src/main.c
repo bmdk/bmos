@@ -76,8 +76,19 @@ typedef struct {
 #error define FLASH_BLKSIZE
 #endif
 
+static int led_state;
+static xtime_ms_t last_blink;
+
 void blink()
 {
+  xtime_ms_t now;
+
+  now = xtime_ms();
+  if (xtime_diff_ms(now, last_blink) >= 500) {
+    led_state ^= 1;
+    led_set(0, led_state);
+    last_blink = now;
+  }
 }
 
 static void boot();
@@ -350,6 +361,8 @@ unsigned int systick_count = 0;
 void systick_handler(void)
 {
   systick_count++;
+
+  blink();
 }
 
 int main()
