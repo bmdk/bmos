@@ -85,9 +85,10 @@
 #define EIR_TXERIF BIT(1)
 #define EIR_RXERIF BIT(0)
 
-/* rx memory start and end */
-#define RXST 0x1000
-#define RXND 0x1fff
+/* tx/rx memory start and end */
+#define RXST 0x0000
+#define TXST 0x1800
+#define RXND (TXST - 1)
 
 #define MAX_PKTLEN 1518
 
@@ -214,6 +215,20 @@ static void enc28j60_int(void *data)
   sem_post(eth_wakeup);
 }
 
+/*  ERXRDPTL must never be set to an even value - erratum 14 */
+static unsigned int enc28j60_erxrdptl_errata(unsigned int val)
+{
+  if (val & 1)
+    return val;
+
+  /* reduce even value by one allowing for region wrap - assumes
+     RXST is zero as it must be for another erratum (5) */
+  val -= 1;
+  if (val > RXND)
+    val = RXND;
+  return val;
+}
+
 static void enc28j60_init(stm32_hal_spi_t *spi, unsigned char *macaddr,
                           unsigned int irq, unsigned int exti)
 {
@@ -228,7 +243,7 @@ static void enc28j60_init(stm32_hal_spi_t *spi, unsigned char *macaddr,
   enc28j60_set_bank(0);
 
   enc28j60_wr16(ENC28J60_ERXSTL, RXST);
-  enc28j60_wr16(ENC28J60_ERXRDPTL, RXST);
+  enc28j60_wr16(ENC28J60_ERXRDPTL, RXND); /* errata - must be odd */
   enc28j60_wr16(ENC28J60_ERDPTL, RXST);
   enc28j60_wr16(ENC28J60_ERXNDL, RXND);
 
@@ -378,7 +393,7 @@ static void poll_rx_desc(struct netif *nif)
 #endif
 
     /* move the read pointers to the next packet */
-    enc28j60_wr16(ENC28J60_ERXRDPTL, next);
+    enc28j60_wr16(ENC28J60_ERXRDPTL, enc28j60_erxrdptl_errata(next));
     enc28j60_wr16(ENC28J60_ERDPTL, next);
 
     _enc28j60_bit_set(ENC28J60_ECON2, ECON2_PKTDEC);
@@ -399,8 +414,8 @@ static err_t hal_eth_send(struct netif *netif, struct pbuf *p)
   _enc28j60_bit_clear(ENC28J60_EIR, EIR_TXIF);
 
   /* write packet */
-  enc28j60_wr16(ENC28J60_ETXSTL, 0);
-  enc28j60_wr16(ENC28J60_EWRPTL, 0);
+  enc28j60_wr16(ENC28J60_ETXSTL, TXST);
+  enc28j60_wr16(ENC28J60_EWRPTL, TXST);
 
   cmd = ENC_WBM;
   val = 0; /* no flag override */
@@ -415,7 +430,7 @@ static err_t hal_eth_send(struct netif *netif, struct pbuf *p)
     len += l;
   }
 
-  enc28j60_wr16(ENC28J60_ETXNDL, len); /* points to last data byte */
+  enc28j60_wr16(ENC28J60_ETXNDL, TXST + len); /* points to last data byte */
 
   /* activate tx */
   _enc28j60_bit_set(ENC28J60_ECON1, ECON1_TXRTS);
