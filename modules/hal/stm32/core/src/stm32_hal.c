@@ -137,7 +137,7 @@ int cmd_devid(int argc, char *argv[])
     idstr = "G07/8";
     break;
   case 0x466:
-    idstr = "G05/6";
+    idstr = "G03/4";
     break;
   case 0x467:
     idstr = "G0B/C";

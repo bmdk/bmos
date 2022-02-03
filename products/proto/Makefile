@@ -46,6 +46,7 @@ PROG += l432
 PROG += l452
 PROG += l496
 PROG += l4r
+PROG += g030deb
 PROG += g0b1n
 PROG += g474n
 PROG += g431kbn
@@ -247,6 +248,19 @@ XCFLAGS.g0b1n += -DCONFIG_N_INTS=32
 XCFLAGS.g0b1n += -DCONFIG_BUTTON_INT=0
 XCFLAGS.g0b1n += -mcpu=cortex-m0plus
 STACK_END.g0b1n = 0x20024000
+
+XCFLAGS.g030deb += -DSTM32_G030 -DSTM32_G030DEB -DSTM32_G0XX
+XCFLAGS.g030deb += -DCONFIG_N_INTS=32
+XCFLAGS.g030deb += -DCONFIG_FAST_LOG_ENABLE=0
+XCFLAGS.g030deb += -DCONFIG_TIMER_16BIT=1
+XCFLAGS.g030deb += -DCONFIG_BUTTON_INT=1
+XCFLAGS.g030deb += -DCONFIG_SHELL_HIST=2
+XCFLAGS.g030deb += -DCONFIG_SHELL_MAX_LINE_LEN=32
+XCFLAGS.g030deb += -DCONFIG_MALLOC_CHUNK_POW2=6
+XCFLAGS.g030deb += -mcpu=cortex-m0plus
+APPL_FLASH_BASE.g030deb = 0x8002800
+STACK_END.g030deb = 0x20002000
+OPTFLAGS.g030deb = -Os
 
 XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474N
 XCFLAGS.g474n += -mcpu=cortex-m4
@@ -548,14 +562,21 @@ FILES.h743wa += $(FILES.h7xx)
 FILES.h743nucleo += $(FILES.h7xx)
 FILES.h745nucleo += $(FILES.h7xx)
 
-FILES.g0xx += stm32_rcc_g0.o
-FILES.g0xx += stm32_usart_b.o
 FILES.g0xx += stm32_flash.o
 FILES.g0xx += stm32_hal_bdma.o
 FILES.g0xx += stm32_hal_dmamux.o
+FILES.g0xx += stm32_hal_rtc.o
+FILES.g0xx += stm32_pwr_g0xx.o
+FILES.g0xx += stm32_rcc_g0.o
+FILES.g0xx += stm32_usart_b.o
 
 FILES.g0b1n += $(FILES.g0xx)
 FILES.g0b1n += stm32_board_g0b1n.o
+
+FILES.g030deb += $(FILES.g0xx)
+FILES.g030deb += stm32_exti_uxxx.o
+FILES.g030deb += stm32_board_g030deb.o
+XSLOG.g030deb += xslog_simple.o
 
 FILES.g4xx += crc_ccitt16.o
 FILES.g4xx += stm32_exti_lxxx.o

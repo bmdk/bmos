@@ -45,7 +45,11 @@ typedef struct {
   reg32_t emr1;
 } stm32_exti_uxxx_t;
 
+#if STM32_G0XX
+#define EXTI_BASE 0x40021800
+#elif STM32_UXXX
 #define EXTI_BASE 0x46022000
+#endif
 #define EXTI ((volatile stm32_exti_uxxx_t*)EXTI_BASE)
 
 void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
@@ -109,6 +113,7 @@ void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
   reg_set_field(&EXTI->exticr[reg], 4, ofs << 3, v);
 }
 
+#if 0
 static inline void _reg_set_clear(
   volatile unsigned int *reg, unsigned int clear, unsigned int set)
 {
@@ -154,3 +159,4 @@ int cmd_exti(int argc, char *argv[])
 }
 
 SHELL_CMD(exti, cmd_exti);
+#endif

@@ -86,6 +86,9 @@ void blink()
   STM32_F1XX
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 6
+#elif STM32_G030DEB
+#define BUTTON_EXTI 0
+#define BUTTON_IRQ 5 /* EXTI0_1 */
 #else
 #define BUTTON_EXTI 11
 #define BUTTON_IRQ 40

@@ -28,7 +28,7 @@
 #include "io.h"
 #include "hal_rtc.h"
 
-#if STM32_UXXX
+#if STM32_UXXX || STM32_G0XX
 typedef struct {
   reg32_t tr;
   reg32_t dr;

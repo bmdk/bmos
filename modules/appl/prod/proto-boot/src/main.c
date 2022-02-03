@@ -42,7 +42,7 @@
 #define APP_BASE 0x08020000
 #elif STM32_F072
 #define APP_BASE 0x08004000
-#elif STM32_F0XX
+#elif STM32_F0XX || STM32_G030
 #define APP_BASE 0x08002800
 #else
 #define APP_BASE 0x08008000
@@ -115,6 +115,8 @@ static int xmodem_flash_erase()
   err = _flash_erase(128, 128);
 #elif STM32_F072
   err = _flash_erase(16, 32);
+#elif STM32_G030
+  err = _flash_erase(10, 32);
 #elif STM32_F0XX
   err = _flash_erase(4, 12);
 #else
