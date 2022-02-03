@@ -36,7 +36,8 @@
 
 #define CNF_INP_ANA 0
 #define CNF_INP_FLO 1
-#define CNF_IMP_PUD 2
+/* pull up or down is set with the output register */
+#define CNF_INP_PUD 2
 
 #define CNF_OUT_PP 0
 #define CNF_OUT_OD 1

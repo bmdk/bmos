@@ -26,6 +26,7 @@ export ROOT ?= $(shell pwd)/../..
 PROG += f030demo
 PROG += f072n
 PROG += f100d
+PROG += f103deb
 PROG += f103bp
 PROG += f103n
 PROG += f401bp
@@ -154,6 +155,16 @@ XCFLAGS.f100d += -DCONFIG_N_INTS=61
 XCFLAGS.f100d += -DCONFIG_TIMER_16BIT=1
 XCFLAGS.f100d += -mcpu=cortex-m3
 STACK_END.f100d = 0x20002000
+
+XCFLAGS.f103deb += -DSTM32_F1XX
+XCFLAGS.f103deb += -DSTM32_F103DEB -DSTM32_F103
+XCFLAGS.f103deb += -DCONFIG_FAST_LOG_ENABLE=0
+XCFLAGS.f103deb += -DCONFIG_MALLOC_CHUNK_POW2=6
+XCFLAGS.f103deb += -DCONFIG_N_INTS=68
+XCFLAGS.f103deb += -DCONFIG_TIMER_16BIT=1
+XCFLAGS.f103deb += -mcpu=cortex-m3
+STACK_END.f103deb = 0x20002800
+APPL_FLASH_BASE.f103deb = 0x8002800
 
 XCFLAGS.f103bp += -DSTM32_F1XX
 XCFLAGS.f103bp += -DSTM32_F103BP -DSTM32_F103
@@ -457,6 +468,10 @@ FILES.f1xx += stm32_usart_a.o
 FILES.f100d += stm32_board_f100d.o
 XSLOG.f100d += xslog_simple.o
 FILES.f100d += $(FILES.f1xx)
+
+FILES.f103deb += stm32_board_f103deb.o
+FILES.f103deb += $(FILES.f1xx)
+XSLOG.f103deb = xslog_simple.o
 
 FILES.f103bp += stm32_board_f103bp.o
 FILES.f103bp += $(FILES.f1xx)
