@@ -54,12 +54,15 @@ void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
 
 #define PWR_SCR_VOSRDY BIT(14)
 
+static int stm32_pwr_vos_rdy(void)
+{
+  return (PWR->csr & PWR_SCR_VOSRDY) != 0;
+}
+
 void stm32_pwr_vos(unsigned int vos)
 {
   reg_set_field(&PWR->cr, 2, 14, vos);
-}
 
-int stm32_pwr_vos_rdy(void)
-{
-  return (PWR->csr & PWR_SCR_VOSRDY) != 0;
+  while (!stm32_pwr_vos_rdy())
+    ;
 }

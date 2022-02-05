@@ -24,7 +24,6 @@
 
 /* validate vddio2 and enable PG2-15 */
 void vddio2_en(int on);
-void stm32_pwr_vos(unsigned int vos);
 /* EPOD control */
 void stm32_pwr_boost(int on);
 

@@ -23,5 +23,6 @@
 #define STM32_PWR_H
 
 void backup_domain_protect(int on);
+void stm32_pwr_vos(unsigned int vos);
 
 #endif

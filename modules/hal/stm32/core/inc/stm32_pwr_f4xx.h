@@ -44,9 +44,6 @@ typedef struct {
 /* choose between rmii and mii interface */
 void stm32_syscfg_eth_phy(unsigned int rmii);
 
-void stm32_pwr_vos(unsigned int vos);
-int stm32_pwr_vos_rdy(void);
-
 #define SYSCFG_MEMMAP_MAIN 0
 #define SYSCFG_MEMMAP_SYS 1
 #define SYSCFG_MEMMAP_SRAM 3
