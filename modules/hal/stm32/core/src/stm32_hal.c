@@ -274,7 +274,7 @@ SHELL_CMD(devid, cmd_devid);
 #if FLASH_SIZE
 unsigned int hal_flash_size(void)
 {
-  return (unsigned int) *(unsigned short *)FLASH_SIZE;
+  return (unsigned int)*(unsigned short *)FLASH_SIZE;
 }
 #endif
 
