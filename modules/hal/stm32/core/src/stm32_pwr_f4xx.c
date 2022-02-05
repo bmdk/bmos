@@ -23,6 +23,25 @@
 #include "hal_common.h"
 #include "stm32_pwr_f4xx.h"
 
+typedef struct {
+  unsigned int memrmp;
+  unsigned int pmc;
+  unsigned int exticr[4];
+  unsigned int rsvd0;
+  unsigned int cbr;
+  unsigned int cmpcr;
+} stm32_syscfg_t;
+
+typedef struct {
+  unsigned int cr;
+  unsigned int csr;
+} stm32_pwr_t;
+
+#define SYSCFG ((volatile stm32_syscfg_t *)(0x40013800))
+#define PWR ((volatile stm32_pwr_t *)(0x40007000))
+
+#define PWR_CR1_DBP BIT(8)
+
 void backup_domain_protect(int on)
 {
   if (on)
@@ -65,4 +84,9 @@ void stm32_pwr_vos(unsigned int vos)
 
   while (!stm32_pwr_vos_rdy())
     ;
+}
+
+void stm32_memmap(unsigned int val)
+{
+  SYSCFG->memrmp = val & 0x3;
 }

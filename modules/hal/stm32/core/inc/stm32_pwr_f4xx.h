@@ -22,25 +22,6 @@
 #ifndef STM32_PWR_FXXX
 #define STM32_PWR_FXXX
 
-typedef struct {
-  unsigned int memrmp;
-  unsigned int pmc;
-  unsigned int exticr[4];
-  unsigned int rsvd0;
-  unsigned int cbr;
-  unsigned int cmpcr;
-} stm32_syscfg_t;
-
-typedef struct {
-  unsigned int cr;
-  unsigned int csr;
-} stm32_pwr_t;
-
-#define SYSCFG ((volatile stm32_syscfg_t *)(0x40013800))
-#define PWR ((volatile stm32_pwr_t *)(0x40007000))
-
-#define PWR_CR1_DBP BIT(8)
-
 /* choose between rmii and mii interface */
 void stm32_syscfg_eth_phy(unsigned int rmii);
 
@@ -48,9 +29,6 @@ void stm32_syscfg_eth_phy(unsigned int rmii);
 #define SYSCFG_MEMMAP_SYS 1
 #define SYSCFG_MEMMAP_SRAM 3
 
-static inline void stm32_memmap(unsigned int val)
-{
-  SYSCFG->memrmp = val & 0x3;
-}
+void stm32_memmap(unsigned int val);
 
 #endif
