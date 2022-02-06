@@ -72,6 +72,7 @@ endif
 
 CONFIG_NEWLIB ?= n
 
+CPP = cpp
 XCC = $(TOOLCHAIN_PFX)arm-none-eabi-gcc
 XOBJCOPY = $(TOOLCHAIN_PFX)arm-none-eabi-objcopy
 
@@ -254,7 +255,7 @@ else
 XLDFLAGS += -nostdlib
 XLDFLAGS += -lgcc
 endif
-XLDFLAGS += -T boot.ld
+LD_SCRIPT = $(OBJDIR)/boot.ld
 XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
 XLDFLAGS += -Wl,--gc-sections
 XLDFLAGS += $(XCFLAGS)
@@ -495,8 +496,31 @@ $(BUILD_DIR) $(OBJDIR):
 OFILES = $(addprefix $(OBJDIR)/,$(FILES))
 $(OFILES): | $(OBJDIR)
 
-$(BUILD_DIR)/$(PROG).elf: $(OFILES) |$(BUILD_DIR)
-	 $(XCC) -o $@ $^ $(XLDFLAGS)
+ifdef CONFIG_SHELL.$(PROG)
+CONFIG_SHELL = $(CONFIG_SHELL.$(PROG))
+else
+CONFIG_SHELL = 1
+endif
+
+ifdef CONFIG_RAMSIZE.$(PROG)
+CONFIG_RAMSIZE = $(CONFIG_RAMSIZE.$(PROG))
+else
+CONFIG_RAMSIZE = 16
+endif
+
+ifdef CONFIG_FLASHSIZE.$(PROG)
+CONFIG_FLASHSIZE = $(CONFIG_FLASHSIZE.$(PROG))
+else
+CONFIG_FLASHSIZE = 16
+endif
+
+$(OBJDIR)/boot.ld: boot.ld.tem | $(OBJDIR)
+	$(CPP) -P -D CONFIG_SHELL=$(CONFIG_SHELL) \
+          -D CONFIG_FLASHSIZE=$(CONFIG_FLASHSIZE)K \
+          -D CONFIG_RAMSIZE=$(CONFIG_RAMSIZE)K $< -o $@
+
+$(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
+	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
 
 $(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
 	 $(XOBJCOPY) -O binary $^ $@
