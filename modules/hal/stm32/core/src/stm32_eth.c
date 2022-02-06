@@ -482,15 +482,18 @@ int phy_reset(void)
     xslog(LOG_INFO, "phy read timeout\n");
     return -1;
   }
-  count = 50;
+  count = 5000;
   while (count > 0) {
     reg = phy_read(PHY_ADDR, 31);
     if (reg & BIT(12))
       break;
+    hal_delay_us(1000);
     count --;
   }
-  if (count == 0)
+  if (count == 0) {
+    xslog(LOG_INFO, "eth autonegotiate fail");
     return -1;
+  }
 
   xslog(LOG_INFO, "eth 10%s:%s-duplex", (reg & BIT(3)) ? "0": "", (reg & BIT(4)) ? "full" : "half");
   return (reg >> 3) & 0x3;
