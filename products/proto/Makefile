@@ -87,6 +87,18 @@ all: $(BUILD_DIR)/$(PROG).bin
 clean:
 	rm -fr $(BUILD_DIR)
 
+H7_BOARDS += h723n
+H7_BOARDS += h735dk
+H7_BOARDS += h743wa
+H7_BOARDS += h743nucleo
+H7_BOARDS += h745nucleo
+
+ifneq (,$(findstring $(PROG),$(H7_BOARDS)))
+CONFIG_STM32_H7 = 1
+else
+CONFIG_STM32_H7 = 0
+endif
+
 XCFLAGS.h735dk += -DSTM32_H7XX
 XCFLAGS.h735dk += -DSTM32_H735DK
 STACK_END.h735dk = 0x20020000
@@ -714,7 +726,11 @@ CPU.f100d = cortex-m3
 ifdef APPL_FLASH_BASE.$(PROG)
 APPL_FLASH_BASE = $(APPL_FLASH_BASE.$(PROG))
 else
+ifeq ($(CONFIG_STM32_H7), 1)
+APPL_FLASH_BASE = 0x8020000
+else
 APPL_FLASH_BASE = 0x8008000
+endif
 endif
 
 APPL_RAM_SIZE=256K
@@ -761,7 +777,8 @@ $(OBJDIR)/appl.ld: appl.ld.tem | $(OBJDIR)
 	 $(CPP) -P -D __APPL_FLASH_SIZE=$(APPL_FLASH_SIZE) \
 	        -D __APPL_RAM_SIZE=$(APPL_RAM_SIZE) \
 	        -D CONFIG_COPY_ISR=$(CONFIG_COPY_ISR) \
-	        -D __APPL_FLASH_BASE=$(APPL_FLASH_BASE) $< -o $@
+	        -D __APPL_FLASH_BASE=$(APPL_FLASH_BASE) \
+	        -D CONFIG_STM32_H7=$(CONFIG_STM32_H7) $< -o $@
 
 $(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
 	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
