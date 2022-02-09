@@ -23,31 +23,13 @@
 #include "shell.h"
 #include "xtime.h"
 
-#if ARCH_AVR
-extern unsigned long systick_count;
-#else
-extern unsigned int systick_count;
-#endif
-
-xtime_ms_t xtime_ms(void)
-{
-  return systick_count;
-}
-
-xtime_diff_ms_t xtime_diff_ms(xtime_ms_t t1, xtime_ms_t t2)
-{
-  return (xtime_diff_ms_t)(t1 - t2);
-}
-
 int cmd_time(int argc, char *argv[])
 {
-#if ARCH_AVR
-  unsigned long c = systick_count;
+  xtime_ms_t c = systick_count;
 
+#if ARCH_AVR
   xprintf("%lu.%03lu\n", c / 1000UL, c % 1000UL);
 #else
-  unsigned int c = systick_count;
-
   xprintf("%u.%03u\n", c / 1000, c % 1000);
 #endif
 

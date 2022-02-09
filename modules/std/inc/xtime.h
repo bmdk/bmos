@@ -30,6 +30,18 @@ typedef unsigned int xtime_ms_t;
 typedef int xtime_diff_ms_t;
 #endif
 
+extern volatile xtime_ms_t systick_count;
+
+static inline xtime_ms_t xtime_ms(void)
+{
+  return systick_count;
+}
+
+static inline xtime_diff_ms_t xtime_diff_ms(xtime_ms_t t1, xtime_ms_t t2)
+{
+  return (xtime_diff_ms_t)(t1 - t2);
+}
+
 xtime_ms_t xtime_ms(void);
 
 xtime_diff_ms_t xtime_diff_ms(xtime_ms_t t1, xtime_ms_t t2);

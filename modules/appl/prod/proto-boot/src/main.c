@@ -373,7 +373,7 @@ void try_boot()
   app();
 }
 
-unsigned int systick_count = 0;
+volatile xtime_ms_t systick_count;
 
 void systick_handler(void)
 {

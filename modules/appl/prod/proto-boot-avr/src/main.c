@@ -44,7 +44,7 @@
 
 #define APP_VER 0x0001
 
-unsigned long systick_count;
+volatile xtime_ms_t systick_count = 0;
 
 static char led_state = 0;
 static unsigned int last_blink = 0;

@@ -33,8 +33,9 @@
 #include "io.h"
 #include "shell.h"
 #include "xassert.h"
+#include "xtime.h"
 
-unsigned int systick_count = 0;
+volatile xtime_ms_t systick_count = 0;
 
 #define TASK_STATE_EXIT 0
 #define TASK_STATE_RUN 1
