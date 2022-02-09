@@ -42,6 +42,7 @@ void led_init_flags(const gpio_handle_t *led_list,
 
 void stm32_get_udid(void *buf, unsigned int len);
 
+#if !CONFIG_BUS_ENABLE_INLINE
 void enable_ahb1(unsigned int dev);
 void enable_ahb2(unsigned int dev);
 void enable_ahb3(unsigned int dev);
@@ -59,6 +60,7 @@ void disable_apb1(unsigned int dev);
 void disable_apb2(unsigned int dev);
 void disable_apb3(unsigned int dev);
 void disable_apb4(unsigned int dev);
+#endif
 
 void clock_init_ls(int internal);
 const char *clock_ls_name(void);

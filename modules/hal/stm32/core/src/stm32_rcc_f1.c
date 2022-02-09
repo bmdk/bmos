@@ -28,44 +28,6 @@
 #include "stm32_flash.h"
 #include "stm32_rcc_ls.h"
 
-typedef struct {
-  reg32_t cr;
-  reg32_t cfgr;
-  reg32_t cir;
-  reg32_t apb2rstr;
-  reg32_t apb1rstr;
-  reg32_t ahbenr;
-  reg32_t apb2enr;
-  reg32_t apb1enr;
-  rcc_ls_t rcc_ls;
-#if STM32_F0XX || STM32_F3XX
-  reg32_t ahbrstr;
-#endif
-  reg32_t cfgr2;
-#if STM32_F0XX || STM32_F3XX
-  reg32_t cfgr3;
-  reg32_t cr2;
-#endif
-} stm32_rcc_f1_t;
-
-#define RCC ((stm32_rcc_f1_t *)(0x40021000))
-
-
-void enable_apb1(unsigned int n)
-{
-  RCC->apb1enr |= BIT(n);
-}
-
-void enable_apb2(unsigned int n)
-{
-  RCC->apb2enr |= BIT(n);
-}
-
-void enable_ahb1(unsigned int n)
-{
-  RCC->ahbenr |= BIT(n);
-}
-
 #define RCC_CR_PLLRDY BIT(25)
 #define RCC_CR_PLLON BIT(24)
 #define RCC_CR_CSSON BIT(19)
@@ -159,6 +121,23 @@ void clock_init_hs(const struct pll_params_t *p)
   while (((RCC->cfgr >> 2) & 0x3) != RCC_CFGR_SW_PLL)
     ;
 }
+
+#if !CONFIG_BUS_ENABLE_INLINE
+void enable_apb1(unsigned int n)
+{
+  RCC->apb1enr |= BIT(n);
+}
+
+void enable_apb2(unsigned int n)
+{
+  RCC->apb2enr |= BIT(n);
+}
+
+void enable_ahb1(unsigned int n)
+{
+  RCC->ahbenr |= BIT(n);
+}
+#endif
 
 void clock_init(const struct pll_params_t *p)
 {

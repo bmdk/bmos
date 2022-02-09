@@ -19,6 +19,47 @@
  * IN THE SOFTWARE.
  */
 
+#include "stm32_rcc_ls.h"
+
+typedef struct {
+  reg32_t cr;
+  reg32_t cfgr;
+  reg32_t cir;
+  reg32_t apb2rstr;
+  reg32_t apb1rstr;
+  reg32_t ahbenr;
+  reg32_t apb2enr;
+  reg32_t apb1enr;
+  rcc_ls_t rcc_ls;
+#if STM32_F0XX || STM32_F3XX
+  reg32_t ahbrstr;
+#endif
+  reg32_t cfgr2;
+#if STM32_F0XX || STM32_F3XX
+  reg32_t cfgr3;
+  reg32_t cr2;
+#endif
+} stm32_rcc_f1_t;
+
+#define RCC ((stm32_rcc_f1_t *)(0x40021000))
+
+#if CONFIG_BUS_ENABLE_INLINE
+static inline void enable_apb1(unsigned int n)
+{
+  RCC->apb1enr |= BIT(n);
+}
+
+static inline void enable_apb2(unsigned int n)
+{
+  RCC->apb2enr |= BIT(n);
+}
+
+static inline void enable_ahb1(unsigned int n)
+{
+  RCC->ahbenr |= BIT(n);
+}
+#endif
+
 #ifndef STM32_RCC_A_H
 #define STM32_RCC_A_H
 
