@@ -104,11 +104,16 @@ void stm32_pwr_boost(int on)
     PWR->vosr &= ~PWR_VOSR_BOOSTEN;
 }
 
+int stm32_pwr_vos_rdy()
+{
+  return (PWR->vosr & PWR_VOSR_VOSRDY) != 0;
+}
+
 void stm32_pwr_vos(unsigned int vos)
 {
   reg_set_field(&PWR->vosr, 2, 16, vos);
 
-  while ((PWR->vosr & PWR_VOSR_VOSRDY) == 0)
+  while (!stm32_pwr_vos_rdy())
     ;
 }
 

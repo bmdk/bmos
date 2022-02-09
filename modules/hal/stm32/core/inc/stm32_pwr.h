@@ -24,5 +24,6 @@
 
 void backup_domain_protect(int on);
 void stm32_pwr_vos(unsigned int vos);
+int stm32_pwr_vos_rdy(void);
 
 #endif

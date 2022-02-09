@@ -128,10 +128,15 @@ void stm32_pwr_usbreg(int en)
 
 #define PWR_D3CR_VOSRDY BIT(13)
 
+int stm32_pwr_vos_rdy()
+{
+  return (PWR->d3cr & PWR_D3CR_VOSRDY) != 0;
+}
+
 void stm32_pwr_vos(unsigned int vos)
 {
   reg_set_field(&PWR->d3cr, 2, 14, vos);
 
-  while ((PWR->d3cr & PWR_D3CR_VOSRDY) == 0)
+  while (!stm32_pwr_vos_rdy())
     ;
 }

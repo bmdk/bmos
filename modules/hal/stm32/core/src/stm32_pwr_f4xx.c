@@ -71,19 +71,18 @@ void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
   reg_set_field(&SYSCFG->exticr[reg], 4, ofs << 2, v);
 }
 
-#define PWR_SCR_VOSRDY BIT(14)
+#define PWR_CSR_VOSRDY BIT(14)
 
-static int stm32_pwr_vos_rdy(void)
+int stm32_pwr_vos_rdy(void)
 {
-  return (PWR->csr & PWR_SCR_VOSRDY) != 0;
+  return (PWR->csr & PWR_CSR_VOSRDY) != 0;
 }
 
+/* vos is only activated when the pll is activated with HSI or HSE as
+   clock source so we cannot wait for ready immediately after setting */
 void stm32_pwr_vos(unsigned int vos)
 {
   reg_set_field(&PWR->cr, 2, 14, vos);
-
-  while (!stm32_pwr_vos_rdy())
-    ;
 }
 
 void stm32_memmap(unsigned int val)
