@@ -245,7 +245,6 @@ static int cmd_xmodem(int argc, char *argv[])
   int err;
   xtime_ms_t start = xtime_ms();
 
-  memset(&bd, 0, sizeof(bd));
 #if STM32_H745N
   if (argc > 1 && argv[1][0] == 'm')
     bd.addr = H745N_M4_FLASH_BASE;
@@ -254,6 +253,8 @@ static int cmd_xmodem(int argc, char *argv[])
   {
     bd.addr = APP_BASE;
   }
+  bd.count = 0;
+  bd.len = 0;
 
   xmdat.putc = debug_putc;
   xmdat.block = xmodem_block;
