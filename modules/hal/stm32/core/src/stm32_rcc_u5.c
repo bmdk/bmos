@@ -24,7 +24,7 @@
 #include "common.h"
 #include "hal_common.h"
 #include "stm32_hal.h"
-#include "stm32_rcc_d.h"
+#include "stm32_rcc_u5.h"
 #include "stm32_flash.h"
 
 #if STM32_UXXX
@@ -33,7 +33,7 @@
 #error define RCC_BASE
 #endif
 
-#define RCC ((stm32_rcc_d_t *)RCC_BASE)
+#define RCC ((stm32_rcc_u5_t *)RCC_BASE)
 
 #define RCC_CR_PLL3RDY BIT(29)
 #define RCC_CR_PLL3ON BIT(28)
@@ -142,7 +142,7 @@ typedef struct {
   unsigned int pad12[6];
   reg32_t seccfgr;
   reg32_t privcfgr;
-} stm32_rcc_d_t;
+} stm32_rcc_u5_t;
 
 /* 4 bit dividers */
 #define RCC_DIV4_1 0

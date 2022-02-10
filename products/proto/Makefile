@@ -423,7 +423,7 @@ FILES += malloc.o
 endif
 
 FILES.h7xx += stm32_usart_b.o
-FILES.h7xx += stm32_rcc_c.o
+FILES.h7xx += stm32_rcc_h7.o
 FILES.h7xx += stm32_hal_rtc.o
 FILES.h7xx += stm32_flash_h7xx.o
 FILES.h7xx += stm32_wdog.o
@@ -706,7 +706,7 @@ FILES.g431kbn += fdcan.o
 FILES.u575n += stm32_hal_rtc.o
 FILES.u575n += stm32_exti_uxxx.o
 FILES.u575n += stm32_pwr_uxxx.o
-FILES.u575n += stm32_rcc_d.o
+FILES.u575n += stm32_rcc_u5.o
 FILES.u575n += stm32_usart_b.o
 FILES.u575n += stm32_hal_gpdma.o
 FILES.u575n += stm32_fdcan.o

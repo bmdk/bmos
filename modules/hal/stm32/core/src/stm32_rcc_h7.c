@@ -26,15 +26,13 @@
 #include "stm32_hal.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_h7xx.h"
-#include "stm32_rcc_c.h"
+#include "stm32_rcc_h7.h"
 
 #if STM32_H7XX
 #define RCC_BASE 0x58024400
 #else
 #error define RCC_BASE
 #endif
-
-#define RCC ((volatile stm32_rcc_c_t *)RCC_BASE)
 
 #define RCC_CR_PLL3RDY BIT(29)
 #define RCC_CR_PLL3ON BIT(28)
@@ -101,71 +99,73 @@
 #define RCC_PLL1DIVR_DIVN1(v)  ((v) & 0x1ff)
 
 typedef struct {
-  unsigned int cr;
-  unsigned int icscr;
-  unsigned int crrcr;
-  unsigned int pad0;
-  unsigned int cfgr;
-  unsigned int pad1;
-  unsigned int d1cfgr;
-  unsigned int d2cfgr;
-  unsigned int d3cfgr;
-  unsigned int pad2;
-  unsigned int pllckselr;
-  unsigned int pllcfgr;
-  unsigned int pll1divr;
-  unsigned int pll1fracr;
-  unsigned int pll2divr;
-  unsigned int pll2fracr;
-  unsigned int pll3divr;
-  unsigned int pll3fracr;
-  unsigned int pad3;
-  unsigned int d1ccipr;
-  unsigned int d2ccip1r;
-  unsigned int d2ccip2r;
-  unsigned int d3ccipr;
-  unsigned int pad4;
-  unsigned int cier;
-  unsigned int cifr;
-  unsigned int cicr;
-  unsigned int pad5;
-  unsigned int bdcr;
-  unsigned int csr;
-  unsigned int pad6;
-  unsigned int ahb3rstr;
-  unsigned int ahb1rstr;
-  unsigned int ahb2rstr;
-  unsigned int ahb4rstr;
-  unsigned int apb3rstr;
-  unsigned int apb1lrstr;
-  unsigned int apb1hrstr;
-  unsigned int apb2rstr;
-  unsigned int apb4rstr;
-  unsigned int gcr;
-  unsigned int pad7;
-  unsigned int d3amr;
-  unsigned int pad8[9];
-  unsigned int rsr;
-  unsigned int ahb3enr;
-  unsigned int ahb1enr;
-  unsigned int ahb2enr;
-  unsigned int ahb4enr;
-  unsigned int apb3enr;
-  unsigned int apb1lenr;
-  unsigned int apb1henr;
-  unsigned int apb2enr;
-  unsigned int apb4enr;
-  unsigned int pad9;
-  unsigned int ahb3lpenr;
-  unsigned int ahb1lpenr;
-  unsigned int ahb2lpenr;
-  unsigned int ahb4lpenr;
-  unsigned int apb3lpenr;
-  unsigned int apb1llpenr;
-  unsigned int apb1hlpenr;
-  unsigned int apb2lpenr;
-  unsigned int apb4lpenr;
-} stm32_rcc_c_t;
+  reg32_t cr;
+  reg32_t icscr;
+  reg32_t crrcr;
+  reg32_t pad0;
+  reg32_t cfgr;
+  reg32_t pad1;
+  reg32_t d1cfgr;
+  reg32_t d2cfgr;
+  reg32_t d3cfgr;
+  reg32_t pad2;
+  reg32_t pllckselr;
+  reg32_t pllcfgr;
+  reg32_t pll1divr;
+  reg32_t pll1fracr;
+  reg32_t pll2divr;
+  reg32_t pll2fracr;
+  reg32_t pll3divr;
+  reg32_t pll3fracr;
+  reg32_t pad3;
+  reg32_t d1ccipr;
+  reg32_t d2ccip1r;
+  reg32_t d2ccip2r;
+  reg32_t d3ccipr;
+  reg32_t pad4;
+  reg32_t cier;
+  reg32_t cifr;
+  reg32_t cicr;
+  reg32_t pad5;
+  reg32_t bdcr;
+  reg32_t csr;
+  reg32_t pad6;
+  reg32_t ahb3rstr;
+  reg32_t ahb1rstr;
+  reg32_t ahb2rstr;
+  reg32_t ahb4rstr;
+  reg32_t apb3rstr;
+  reg32_t apb1lrstr;
+  reg32_t apb1hrstr;
+  reg32_t apb2rstr;
+  reg32_t apb4rstr;
+  reg32_t gcr;
+  reg32_t pad7;
+  reg32_t d3amr;
+  reg32_t pad8[9];
+  reg32_t rsr;
+  reg32_t ahb3enr;
+  reg32_t ahb1enr;
+  reg32_t ahb2enr;
+  reg32_t ahb4enr;
+  reg32_t apb3enr;
+  reg32_t apb1lenr;
+  reg32_t apb1henr;
+  reg32_t apb2enr;
+  reg32_t apb4enr;
+  reg32_t pad9;
+  reg32_t ahb3lpenr;
+  reg32_t ahb1lpenr;
+  reg32_t ahb2lpenr;
+  reg32_t ahb4lpenr;
+  reg32_t apb3lpenr;
+  reg32_t apb1llpenr;
+  reg32_t apb1hlpenr;
+  reg32_t apb2lpenr;
+  reg32_t apb4lpenr;
+} stm32_rcc_h7_t;
+
+#define RCC ((stm32_rcc_h7_t *)RCC_BASE)
 
 #define CLOCK_PLL_SRC_HSI 0
 #define CLOCK_PLL_SRC_CSI 1
@@ -336,7 +336,7 @@ static void _clock_init(const struct pll_params_t *params)
 
 void clock_init(const struct pll_params_t *params)
 {
-  stm32_pwr_vos(PWR_VOS_HIG);
+  stm32_pwr_vos(3);
   _clock_init(params);
 }
 

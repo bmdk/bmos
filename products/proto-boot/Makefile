@@ -306,7 +306,7 @@ FILES += libc.o
 endif
 
 FILES.h7xx += stm32_usart_b.o
-FILES.h7xx += stm32_rcc_c.o
+FILES.h7xx += stm32_rcc_h7.o
 FILES.h7xx += stm32_hal_rtc.o
 FILES.h7xx += stm32_flash_h7xx.o
 FILES.h7xx += stm32_pwr_h7xx.o
@@ -446,7 +446,7 @@ FILES.l4r += stm32_pwr_lxxx.o
 FILES.l4r += stm32_flash.o
 
 FILES.uxxx += stm32_usart_b.o
-FILES.uxxx += stm32_rcc_d.o
+FILES.uxxx += stm32_rcc_u5.o
 FILES.uxxx += stm32_exti_uxxx.o
 FILES.uxxx += stm32_pwr_uxxx.o
 FILES.uxxx += stm32_hal_rtc.o
