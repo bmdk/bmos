@@ -107,10 +107,12 @@ LWIP.h735dk = y
 
 XCFLAGS.h743wa += -DSTM32_H7XX
 XCFLAGS.h743wa += -DSTM32_H743WA
+XCFLAGS.h743wa += -DSTM32_VOS_HACK
 STACK_END.h743wa = 0x20020000
 XCFLAGS.h743wa += -mcpu=cortex-m7
 
 XCFLAGS.h743nucleo += -DSTM32_H7XX
+XCFLAGS.h743nucleo += -DSTM32_VOS_HACK
 STACK_END.h743nucleo = 0x20020000
 XCFLAGS.h743nucleo += -mcpu=cortex-m7
 LWIP.h743nucleo = y
@@ -121,6 +123,7 @@ XCFLAGS.h723n += -mcpu=cortex-m7
 LWIP.h723n = y
 
 XCFLAGS.h745nucleo += -DSTM32_H7XX -DSTM32_H745N
+XCFLAGS.h745nucleo += -DSTM32_VOS_HACK
 STACK_END.h745nucleo = 0x20020000
 XCFLAGS.h745nucleo += -mcpu=cortex-m7
 LWIP.h745nucleo = y

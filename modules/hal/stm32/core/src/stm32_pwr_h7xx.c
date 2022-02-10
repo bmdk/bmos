@@ -50,13 +50,16 @@ typedef struct {
   unsigned int ccsr;
   unsigned int ccvr;
   unsigned int cccr;
-  unsigned int pad1[63];
+  unsigned int pwrcr;
+  unsigned int pad1[62];
   unsigned int pkgr;
   unsigned int pad2[118];
   unsigned int ur[18];
 } stm32_syscfg_h7xx_t;
 
 #define SYSCFG ((volatile stm32_syscfg_h7xx_t *)SYSCFG_BASE)
+
+#define SYSCFG_PWRCR_ODEN BIT(0)
 
 #define PWR_CR1_DBP BIT(8)
 
@@ -133,10 +136,28 @@ int stm32_pwr_vos_rdy()
   return (PWR->d3cr & PWR_D3CR_VOSRDY) != 0;
 }
 
-void stm32_pwr_vos(unsigned int vos)
+static void _stm32_pwr_vos(unsigned int vos)
 {
   reg_set_field(&PWR->d3cr, 2, 14, vos);
 
   while (!stm32_pwr_vos_rdy())
     ;
+}
+
+void stm32_pwr_vos(unsigned int vos)
+{
+#if STM32_VOS_HACK
+  if (vos == PWR_VOS_SCALE_0) {
+    _stm32_pwr_vos(PWR_VOS_SCALE_1);
+    SYSCFG->pwrcr |= SYSCFG_PWRCR_ODEN;
+
+    while (!stm32_pwr_vos_rdy())
+      ;
+  } else {
+    SYSCFG->pwrcr &= ~SYSCFG_PWRCR_ODEN;
+    _stm32_pwr_vos(vos);
+  }
+#else
+  _stm32_pwr_vos(vos);
+#endif
 }

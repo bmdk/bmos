@@ -336,7 +336,7 @@ static void _clock_init(const struct pll_params_t *params)
 
 void clock_init(const struct pll_params_t *params)
 {
-  stm32_pwr_vos(3);
+  stm32_pwr_vos(PWR_VOS_SCALE_0);
   _clock_init(params);
 }
 

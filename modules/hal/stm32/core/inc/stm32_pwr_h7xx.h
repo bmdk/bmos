@@ -29,6 +29,11 @@ void stm32_syscfg_eth_phy(unsigned int val);
 
 void stm32_pwr_wkup_en(unsigned int n, int en);
 
+#define PWR_VOS_SCALE_0 0
+#define PWR_VOS_SCALE_1 3
+#define PWR_VOS_SCALE_2 2
+#define PWR_VOS_SCALE_3 1
+
 /* the power config in d3cr needs to be written once at startup for every h7 */
 #define PWR_CR3_BYPASS BIT(0)
 #define PWR_CR3_LDOEN BIT(1)
