@@ -251,9 +251,9 @@ void poll_rx_desc(eth_ctx_t *eth_ctx, struct netif *nif)
 #endif
 
     p = pbuf_alloc(PBUF_RAW, rem, PBUF_POOL);
-    if (!p) {
+    if (!p)
       xslog(LOG_ERR, "could not allocate rx buffer %d\n", rem);
-    } else {
+    else {
       err_t err;
 
       for (q = p; q && (rem > 0); q = q->next) {
@@ -347,9 +347,9 @@ static void eth_irq(void *data)
 #endif
   if (dmasr & ETH_DMASR_FBES) {
     xslog(LOG_ERR, "%s: eth bus error: %s %s\n",
-            (dmasr & BIT(23)) ? "tx" : "rx",
-            (dmasr & BIT(24)) ? "read" : "write",
-            (dmasr & BIT(25)) ? "desc" : "data");
+          (dmasr & BIT(23)) ? "tx" : "rx",
+          (dmasr & BIT(24)) ? "read" : "write",
+          (dmasr & BIT(25)) ? "desc" : "data");
   }
 }
 
@@ -488,14 +488,15 @@ int phy_reset(void)
     if (reg & BIT(12))
       break;
     hal_delay_us(1000);
-    count --;
+    count--;
   }
   if (count == 0) {
     xslog(LOG_INFO, "eth autonegotiate fail");
     return -1;
   }
 
-  xslog(LOG_INFO, "eth 10%s:%s-duplex", (reg & BIT(3)) ? "0": "", (reg & BIT(4)) ? "full" : "half");
+  xslog(LOG_INFO, "eth 10%s:%s-duplex", (reg & BIT(3)) ? "0": "", (reg & BIT(
+                                                                     4)) ? "full" : "half");
   return (reg >> 3) & 0x3;
 }
 
