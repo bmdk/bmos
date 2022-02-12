@@ -41,9 +41,9 @@
 
 void pin_init()
 {
-  enable_ahb1(0); /* GPIOA */
-  enable_ahb1(1); /* GPIOB */
-  enable_ahb1(2); /* GPIOC */
+  enable_ahb1(0);  /* GPIOA */
+  enable_ahb1(1);  /* GPIOB */
+  enable_ahb1(2);  /* GPIOC */
 
   enable_apb2(14); /* SYSCFG */
 
@@ -102,15 +102,15 @@ static void eth_pin_init()
   stm32_syscfg_eth_phy(1);
 
   /* RMII pins */
-  gpio_init_attr(GPIO(0, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* CLK */
-  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* MDIO */
-  gpio_init_attr(GPIO(0, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* CRS_DV */
+  gpio_init_attr(GPIO(0, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));  /* CLK */
+  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));  /* MDIO */
+  gpio_init_attr(GPIO(0, 7), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));  /* CRS_DV */
   gpio_init_attr(GPIO(1, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* TX_EN */
   gpio_init_attr(GPIO(1, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* TXD0 */
   gpio_init_attr(GPIO(1, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* TXD1 */
-  gpio_init_attr(GPIO(2, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* MDC */
-  gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* RXD0 */
-  gpio_init_attr(GPIO(2, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT)); /* RXD1 */
+  gpio_init_attr(GPIO(2, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));  /* MDC */
+  gpio_init_attr(GPIO(2, 4), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));  /* RXD0 */
+  gpio_init_attr(GPIO(2, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));  /* RXD1 */
 }
 #endif
 
