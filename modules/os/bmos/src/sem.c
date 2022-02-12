@@ -87,6 +87,16 @@ int sem_wait_ms(bmos_sem_t *s, int tms)
 
   saved = interrupt_disable();
 
+  if (tms == 0) {
+    if (s->count == 0)
+      status = TASK_STATUS_TIMEOUT;
+    else {
+      s->count--;
+      status = TASK_STATUS_OK;
+    }
+    goto exit;
+  }
+
   while (s->count == 0 && status != TASK_STATUS_TIMEOUT) {
     _waiters_add(&s->waiters, CURRENT, tms);
 
@@ -95,6 +105,7 @@ int sem_wait_ms(bmos_sem_t *s, int tms)
     interrupt_enable(saved);
 
     __ISB();
+    __DSB();
     asm volatile ("" : : : "memory");
 
     saved = interrupt_disable();
@@ -112,6 +123,7 @@ int sem_wait_ms(bmos_sem_t *s, int tms)
     s->count--;
   }
 
+exit:
   interrupt_enable(saved);
 
   FAST_LOG('S', "sem_wait_msE '%s' %d\n", s->name, status);
