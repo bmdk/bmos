@@ -223,11 +223,11 @@ void hal_board_init()
 {
   pin_init();
   clock_init(&pll_params);
-  backup_domain_protect(0);
-  clock_init_ls();
   led_init(leds, ARRSIZ(leds));
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 #if APPL
+  backup_domain_protect(0);
+  clock_init_ls();
   lcd_init(LCD_X, LCD_Y);
 #endif
 }

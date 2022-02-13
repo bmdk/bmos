@@ -156,7 +156,7 @@ void hal_board_init()
 {
   pin_init();
   clock_init(&pll_params);
-#if 1
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
 #endif

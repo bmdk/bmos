@@ -26,6 +26,7 @@
 #include "stm32_flash.h"
 #include "stm32_pwr.h"
 #include "stm32_rcc_a.h"
+#include "stm32_rcc_ls.h"
 
 typedef struct {
   reg32_t cr;
@@ -53,8 +54,7 @@ typedef struct {
   reg32_t apb1lpenr;
   reg32_t apb2lpenr;
   reg32_t pad6[2];
-  reg32_t bdcr;
-  reg32_t csr;
+  rcc_ls_t rcc_ls;
   reg32_t pad7[2];
   reg32_t sscgr;
   reg32_t pll12scfgr;
@@ -146,27 +146,9 @@ void clock_init_hs(const struct pll_params_t *p)
     ;
 }
 
-#define RCC_BDCR_LSEON BIT(0)
-#define RCC_BDCR_LSERDY BIT(1)
-#define RCC_BDCR_RTCEN BIT(15)
-#define RCC_BDCR_BDRST BIT(16)
-
-#define RCC_BDCR_RTCSEL_NONE 0
-#define RCC_BDCR_RTCSEL_LSE 1
-#define RCC_BDCR_RTCSEL_LSI 2
-#define RCC_BDCR_RTCSEL_HSE 3
-
 void clock_init_ls()
 {
-  RCC->bdcr &= ~RCC_BDCR_BDRST;
-  RCC->bdcr |= RCC_BDCR_LSEON;
-
-  while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
-    ;
-
-  reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
-
-  RCC->bdcr |= RCC_BDCR_RTCEN;
+  rcc_clock_init_ls(&RCC->rcc_ls);
 }
 
 void clock_init(const struct pll_params_t *p)

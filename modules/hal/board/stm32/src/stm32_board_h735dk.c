@@ -238,14 +238,15 @@ void hal_board_init()
   led_init_flags(leds, led_flags, ARRSIZ(leds));
   stm32_pwr_power(PWR_CR3_SDEN);
   clock_init(&clock_params);
-  backup_domain_protect(0);
-  clock_init_ls();
 
   /* FDCAN */
   set_fdcansel(FDCANSEL_HSE_CK);
   enable_apb1(40);
 
 #if APPL
+  backup_domain_protect(0);
+  clock_init_ls();
+
   stm32_syscfg_eth_phy(SYSCFG_ETH_PHY_RMII);
 
   stm32_syscfg_set_exti(2, 13);

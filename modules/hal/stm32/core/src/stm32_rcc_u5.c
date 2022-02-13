@@ -23,9 +23,10 @@
 
 #include "common.h"
 #include "hal_common.h"
-#include "stm32_hal.h"
-#include "stm32_rcc_u5.h"
 #include "stm32_flash.h"
+#include "stm32_hal.h"
+#include "stm32_rcc_ls.h"
+#include "stm32_rcc_u5.h"
 
 #if STM32_UXXX
 #define RCC_BASE 0x46020C00
@@ -137,8 +138,7 @@ typedef struct {
   unsigned int pad10;
   reg32_t ccipr[3];
   unsigned int pad11;
-  reg32_t bdcr;
-  reg32_t csr;
+  rcc_ls_t rcc_ls;
   unsigned int pad12[6];
   reg32_t seccfgr;
   reg32_t privcfgr;
@@ -340,36 +340,9 @@ void enable_apb3(unsigned int dev)
   RCC->apb3enr |= BIT(dev);
 }
 
-#define RCC_BDCR_LSEON BIT(0)
-#define RCC_BDCR_LSERDY BIT(1)
-#define RCC_BDCR_LSESYSEN BIT(7)
-#define RCC_BDCR_LSESYSRDY BIT(11)
-#define RCC_BDCR_RTCEN BIT(15)
-#define RCC_BDCR_BDRST BIT(16)
-
-#define RCC_BDCR_LSION BIT(26)
-#define RCC_BDCR_LSIRDY BIT(27)
-
-#define RCC_BDCR_RTCSEL_NONE 0
-#define RCC_BDCR_RTCSEL_LSE 1
-#define RCC_BDCR_RTCSEL_LSI 2
-#define RCC_BDCR_RTCSEL_HSE 3
-
 void clock_init_ls()
 {
-  RCC->bdcr &= ~RCC_BDCR_BDRST;
-
-  /* set lse drive strength to max */
-  reg_set_field(&RCC->bdcr, 2, 3, 0x3);
-
-  RCC->bdcr |= RCC_BDCR_LSEON;
-
-  while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
-    ;
-
-  reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
-
-  RCC->bdcr |= RCC_BDCR_RTCEN;
+  rcc_clock_init_ls(&RCC->rcc_ls);
 }
 
 void set_mco(unsigned int sel, unsigned int div)

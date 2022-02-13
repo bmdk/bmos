@@ -155,10 +155,11 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
   stm32_pwr_power(PWR_CR3_SCUEN | PWR_CR3_LDOEN);
   clock_init(&clock_params);
+
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
 
-#if APPL
   stm32_syscfg_eth_phy(SYSCFG_ETH_PHY_RMII);
 
   stm32_syscfg_set_exti(2, 13);

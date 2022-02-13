@@ -112,8 +112,10 @@ void hal_board_init()
 {
   pin_init();
   clock_init(&pll_params);
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
+#endif
   led_init(leds, ARRSIZ(leds));
 
 #if 1

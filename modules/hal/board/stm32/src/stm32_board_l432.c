@@ -118,8 +118,10 @@ void hal_board_init()
   pin_init();
   led_init(leds, ARRSIZ(leds));
   clock_init(&pll_params);
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
+#endif
 
   debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
 }

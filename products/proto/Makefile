@@ -437,6 +437,7 @@ FILES += stm32_timer.o
 FILES += circ_buf.o
 FILES += hal_dma.o
 FILES += stm32_dma_if.o
+FILES += stm32_rcc_ls.o
 
 # BMOS
 FILES += mutex.o

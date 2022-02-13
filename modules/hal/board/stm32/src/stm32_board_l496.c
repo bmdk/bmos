@@ -141,8 +141,10 @@ void hal_board_init()
 #if CLOCK_HS
   clock_init(&pll_params);
 #endif
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
+#endif
   led_init(leds, ARRSIZ(leds));
 
   debug_uart_init(LPUART1_BASE, 115200, APB1_CLOCK, STM32_UART_LP);

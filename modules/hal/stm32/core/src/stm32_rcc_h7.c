@@ -27,6 +27,7 @@
 #include "stm32_pwr.h"
 #include "stm32_pwr_h7xx.h"
 #include "stm32_rcc_h7.h"
+#include "stm32_rcc_ls.h"
 
 #if STM32_H7XX
 #define RCC_BASE 0x58024400
@@ -127,8 +128,7 @@ typedef struct {
   reg32_t cifr;
   reg32_t cicr;
   reg32_t pad5;
-  reg32_t bdcr;
-  reg32_t csr;
+  rcc_ls_t rcc_ls;
   reg32_t pad6;
   reg32_t ahb3rstr;
   reg32_t ahb1rstr;
@@ -440,25 +440,7 @@ void set_mco1(unsigned int sel, unsigned int div)
   reg_set_field(&RCC->cfgr, 4, 18, div);
 }
 
-#define RCC_BDCR_LSEON BIT(0)
-#define RCC_BDCR_LSERDY BIT(1)
-#define RCC_BDCR_RTCEN BIT(15)
-#define RCC_BDCR_BDRST BIT(16)
-
-#define RCC_BDCR_RTCSEL_NONE 0
-#define RCC_BDCR_RTCSEL_LSE 1
-#define RCC_BDCR_RTCSEL_LSI 2
-#define RCC_BDCR_RTCSEL_HSE 3
-
 void clock_init_ls()
 {
-  RCC->bdcr &= ~RCC_BDCR_BDRST;
-  RCC->bdcr |= RCC_BDCR_LSEON;
-
-  while ((RCC->bdcr & RCC_BDCR_LSERDY) == 0)
-    ;
-
-  reg_set_field(&RCC->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
-
-  RCC->bdcr |= RCC_BDCR_RTCEN;
+  rcc_clock_init_ls(&RCC->rcc_ls);
 }

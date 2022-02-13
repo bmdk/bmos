@@ -135,8 +135,6 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
   stm32_pwr_power(PWR_CR3_SCUEN | PWR_CR3_LDOEN);
   clock_init(&clock_params);
-  backup_domain_protect(0);
-  clock_init_ls();
 
   /* 48MHz - USB clock */
   set_spi123sel(SPI123SEL_PLL1_Q_CK);
@@ -144,6 +142,9 @@ void hal_board_init()
   set_spi45sel(SPI45SEL_APB);
 
 #if APPL
+  backup_domain_protect(0);
+  clock_init_ls();
+
   stm32_syscfg_set_exti(2, 13);
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);
