@@ -118,9 +118,16 @@ static xmodem_bd_t bd;
 
 static inline int _flash_erase(unsigned int start, unsigned int count);
 
-static int xmodem_flash_erase()
+#define H745N_M4_FLASH_BASE 0x08100000
+
+static int xmodem_flash_erase(unsigned int addr)
 {
   int err;
+
+#if STM32_H745N
+  if (addr == H745N_M4_FLASH_BASE)
+    return _flash_erase(1024, 128);
+#endif
 
 #if STM32_H7XX
   err = _flash_erase(128, 128);
@@ -144,7 +151,7 @@ static int xmodem_block(void *block_ctx, void *data, unsigned int len)
   xmodem_bd_t *bd = (xmodem_bd_t *)block_ctx;
 
   if (bd->count == 0)
-    if (xmodem_flash_erase() < 0)
+    if (xmodem_flash_erase(bd->addr) < 0)
       return -1;
 
   bd->count++;
@@ -236,7 +243,14 @@ static int cmd_xmodem(int argc, char *argv[])
   xtime_ms_t start = xtime_ms();
 
   memset(&bd, 0, sizeof(bd));
-  bd.addr = APP_BASE;
+#if STM32_H745N
+  if (argc > 1 && argv[1][0] == 'm')
+    bd.addr = H745N_M4_FLASH_BASE;
+  else
+#endif
+  {
+    bd.addr = APP_BASE;
+  }
 
   xmdat.putc = debug_putc;
   xmdat.block = xmodem_block;

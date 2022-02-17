@@ -30,12 +30,16 @@
 #include "stm32_hal.h"
 
 typedef struct {
-  unsigned int acr;
-  unsigned int keyr1;
-  unsigned int optkeyr;
-  unsigned int cr1;
-  unsigned int sr1;
-  unsigned int ccr1;
+  reg32_t acr;
+  reg32_t keyr;
+  reg32_t optkeyr;
+  reg32_t cr;
+  reg32_t sr;
+  reg32_t ccr;
+  reg32_t optcr;
+  reg32_t optsr_cur;
+  reg32_t optsr_prg;
+  reg32_t optccr;
 } stm32_flash_h7xx_t;
 
 #define FLASH_KEYR_KEY1 0x45670123
@@ -99,11 +103,14 @@ static void flash_error_decode(unsigned int sr)
   xprintf("\n");
 }
 
-#define FLASH ((volatile stm32_flash_h7xx_t *)0x52002000)
+#define FLASH_BASE 0x52002000
+#define FLASH(_idx_) ((stm32_flash_h7xx_t *)(FLASH_BASE + (_idx_) * 0x100))
+#define FLASHL FLASH(0)
+#define FLASHH FLASH(1)
 
 void stm32_flash_latency(unsigned int val)
 {
-  reg_set_field(&FLASH->acr, 4, 0, val);
+  reg_set_field(&FLASHL->acr, 4, 0, val);
 }
 
 /* No flash specific cache on H7 */
@@ -111,73 +118,100 @@ void stm32_flash_cache_enable(unsigned int en)
 {
 }
 
-static void flash_lock()
+static void flash_lock(stm32_flash_h7xx_t *flash)
 {
-  FLASH->cr1 |= FLASH_CR_LOCK;
+  flash->cr |= FLASH_CR_LOCK;
 }
 
-static void flash_unlock()
+static void flash_unlock(stm32_flash_h7xx_t *flash)
 {
   /* already unlocked */
-  if ((FLASH->cr1 & FLASH_CR_LOCK) == 0)
+  if ((flash->cr & FLASH_CR_LOCK) == 0)
     return;
-  FLASH->keyr1 = FLASH_KEYR_KEY1;
-  FLASH->keyr1 = FLASH_KEYR_KEY2;
+  flash->keyr = FLASH_KEYR_KEY1;
+  flash->keyr = FLASH_KEYR_KEY2;
 }
 
-int flash_erase(unsigned int start, unsigned int count)
+int _flash_erase(stm32_flash_h7xx_t *flash,
+                 unsigned int start, unsigned int count)
 {
   unsigned int cr;
   unsigned int page;
 
-  flash_unlock();
+  flash_unlock(flash);
 
   for (page = start; page < start + count; page++) {
-    cr = FLASH->cr1;
+    cr = flash->cr;
 
     cr = FLASH_CR_START | FLASH_CR_SNB(page) | FLASH_CR_SER;
 
-    FLASH->cr1 = cr;
+    flash->cr = cr;
 
-    while (FLASH->sr1 & FLASH_SR_QW)
+    while (flash->sr & FLASH_SR_QW)
       ;
   }
 
-  flash_lock();
+  flash_lock(flash);
 
   return 0;
 }
 
-void flash_status()
+static stm32_flash_h7xx_t *_get_flash(unsigned int addr)
 {
-  xprintf("sr1: %08x\n", FLASH->sr1);
+  if (addr >= 0x08100000)
+    return FLASHH;
+  else
+    return FLASHL;
 }
 
-static void flash_wait_done(void)
+static stm32_flash_h7xx_t *_get_flash_block(unsigned int block)
 {
-  while (FLASH->sr1 & (FLASH_SR_QW | FLASH_SR_BSY | FLASH_SR_WBNE))
+  if (block >= 8)
+    return FLASHH;
+  else
+    return FLASHL;
+}
+
+int flash_erase(unsigned int start, unsigned int count)
+{
+  stm32_flash_h7xx_t *flash = _get_flash_block(start);
+
+  _flash_erase(flash, start, count);
+
+  return 0;
+}
+
+void flash_status(stm32_flash_h7xx_t *flash)
+{
+  xprintf("sr: %08x\n", flash->sr);
+}
+
+static void flash_wait_done(stm32_flash_h7xx_t *flash)
+{
+  while (flash->sr & (FLASH_SR_QW | FLASH_SR_BSY | FLASH_SR_WBNE))
     ;
 }
 
-static void flash_program_word(unsigned long long *a,
+static void flash_program_word(stm32_flash_h7xx_t *flash,
+                               unsigned long long *a,
                                const unsigned long long *d)
 {
   unsigned int i;
 
-  flash_wait_done();
+  flash_wait_done(flash);
 
-  FLASH->ccr1 |= 0x0fef0000;
-  FLASH->cr1 |= FLASH_CR_PG;
+  flash->ccr |= 0x0fef0000;
+  flash->cr |= FLASH_CR_PG;
 
   for (i = 0; i < 4; i++)
     *a++ = *d++;
 
-  flash_wait_done();
+  flash_wait_done(flash);
 
-  if (FLASH->sr1 & FLASH_SR_EOP)
-    FLASH->ccr1 &= ~FLASH_SR_EOP;
+  if (flash->sr & FLASH_SR_EOP)
+    flash->ccr &= ~FLASH_SR_EOP;
 
-  FLASH->cr1 &= ~FLASH_CR_PG;
+  flash->cr &= ~FLASH_CR_PG;
 }
 
 int flash_program(unsigned int addr, const void *data, unsigned int len)
@@ -187,16 +221,20 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
   unsigned int i, words, remainder;
   unsigned long long buf[4];
   int err = 0;
+  stm32_flash_h7xx_t *flash = _get_flash(addr);
 
   words = len >> 5;
   remainder = len - (words << 5);
 
   a = (unsigned long long *)addr;
 
-  flash_unlock();
+  flash_unlock(flash);
 
   for (i = 0; i < words; i++) {
-    flash_program_word(a, d);
+#if 0
+    debug_printf("a: %08x d:%08x\n", a, d);
+#endif
+    flash_program_word(flash, a, d);
     a += 4;
     d += 4;
   }
@@ -204,10 +242,10 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
   if (remainder) {
     memset(buf, 0xff, sizeof(buf));
     memcpy(buf, d, remainder);
-    flash_program_word(a, buf);
+    flash_program_word(flash, a, buf);
   }
 
-  flash_lock();
+  flash_lock(flash);
 
   return err;
 }
@@ -216,13 +254,14 @@ int flash_program_test(unsigned int addr, unsigned int len)
 {
   unsigned int i, *a, sr;
   int err = 0;
+  stm32_flash_h7xx_t *flash = _get_flash(addr);
 
-  flash_unlock();
+  flash_unlock(flash);
 
   len >>= 2;
   a = (unsigned int *)addr;
 
-  FLASH->cr1 = FLASH_CR_PG;
+  flash->cr = FLASH_CR_PG;
 
   for (i = 0; i < len; i++) {
     unsigned int b = i & 0xff;
@@ -230,10 +269,10 @@ int flash_program_test(unsigned int addr, unsigned int len)
 
     *a++ = m;
 
-    while (FLASH->sr1 & FLASH_SR_QW)
+    while (flash->sr & FLASH_SR_QW)
       ;
 
-    sr = FLASH->sr1;
+    sr = flash->sr;
     if ((sr & 0xfffe0000) != 0) {
       flash_error_decode(sr);
       err = -1;
@@ -241,12 +280,12 @@ int flash_program_test(unsigned int addr, unsigned int len)
     }
   }
 
-  FLASH->cr1 |= FLASH_CR_FW;
-  while (FLASH->cr1 & FLASH_CR_FW)
+  flash->cr |= FLASH_CR_FW;
+  while (flash->cr & FLASH_CR_FW)
     ;
 
 exit:
-  flash_lock();
+  flash_lock(flash);
 
   xprintf("end %08x\n", (unsigned int)a);
 
@@ -254,7 +293,7 @@ exit:
 }
 
 
-char data[4096];
+char data[4096] __attribute__((aligned(8)));
 
 int cmd_flash(int argc, char *argv[])
 {
@@ -264,24 +303,27 @@ int cmd_flash(int argc, char *argv[])
     return -1;
 
   switch (argv[1][0]) {
+#if 0
   case 'u':
     flash_unlock();
     break;
   case 'l':
     flash_lock();
     break;
+#endif
   case 'e':
-    flash_erase(1, 1);
+    flash_erase(8, 1);
     break;
   case 'p':
     for (int i = 0; i < sizeof(data); i++)
       data[i] = i & 0xff;
     //memset(data, 0x5a, sizeof(data));
-    err = flash_program(0x08020000, data, sizeof(data));
+    //err = flash_program(0x08100000, data, sizeof(data));
+    err = flash_program(0x8100000, data, sizeof(data));
     xprintf("err %d\n", err);
     break;
   case 'q':
-    err = flash_program_test(0x08020000, 256);
+    err = flash_program_test(0x08100000, 256);
     xprintf("err %d\n", err);
     break;
   }
