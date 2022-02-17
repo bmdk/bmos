@@ -340,6 +340,17 @@ void clock_init(const struct pll_params_t *params)
   _clock_init(params);
 }
 
+#define BOOT_C1 BIT(2)
+#define BOOT_C2 BIT(3)
+
+void boot_cpu(int idx)
+{
+  if (idx == 0)
+    RCC->gcr |= BOOT_C1;
+  else if (idx == 1)
+    RCC->gcr |= BOOT_C2;
+}
+
 void enable_ahb1(unsigned int dev)
 {
   RCC->ahb1enr |= BIT(dev);

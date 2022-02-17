@@ -42,6 +42,8 @@ typedef struct {
 
 #define SYSCFG_BASE 0x58000400
 
+#define SYSCFG_N_UR 18
+
 typedef struct {
   unsigned int pad0;
   unsigned int pmcr;
@@ -54,7 +56,7 @@ typedef struct {
   unsigned int pad1[62];
   unsigned int pkgr;
   unsigned int pad2[118];
-  unsigned int ur[18];
+  unsigned int ur[SYSCFG_N_UR];
 } stm32_syscfg_h7xx_t;
 
 #define SYSCFG ((volatile stm32_syscfg_h7xx_t *)SYSCFG_BASE)
@@ -160,4 +162,25 @@ void stm32_pwr_vos(unsigned int vos)
 #else
   _stm32_pwr_vos(vos);
 #endif
+}
+
+unsigned int stm32_ur_get(unsigned int idx)
+{
+  if (idx > SYSCFG_N_UR)
+    return 0;
+
+  return SYSCFG->ur[idx];
+}
+
+/* this enables and disables the clock to the cortex m4.
+   this method of clock control has the advantage that we can stop
+   the cortex m4 at any point - in particular if we gate the cpu clock
+   before rebooting, after boot the cpu waits to have the clock enabled
+   again */
+void stm32_m4_en(int en)
+{
+  if (en)
+    SYSCFG->ur[1] |= 1;
+  else
+    SYSCFG->ur[1] &= ~1;
 }

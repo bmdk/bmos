@@ -160,7 +160,10 @@ void hal_time_reinit(void)
 /* set up timer2 as a us timer */
 void hal_time_init(void)
 {
+#if STM32_H745NM4
+#else
   timer_init(TIM_BASE, timer_calc_div());
+#endif
 }
 
 unsigned int timer_get(void *base)

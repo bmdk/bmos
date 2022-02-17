@@ -50,4 +50,7 @@ void stm32_pwr_power(unsigned int val);
 void stm32_pwr_usbvdetect(int en);
 void stm32_pwr_usbreg(int en);
 
+unsigned int stm32_ur_get(unsigned int idx);
+void stm32_m4_en(int en);
+
 #endif

@@ -68,7 +68,7 @@ static void pin_init()
   gpio_init_attr(GPIO(3, 8), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
   gpio_init_attr(GPIO(3, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 
-  /* USART2 */
+  /* USART2 - M4 */
   enable_apb1(17);
   gpio_init_attr(GPIO(3, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
   gpio_init_attr(GPIO(3, 6), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
@@ -76,6 +76,8 @@ static void pin_init()
   enable_apb4(1);  /* SYSCFG */
   enable_apb1(0);  /* TIM2 */
   enable_apb2(0);  /* TIM1 */
+
+  enable_apb1(11); /* WWDG2 */
 
   /* TIM1_CH1 */
   gpio_init_attr(GPIO(4, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
@@ -127,13 +129,10 @@ static void pin_init()
 uart_t debug_uart =
 { "debugser3", (void *)USART3_BASE, APB2_CLOCK, 39, STM32_UART_FIFO,
   "u3pool",    "u3tx" };
-uart_t debug_uart_2 =
-{ "debugser2", (void *)USART2_BASE, APB2_CLOCK, 38, STM32_UART_FIFO,
-  "u2pool",    "u2tx" };
 #endif
 
 /* Red, Green, Blue */
-static const gpio_handle_t leds[] = { GPIO(1, 0), GPIO(4, 1), GPIO(1, 14) };
+static const gpio_handle_t leds[] = { GPIO(1, 0), GPIO(1, 14) };
 
 static struct pll_params_t clock_params = {
   .pllsrc = RCC_C_CLK_HSE,
@@ -152,11 +151,11 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
   stm32_pwr_power(PWR_CR3_SDEN);
   clock_init(&clock_params);
+
+#if APPL
   backup_domain_protect(0);
   clock_init_ls();
 
-
-#if APPL
   stm32_syscfg_eth_phy(SYSCFG_ETH_PHY_RMII);
 
   stm32_syscfg_set_exti(2, 13);
@@ -165,9 +164,5 @@ void hal_board_init()
   stm32_exti_ev_enable(13, 1);
 #endif
 
-#if 0
-  debug_uart_init((void *)USART2_BASE, 115200, APB2_CLOCK, 0);
-#else
   debug_uart_init((void *)USART3_BASE, 115200, APB2_CLOCK, 0);
-#endif
 }

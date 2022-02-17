@@ -118,6 +118,11 @@ void stm32_flash_cache_enable(unsigned int en)
 {
 }
 
+unsigned int stm32_flash_opt()
+{
+  return FLASHL->optsr_cur;
+}
+
 static void flash_lock(stm32_flash_h7xx_t *flash)
 {
   flash->cr |= FLASH_CR_LOCK;

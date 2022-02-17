@@ -78,7 +78,9 @@ void delay(unsigned int count)
 #define CONFIG_STM32_HAL_COMMANDS 1
 #endif
 
-#if STM32_H7XX
+#if STM32_H745NM4
+/* the m4 cannot access the system memory, including UDID and FLASH_SIZE */
+#elif STM32_H7XX
 #define UDID_ADDR 0x1FF1E800
 #elif STM32_G4XX || STM32_G0XX || STM32_L4XX
 #define UDID_ADDR 0x1FFF7590
@@ -253,7 +255,9 @@ int cmd_devid(int argc, char *argv[])
 SHELL_CMD(devid, cmd_devid);
 #endif
 
-#if STM32_F4XX
+#if STM32_H745NM4
+/* the m4 cannot access the system memory, including UDID and FLASH_SIZE */
+#elif STM32_F4XX
 #define FLASH_SIZE 0x1FFF7A22
 #elif STM32_F7XX
 #define FLASH_SIZE 0x1FF0F442
@@ -294,4 +298,52 @@ int cmd_led(int argc, char *argv[])
 }
 
 SHELL_CMD(led, cmd_led);
+
+#if STM32_H745N
+#include "stm32_rcc_h7.h"
+#include "stm32_pwr_h7xx.h"
+#include "stm32_flash.h"
+#include "stm32_wwdg.h"
+
+int cmd_m4(int argc, char *argv[])
+{
+  char cmd = 's';
+  unsigned int opt;
+  char *m4opt;
+
+  if (argc > 1)
+    cmd = argv[1][0];
+
+  switch (cmd) {
+  case 'a':
+    boot_cpu(1);
+    break;
+  case 'b':
+    stm32_m4_en(1);
+    break;
+  case 'h':
+    stm32_m4_en(0);
+    break;
+  case 'r':
+    wwdg_reset_cpu2();
+    break;
+  case 's':
+    opt = stm32_flash_opt();
+    if (opt & BIT(22))
+      m4opt = "boot";
+    else
+      m4opt = "halt";
+    xprintf("m4 %s after reset\n", m4opt);
+    break;
+  case 'u':
+    opt = stm32_ur_get(1);
+    xprintf("ur1=%08x\n", opt);
+    break;
+  }
+
+  return 0;
+}
+
+SHELL_CMD(m4, cmd_m4);
+#endif
 #endif

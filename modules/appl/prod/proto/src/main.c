@@ -290,7 +290,7 @@ int main()
 
   shell_info_init(&shell_info, "sh1rx", 0);
   shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
-#if STM32_H7XX || STM32_G474N
+#if !STM32_H745N && !STM32_H745NM4 && STM32_H7XX || STM32_G474N
   shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
 #endif
 

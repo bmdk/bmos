@@ -19,15 +19,40 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef STM32_FLASH_H
-#define STM32_FLASH_H
+#include "common.h"
+#include "debug_ser.h"
+#include "stm32_hal.h"
+#include "hal_uart.h"
 
-int flash_erase(unsigned int start, unsigned int count);
-int flash_program(unsigned int addr, const void *data, unsigned int len);
-void stm32_flash_latency(unsigned int val);
-void stm32_flash_cache_enable(unsigned int en);
+/* H7xx memory layout:
+ * ITCM  0x00000000 64K
+ * DTCM  0x20000000 128K
+ * AXI   0x24000000 512K
+ * SRAM1 0x30000000 128K
+ * SRAM2 0x30020000 128K
+ * SRAM3 0x30040000 32K
+ * SRAM4 0x38000000 64K
+ * Backup SRAM 0x38800000 4K
+ */
 
-/* read the option word */
-unsigned int stm32_flash_opt();
 
+#define USART2_BASE 0x40004400
+#define APB2_CLOCK 120000000
+#if BMOS
+uart_t debug_uart =
+{ "ser2",   (void *)USART2_BASE,   APB2_CLOCK, 38, STM32_UART_FIFO,
+  "u2pool", "u2tx" };
 #endif
+
+/* Orange */
+static const gpio_handle_t leds[] = { GPIO(4, 1) };
+
+unsigned int hal_cpu_clock = 240000000;
+
+void hal_board_init()
+{
+  /* clock, pin and device initialization is done from the M7 code */
+  led_init(leds, ARRSIZ(leds));
+
+  debug_uart_init((void *)USART2_BASE, 115200, APB2_CLOCK, 0);
+}

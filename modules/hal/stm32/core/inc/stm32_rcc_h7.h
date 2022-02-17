@@ -98,4 +98,10 @@ void set_usart234578sel(unsigned int sel);
 #define SEL_MCO1_HSI48 4
 void set_mco1(unsigned int sel, unsigned int div);
 
+/* this boots the cpu with index idx - unfortunately when this method is used
+   the cpu cannot be stopped again since the bit can only be written to one.
+   When the m4 is rebooted it starts immediately. The only way to start with
+   it's clock gated is to reboot both cpus. */
+void boot_cpu(int idx);
+
 #endif

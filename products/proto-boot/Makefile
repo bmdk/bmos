@@ -321,6 +321,7 @@ FILES.h743nucleo += stm32_board_h743nucleo.o
 FILES.h743nucleo += $(FILES.h7xx)
 
 FILES.h745nucleo += stm32_board_h745nucleo.o
+FILES.h745nucleo += stm32_wwdg.o
 FILES.h745nucleo += $(FILES.h7xx)
 
 FILES.h735dk += stm32_board_h735dk.o

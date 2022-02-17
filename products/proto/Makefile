@@ -44,6 +44,7 @@ PROG += h735dk
 PROG += h743wa
 PROG += h743nucleo
 PROG += h745nucleo
+PROG += h745nm4
 PROG += l432
 PROG += l452
 PROG += l496
@@ -127,6 +128,13 @@ XCFLAGS.h745nucleo += -DSTM32_VOS_HACK
 STACK_END.h745nucleo = 0x20020000
 XCFLAGS.h745nucleo += -mcpu=cortex-m7
 LWIP.h745nucleo = y
+
+XCFLAGS.h745nm4 += -DSTM32_H7XX -DSTM32_H745NM4
+XCFLAGS.h745nm4 += -DCONFIG_BUTTON_INT=0
+APPL_RAM_BASE.h745nm4 = 0x30000000
+STACK_END.h745nm4 = 0x30020000
+APPL_FLASH_BASE.h745nm4 = 0x8100000
+XCFLAGS.h745nm4 += -mcpu=cortex-m4
 
 XCFLAGS.l4r += -DSTM32_L4R
 XCFLAGS.l4r += -mcpu=cortex-m4
@@ -460,8 +468,11 @@ FILES.h743wa += st7735.o
 FILES.h743nucleo += stm32_board_h743nucleo.o
 
 FILES.h745nucleo += stm32_board_h745nucleo.o
+FILES.h745nucleo += stm32_wwdg.o
 FILES.h745nucleo += stm32_fdcan.o
 FILES.h745nucleo += fdcan.o
+
+FILES.h745nm4 += stm32_board_h745nm4.o
 
 FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f7xx += stm32_flash.o
@@ -611,6 +622,7 @@ FILES.h735dk += $(FILES.h7xx)
 FILES.h743wa += $(FILES.h7xx)
 FILES.h743nucleo += $(FILES.h7xx)
 FILES.h745nucleo += $(FILES.h7xx)
+FILES.h745nm4 += $(FILES.h7xx)
 
 FILES.g0xx += stm32_flash.o
 FILES.g0xx += stm32_hal_bdma.o
