@@ -31,7 +31,7 @@ ENTRY(reset_handler)
 
 MEMORY
 {
-  RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = __RAM_SIZE
+  RAM (xrw)      : ORIGIN = __APPL_RAM_BASE, LENGTH = __RAM_SIZE
   FLASH (rx)      : ORIGIN = __APPL_FLASH_BASE, LENGTH = __FLASH_SIZE
 #if CONFIG_STM32_H7
   RAM2 (xrw)      : ORIGIN = 0x24000000, LENGTH = 512K
