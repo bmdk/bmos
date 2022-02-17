@@ -60,14 +60,10 @@ void hal_cpu_init()
 
   /* reset the exception vector to flash */
 #if APPL
-#if STM32_H7XX
-  SCB->vtor = 0x8020000;
-#else
 #if RAM_APPL
   SCB->vtor = 0x20000000;
 #else
   SCB->vtor = APPL_FLASH_BASE;
-#endif
 #endif
 #else
   SCB->vtor = 0x8000000;
