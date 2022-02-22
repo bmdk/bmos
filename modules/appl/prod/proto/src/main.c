@@ -209,6 +209,7 @@ static void shell_task(void *arg)
   }
 }
 
+#if BLINK_TASK
 static void blink_task(void *arg)
 {
   for (;;) {
@@ -218,6 +219,7 @@ static void blink_task(void *arg)
     led_set(1, 0);
   }
 }
+#endif
 
 void systick_hook(void)
 {
@@ -282,7 +284,9 @@ int main()
   irq_register("ext", button_int, 0, BUTTON_IRQ);
 #endif
 
+#if BLINK_TASK
   task_init(blink_task, NULL, "blink", 2, 0, 128);
+#endif
 
   shell_info_init(&shell_info, "sh1rx", 0);
   shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
