@@ -39,9 +39,11 @@
 #define USART2_BASE 0x40004400
 #define APB2_CLOCK 120000000
 #if BMOS
+/* *INDENT-OFF* */
 uart_t debug_uart =
-{ "ser2",   (void *)USART2_BASE,   APB2_CLOCK, 38, STM32_UART_FIFO,
+{ "ser2", (void *)USART2_BASE, APB2_CLOCK, 38, STM32_UART_FIFO,
   "u2pool", "u2tx" };
+/* *INDENT-ON* */
 #endif
 
 /* Orange */
