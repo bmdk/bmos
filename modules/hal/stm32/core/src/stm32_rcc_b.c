@@ -28,53 +28,53 @@
 #include "stm32_flash.h"
 
 typedef struct {
-  unsigned int cr;
-  unsigned int icscr;
-  unsigned int cfgr;
-  unsigned int pllcfgr;
-  unsigned int pllsai1cfgr;
-  unsigned int pllsai2cfgr;
-  unsigned int cier;
-  unsigned int cifr;
-  unsigned int cicr;
+  reg32_t cr;
+  reg32_t icscr;
+  reg32_t cfgr;
+  reg32_t pllcfgr;
+  reg32_t pllsai1cfgr;
+  reg32_t pllsai2cfgr;
+  reg32_t cier;
+  reg32_t cifr;
+  reg32_t cicr;
 #if STM32_WBXX
-  unsigned int smpscr; /* wb55 */
+  reg32_t smpscr; /* wb55 */
 #else
-  unsigned int pad0;
+  reg32_t pad0;
 #endif
-  unsigned int ahb1rstr;
-  unsigned int ahb2rstr;
-  unsigned int ahb3rstr;
-  unsigned int pad1;
-  unsigned int apb1rstr1;
-  unsigned int apb1rstr2;
-  unsigned int apb2rstr;
-  unsigned int pad2;
-  unsigned int ahb1enr;
-  unsigned int ahb2enr;
-  unsigned int ahb3enr;
-  unsigned int pad3;
-  unsigned int apb1enr1;
-  unsigned int apb1enr2;
-  unsigned int apb2enr;
-  unsigned int pad4;
-  unsigned int ahb1smenr;
-  unsigned int ahb2smenr;
-  unsigned int ahb3smenr;
-  unsigned int pad5;
-  unsigned int apb1smenr1;
-  unsigned int apb1smenr2;
-  unsigned int apb2smenr;
-  unsigned int pad6;
-  unsigned int ccipr;
-  unsigned int pad7;
-  unsigned int bdcr;
-  unsigned int csr;
-  unsigned int crrcr;
+  reg32_t ahb1rstr;
+  reg32_t ahb2rstr;
+  reg32_t ahb3rstr;
+  reg32_t pad1;
+  reg32_t apb1rstr1;
+  reg32_t apb1rstr2;
+  reg32_t apb2rstr;
+  reg32_t pad2;
+  reg32_t ahb1enr;
+  reg32_t ahb2enr;
+  reg32_t ahb3enr;
+  reg32_t pad3;
+  reg32_t apb1enr1;
+  reg32_t apb1enr2;
+  reg32_t apb2enr;
+  reg32_t pad4;
+  reg32_t ahb1smenr;
+  reg32_t ahb2smenr;
+  reg32_t ahb3smenr;
+  reg32_t pad5;
+  reg32_t apb1smenr1;
+  reg32_t apb1smenr2;
+  reg32_t apb2smenr;
+  reg32_t pad6;
+  reg32_t ccipr;
+  reg32_t pad7;
+  reg32_t bdcr;
+  reg32_t csr;
+  reg32_t crrcr;
 #if STM32_WBXX
   /* TODO */
 #else
-  unsigned int ccipr2;
+  reg32_t ccipr2;
 #endif
 } stm32_rcc_t;
 
@@ -88,7 +88,7 @@ typedef struct {
 #define FLASH_BASE 0x40022000
 #endif
 
-#define RCC ((volatile stm32_rcc_t *)RCC_BASE)
+#define RCC ((stm32_rcc_t *)RCC_BASE)
 
 #define RCC_CR_PLLRDY BIT(25)
 #define RCC_CR_PLLON BIT(24)
