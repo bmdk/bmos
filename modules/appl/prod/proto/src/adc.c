@@ -11,8 +11,12 @@ unsigned short adc_val[2];
 #if STM32_F1XX
 /* no calibration values in F1XX so we need to convert from datasheet values */
 unsigned char adc_seq[] = { 17, 16 };
-#elif STM32_L4XX
+#elif STM32_L4XX || STM32_G4XX
+#if STM32_L4XX
 unsigned char adc_seq[] = { 0, 17 };
+#else
+unsigned char adc_seq[] = { 18, 16 };
+#endif
 
 #define TS_CAL1 *(unsigned short *)0x1FFF75A8
 #define TS_CAL1_TEMP 30
@@ -73,6 +77,7 @@ static void adc_conv_done(unsigned short *data, unsigned int count)
 #if STM32_F1XX
   FAST_LOG('A', "vals V:%d T:%d\n", adc_val[0], adc_val[1]);
 #else
+  xslog(LOG_INFO, "R: VDD:%d T:%d\n", adc_val[0], adc_val[1]);
   xslog(LOG_INFO, "VDD:%d T:%d\n", get_vdd(), get_temp(adc_val[1]));
 #endif
 }

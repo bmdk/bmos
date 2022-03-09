@@ -29,40 +29,52 @@
 #include "stm32_hal_adc.h"
 
 typedef struct {
-  unsigned int isr;
-  unsigned int ier;
-  unsigned int cr;
-  unsigned int cfgr;
-  unsigned int cfgr2;
-  unsigned int smpr[2];
-  unsigned int pad0;
-  unsigned int tr[3];
-  unsigned int pad1;
-  unsigned int sqr[4];
-  unsigned int dr;
-  unsigned int pad2[2];
-  unsigned int jsqr;
-  unsigned int pad3[4];
-  unsigned int ofr[4];
-  unsigned int pad4[4];
-  unsigned int jdr[4];
-  unsigned int pad5[4];
-  unsigned int awd2cr;
-  unsigned int awd3cr;
-  unsigned int pad6[2];
-  unsigned int difsel;
-  unsigned int calfact;
+  reg32_t isr;
+  reg32_t ier;
+  reg32_t cr;
+  reg32_t cfgr;
+  reg32_t cfgr2;
+  reg32_t smpr[2];
+  reg32_t pad0;
+  reg32_t tr[3];
+  reg32_t pad1;
+  reg32_t sqr[4];
+  reg32_t dr;
+  reg32_t pad2[2];
+  reg32_t jsqr;
+  reg32_t pad3[4];
+  reg32_t ofr[4];
+  reg32_t pad4[4];
+  reg32_t jdr[4];
+  reg32_t pad5[4];
+  reg32_t awd2cr;
+  reg32_t awd3cr;
+  reg32_t pad6[2];
+  reg32_t difsel;
+  reg32_t calfact;
 } stm32_adc_t;
 
 typedef struct {
-  unsigned int csr;
-  unsigned int pad0;
-  unsigned int ccr;
-  unsigned int cdr;
+  reg32_t csr;
+  reg32_t pad0;
+  reg32_t ccr;
+  reg32_t cdr;
 } stm32_adc_com_t;
 
-#define ADC_BASE (void *)0x50040000
-#define ADC_COM_BASE (void *)(ADC_BASE + 0x300)
+#if STM32_L4XX
+#define ADC_BASE 0x50040000
+#define ADC_COM_BASE (ADC_BASE + 0x300)
+#define ADC_CKMODE 1
+#elif STM32_G4XX
+#define ADC_BASE 0x50000000
+#define ADC_COM_BASE (ADC_BASE + 0x300)
+#define ADC_CKMODE 3
+#else
+#error Define ADC_BASE for this platform
+#endif
+
+#define ADC (stm32_adc_t *)ADC_BASE
+#define ADC_COM (stm32_adc_com_t *)ADC_COM_BASE
 
 #define SAM_RATE_2_5 0
 #define SAM_RATE_6_5 1
@@ -112,7 +124,7 @@ static adc_data_t adc_data;
 
 static void adc_irq(void *arg)
 {
-  volatile stm32_adc_t *a = (volatile stm32_adc_t *)ADC_BASE;
+  stm32_adc_t *a = ADC;
   unsigned int dr, isr;
 
   isr = a->isr;
@@ -137,14 +149,14 @@ static void adc_irq(void *arg)
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
                             unsigned int cnt)
 {
-  volatile stm32_adc_t *a = (volatile stm32_adc_t *)base;
-  volatile stm32_adc_com_t *ac = (volatile stm32_adc_com_t *)ADC_COM_BASE;
+  stm32_adc_t *a = (stm32_adc_t *)base;
+  stm32_adc_com_t *ac = ADC_COM;
   unsigned int i;
 
   cnt &= 0xf;
 
   /* CKMODE HCLK */
-  ac->ccr = CCR_CH18SEL | CCR_CH17SEL | CCR_VREFEN | CCR_CKMODE(1);
+  ac->ccr = CCR_CH18SEL | CCR_CH17SEL | CCR_VREFEN | CCR_CKMODE(ADC_CKMODE);
 
   a->cr &= ~CR_DEEPPWD;
   a->cr |= CR_ADVREGEN;
@@ -187,12 +199,12 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 
 void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt)
 {
-  _stm32_adc_init(ADC_BASE, reg_seq, cnt);
+  _stm32_adc_init(ADC, reg_seq, cnt);
 }
 
 static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
 {
-  volatile stm32_adc_t *a = (volatile stm32_adc_t *)base;
+  stm32_adc_t *a = (stm32_adc_t *)base;
 
   if ((a->cr & CR_ADSTART))
     return -1;
@@ -206,5 +218,5 @@ static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
 
 int stm32_adc_conv(conv_done_f *conv_done)
 {
-  return _stm32_adc_conv(ADC_BASE, conv_done);
+  return _stm32_adc_conv(ADC, conv_done);
 }

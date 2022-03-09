@@ -292,6 +292,7 @@ XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
 XCFLAGS.l432 += -mcpu=cortex-m4
 STACK_END.l432 = 0x20010000
 XCFLAGS.l432 += -DWS2811
+XCFLAGS.l432 += -DCONFIG_ENABLE_ADC
 
 XCFLAGS.l452 += -DSTM32_L452 -DSTM32_L4XX
 XCFLAGS.l452 += -mcpu=cortex-m4
@@ -322,10 +323,12 @@ OPTFLAGS.g030deb = -Os
 
 XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474N
 XCFLAGS.g474n += -mcpu=cortex-m4
+XCFLAGS.g474n += -DCONFIG_ENABLE_ADC
 STACK_END.g474n = 0x20020000
 
 XCFLAGS.g431kbn += -DSTM32_G4XX -DSTM32_G432KBN
 XCFLAGS.g431kbn += -mcpu=cortex-m4
+XCFLAGS.g431kbn += -DCONFIG_ENABLE_ADC
 STACK_END.g431kbn = 0x20008000
 
 XCFLAGS.u575n += -DSTM32_U575N -DSTM32_UXXX
@@ -705,6 +708,7 @@ FILES.l432 += stm32_hal_rtc.o
 FILES.l432 += stm32_hal_spi.o
 FILES.l432 += stm32_board_l432.o
 FILES.l432 += stm32_hal_adc.o
+FILES.l432 += adc.o
 FILES.l432 += ws2811.o
 
 FILES.l452 += stm32_hal_bdma.o
@@ -742,11 +746,15 @@ FILES.g474n += fb.o
 FILES.g474n += ssd1306_fonts.o
 FILES.g474n += i2c_test.o
 FILES.g474n += fdcan.o
+FILES.g474n += stm32_hal_adc.o
+FILES.g474n += adc.o
 
 FILES.g431kbn += $(FILES.g4xx)
 FILES.g431kbn += stm32_hal_rtc.o
 FILES.g431kbn += stm32_board_g431kbn.o
 FILES.g431kbn += fdcan.o
+FILES.g431kbn += stm32_hal_adc.o
+FILES.g431kbn += adc.o
 
 FILES.u575n += stm32_hal_rtc.o
 FILES.u575n += stm32_exti_uxxx.o
