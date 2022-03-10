@@ -33,15 +33,10 @@ unsigned char adc_seq[] = { 17, 18 };
 
 static unsigned int get_vdd(void)
 {
-  unsigned int vrefint, vref;
-
   if (adc_val[0] == 0)
     return 0;
 
-  vrefint = VREFINT_CAL;
-  vref = VREFINT_V * vrefint / adc_val[0];
-
-  return vref;
+  return VREFINT_V * VREFINT_CAL / adc_val[0];
 }
 
 /* scale an adc value by the ratio of calibrated reference voltage
@@ -49,20 +44,25 @@ static unsigned int get_vdd(void)
 static int adc_conv_voltage(int adc_raw_val)
 {
   unsigned int vrefint = VREFINT_CAL;
+  unsigned int aval = adc_val[0];
 
-  return vrefint * adc_raw_val / adc_val[0];
+  if (aval == 0)
+    return 0;
+
+  return (vrefint * adc_raw_val + aval / 2) / aval;
 }
 
 /* calculate a temperature from an adc measurement */
 static int get_temp(int adcval)
 {
-  int ts_cal1, ts_cal2;
+  int ts_cal1, ts_cal2, diff;
 
   ts_cal1 = TS_CAL1;
   ts_cal2 = TS_CAL2;
+  diff = ts_cal2 - ts_cal1;
 
-  return 1000 * (TS_CAL2_TEMP - TS_CAL1_TEMP) *
-         (adc_conv_voltage(adcval) - ts_cal1) / (ts_cal2 - ts_cal1) +
+  return (1000 * (TS_CAL2_TEMP - TS_CAL1_TEMP) *
+          (adc_conv_voltage(adcval) - ts_cal1) + diff / 2) / diff +
          TS_CAL1_TEMP * 1000;
 }
 
