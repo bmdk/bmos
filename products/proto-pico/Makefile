@@ -70,7 +70,7 @@ MODS_FULL += $(addprefix $(SDK_PATH)/src/rp2040/, $(RP2040_MODS))
 
 XCINC += $(addprefix -I, $(addsuffix /include, $(MODS_FULL)))
 
-XCFLAGS += -O3
+XCFLAGS += -O2
 
 XCFLAGS += -march=armv6-m -mcpu=cortex-m0plus -mthumb
 XCFLAGS += -Wall -Werror -Wno-unused-function
@@ -80,66 +80,34 @@ XCFLAGS += -fdata-sections
 XCFLAGS += -DNDEBUG
 XCFLAGS += -std=gnu11
 
-XCFLAGS += -DPICO_BIT_OPS_PICO=1
+XCFLAGS += -DPICO_BIT_OPS_PICO=0
 XCFLAGS += -DPICO_COPY_TO_RAM=0
 XCFLAGS += -DPICO_CXX_ENABLE_EXCEPTIONS=0
-XCFLAGS += -DPICO_DIVIDER_HARDWARE=1
-XCFLAGS += -DPICO_DOUBLE_PICO=1
-XCFLAGS += -DPICO_FLOAT_PICO=1
-XCFLAGS += -DPICO_INT64_OPS_PICO=1
-XCFLAGS += -DPICO_MEM_OPS_PICO=1
+XCFLAGS += -DPICO_DIVIDER_HARDWARE=0
+XCFLAGS += -DPICO_DOUBLE_PICO=0
+XCFLAGS += -DPICO_FLOAT_PICO=0
+XCFLAGS += -DPICO_INT64_OPS_PICO=0
+XCFLAGS += -DPICO_MEM_OPS_PICO=0
 XCFLAGS += -DPICO_NO_FLASH=0
 XCFLAGS += -DPICO_NO_HARDWARE=0
 XCFLAGS += -DPICO_ON_DEVICE=1
 XCFLAGS += -DPICO_PRINTF_PICO=1
 XCFLAGS += -DPICO_USE_BLOCKED_RAM=0
 
-XLDFLAGS += -T memmap_default.ld
-XLDFLAGS += -Wl,--gc-sections
-XLDFLAGS += --specs=nosys.specs
+LD_SCRIPT = appl.ld
 
-PICO_FILES += common/pico_sync/critical_section.c
-PICO_FILES += common/pico_sync/sem.c
-PICO_FILES += common/pico_sync/lock_core.c
-PICO_FILES += common/pico_sync/mutex.c
-PICO_FILES += common/pico_time/timeout_helper.c
-PICO_FILES += common/pico_time/time.c
-PICO_FILES += common/pico_util/queue.c
-PICO_FILES += common/pico_util/pheap.c
-PICO_FILES += common/pico_util/datetime.c
-PICO_FILES += rp2_common/hardware_adc/adc.c
-PICO_FILES += rp2_common/hardware_claim/claim.c
+XLDFLAGS += -Wl,--gc-sections
+XLDFLAGS += -nostdlib
+XLDFLAGS += -lgcc
+XLDFLAGS += -Wl,--defsym,_stack_end=0x20040000
+
 PICO_FILES += rp2_common/hardware_clocks/clocks.c
-PICO_FILES += rp2_common/hardware_dma/dma.c
-PICO_FILES += rp2_common/hardware_flash/flash.c
-PICO_FILES += rp2_common/hardware_gpio/gpio.c
-PICO_FILES += rp2_common/hardware_i2c/i2c.c
-PICO_FILES += rp2_common/hardware_interp/interp.c
-PICO_FILES += rp2_common/hardware_pio/pio.c
 PICO_FILES += rp2_common/hardware_pll/pll.c
-PICO_FILES += rp2_common/hardware_rtc/rtc.c
-PICO_FILES += rp2_common/hardware_spi/spi.c
-PICO_FILES += rp2_common/hardware_sync/sync.c
-PICO_FILES += rp2_common/hardware_timer/timer.c
-PICO_FILES += rp2_common/hardware_uart/uart.c
-PICO_FILES += rp2_common/hardware_vreg/vreg.c
 PICO_FILES += rp2_common/hardware_watchdog/watchdog.c
 PICO_FILES += rp2_common/hardware_xosc/xosc.c
 PICO_FILES += rp2_common/pico_bootrom/bootrom.c
-PICO_FILES += rp2_common/pico_double/double_init_rom.c
-PICO_FILES += rp2_common/pico_double/double_math.c
-PICO_FILES += rp2_common/pico_float/float_init_rom.c
-PICO_FILES += rp2_common/pico_float/float_math.c
-PICO_FILES += rp2_common/pico_malloc/pico_malloc.c
-PICO_FILES += rp2_common/pico_mem_ops/mem_ops.c
-PICO_FILES += rp2_common/pico_multicore/multicore.c
-PICO_FILES += rp2_common/pico_platform/platform.c
-PICO_FILES += rp2_common/pico_printf/printf.c
-PICO_FILES += rp2_common/pico_runtime/runtime.c
-PICO_FILES += rp2_common/pico_standard_link/binary_info.c
+
 PICO_FILES += rp2_common/pico_stdio_usb/stdio_usb_descriptors.c
-PICO_FILES += rp2_common/pico_stdlib/stdlib.c
-PICO_FILES += rp2_common/pico_unique_id/unique_id.c
 
 define PICO_RULE
 $(BUILD_DIR)/$$(patsubst %.c,%.o,$$(subst /,~,$(1))): $(SDK_PATH)/src/$(1)
@@ -180,15 +148,15 @@ TUSB_CLASSES = audio cdc dfu hid midi msc net usbtmc vendor
 
 TUSB_MODS += $(addprefix $(TUSB_BASE)/class/, $(TUSB_CLASSES))
 
-TUSB_OBJS += audio_device.o
+#TUSB_OBJS += audio_device.o
 TUSB_OBJS += cdc_device.o
-TUSB_OBJS += dfu_rt_device.o
-TUSB_OBJS += hid_device.o
-TUSB_OBJS += midi_device.o
-TUSB_OBJS += msc_device.o
-TUSB_OBJS += net_device.o
-TUSB_OBJS += usbtmc_device.o
-TUSB_OBJS += vendor_device.o
+#TUSB_OBJS += dfu_rt_device.o
+#TUSB_OBJS += hid_device.o
+#TUSB_OBJS += midi_device.o
+#TUSB_OBJS += msc_device.o
+#TUSB_OBJS += net_device.o
+#TUSB_OBJS += usbtmc_device.o
+#TUSB_OBJS += vendor_device.o
 
 TUSB_MODS += $(TUSB_BASE)
 
@@ -201,18 +169,18 @@ TUSB_OBJS += tusb_fifo.o
 LOBJS += $(TUSB_OBJS)
 VPATH += $(TUSB_MODS)
 
-LOBJS += bmos_crt0.o
+LOBJS += start.o
 
-PICO_ASM += rp2_common/hardware_divider/divider.S
-PICO_ASM += rp2_common/hardware_irq/irq_handler_chain.S
-PICO_ASM += rp2_common/pico_bit_ops/bit_ops_aeabi.S
-PICO_ASM += rp2_common/pico_divider/divider.S
-PICO_ASM += rp2_common/pico_double/double_aeabi.S
-PICO_ASM += rp2_common/pico_double/double_v1_rom_shim.S
-PICO_ASM += rp2_common/pico_float/float_aeabi.S
-PICO_ASM += rp2_common/pico_float/float_v1_rom_shim.S
-PICO_ASM += rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S
-PICO_ASM += rp2_common/pico_mem_ops/mem_ops_aeabi.S
+#PICO_ASM += rp2_common/hardware_divider/divider.S
+#PICO_ASM += rp2_common/hardware_irq/irq_handler_chain.S
+#PICO_ASM += rp2_common/pico_bit_ops/bit_ops_aeabi.S
+#PICO_ASM += rp2_common/pico_divider/divider.S
+#PICO_ASM += rp2_common/pico_double/double_aeabi.S
+#PICO_ASM += rp2_common/pico_double/double_v1_rom_shim.S
+#PICO_ASM += rp2_common/pico_float/float_aeabi.S
+#PICO_ASM += rp2_common/pico_float/float_v1_rom_shim.S
+#PICO_ASM += rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S
+#PICO_ASM += rp2_common/pico_mem_ops/mem_ops_aeabi.S
 
 define PICO_ASM_RULE
 $(BUILD_DIR)/$$(patsubst %.S,%.o,$$(subst /,~,$(1))): $(SDK_PATH)/src/$(1)
@@ -228,8 +196,12 @@ MODULES += appl/prod/proto-pico
 MODULES += appl/shell
 MODULES += hal/core
 MODULES += hal/cpu/arm
-MODULES += std
+MODULES += hal/rp2040/core
 MODULES += os/bmos
+MODULES += std
+
+MODULES += lib/libc_min
+
 
 VPATH += $(addsuffix /src, $(addprefix $(ROOT)/modules/, $(MODULES)))
 XCINC += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
@@ -237,6 +209,10 @@ XCINC += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
 LOBJS += cortexm.o
 LOBJS += fast_log.o
 LOBJS += hal_int.o
+LOBJS += hal_gpio.o
+LOBJS += rp2040_hal_adc.o
+LOBJS += rp2040_hal_gpio.o
+LOBJS += rp2040_hal_resets.o
 LOBJS += io.o
 LOBJS += mem.o
 LOBJS += reg.o
@@ -248,8 +224,12 @@ LOBJS += queue.o
 LOBJS += op_msg.o
 LOBJS += misc.o
 LOBJS += pico_irq.o
-LOBJS += pico_uart.o
+LOBJS += rp2040_hal_uart.o
 LOBJS += xtime.o
+
+LOBJS += hal_common.o
+LOBJS += libc.o
+LOBJS += malloc.o
 
 BUILD_LOBJS = $(addprefix $(BUILD_DIR)/,$(LOBJS))
 
@@ -291,7 +271,7 @@ $(BUILD_LOBJS): | $(BUILD_DIR)
 $(BUILD_APP_OBJS): | $(BUILD_DIR)
 
 $(BUILD_DIR)/app.elf: $(BUILD_APP_OBJS) $(BUILD_LOBJS) $(BUILD_DIR)/boot_stage2.raw.o
-	$(XLD) $(XCFLAGS) $(XLDFLAGS) -o $@ $^ -lm
+	$(XLD) $(XCFLAGS) -o $@ $^ $(XLDFLAGS) -T $(LD_SCRIPT)
 
 ELF2UF2_PATH = $(SDK_PATH)/tools/elf2uf2
 $(BUILD_DIR)/elf2uf2: $(ELF2UF2_PATH)/main.cpp

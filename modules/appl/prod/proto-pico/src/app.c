@@ -20,21 +20,18 @@
  */
 
 #include <stdio.h>
-#include "pico/stdlib.h"
-
-#include "hardware/gpio.h"
-#include "hardware/uart.h"
-#include "hardware/timer.h"
 
 #include "tusb.h"
 
 #include "cortexm.h"
+#include "hal_board.h"
 #include "hal_int.h"
 #include "hal_int_cpu.h"
 #include "hal_time.h"
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
+#include "debug_ser.h"
 #include "xtime.h"
 
 #include "bmos_task.h"
@@ -42,9 +39,40 @@
 #include "bmos_op_msg.h"
 #include "bmos_syspool.h"
 
-bmos_queue_t *syspool;
+#include "rp2040_hal_gpio.h"
+#include "rp2040_hal_resets.h"
 
-#define DEBUG_UART uart0
+#include <pico/mutex.h>
+
+void panic(const char *fmt, ...)
+{
+  for(;;)
+    ;
+}
+
+void critical_section_init(critical_section_t *critsec)
+{
+}
+
+void mutex_init(mutex_t *mtx)
+{
+}
+
+void mutex_exit(mutex_t *mtx)
+{
+}
+
+bool mutex_enter_timeout_ms(mutex_t *mtx, uint32_t timeout_ms)
+{
+  return true;
+}
+
+bool running_on_fpga()
+{
+  return false;
+}
+
+bmos_queue_t *syspool;
 
 static int led_state = 0;
 static xtime_ms_t last_blink = 0;
@@ -56,7 +84,7 @@ static xtime_diff_ms_t wait = LONG_WAIT;
 
 static void led_set(int num, int v)
 {
-  gpio_put(LED_PIN, v);
+  gpio_set(LED_PIN, v);
 }
 
 void blink()
@@ -85,16 +113,7 @@ hal_time_us_t hal_time_us()
   return time_us_32();
 }
 
-void debug_putc(int ch)
-{
-  uart_putc_raw(DEBUG_UART, ch);
-}
-
-int debug_ser_tx_done()
-{
-  return 1;
-}
-
+#if 0
 static void polled_shell(void)
 {
   shell_t sh;
@@ -109,14 +128,15 @@ static void polled_shell(void)
       task_delay(10);
   }
 }
+#endif
 
-static void debug_uart_init()
+static void debug_uart_pins_init()
 {
-  gpio_set_function(0, GPIO_FUNC_UART);
-  gpio_set_function(1, GPIO_FUNC_UART);
+  gpio_init_attr(0, GPIO_ATTR_PICO(GPIO_FUNC_UART));
+  gpio_init_attr(1, GPIO_ATTR_PICO(GPIO_FUNC_UART));
 }
 
-uart_t debug_uart = { "debugser", (void *)0, 0 /* CLOCK */, 20 };
+uart_t debug_uart = { "debugser", (void *)0x40034000, 125000000, 20 };
 
 #define SHELL_SRC_COUNT 1
 #define OP_UART1_DATA 0
@@ -184,6 +204,9 @@ static void shell_task(void *arg)
   }
 }
 
+#define CONFIG_PICO_USB_ENABLE 1
+
+#if CONFIG_PICO_USB_ENABLE
 static shell_t cdc_sh;
 static bmos_queue_t *cdc_tx;
 
@@ -249,24 +272,40 @@ static void cdc_shell_put(void *arg)
     op_msg_return(m);
   }
 }
+#endif
 
 unsigned int hal_cpu_clock = 125000000;
 
+extern void clocks_init();
+
+#define UART0_BASE 0x40034000
+#define UART1_BASE 0x40038000
+
 int main()
 {
-  debug_uart_init();
+  INTERRUPT_OFF();
+  rp2040_reset_clr(RESETS_RESET_PADS_BANK0);
+  rp2040_reset_clr(RESETS_RESET_IO_BANK0);
 
-  gpio_init(LED_PIN);
-  gpio_set_dir(LED_PIN, GPIO_OUT);
-  gpio_put(LED_PIN, 1);
+  gpio_init(LED_PIN, GPIO_OUTPUT);
+  gpio_set(LED_PIN, 1);
 
-  interrupt_disable();
+  clocks_init();
+
+  hal_cpu_init();
+
+  rp2040_reset_clr(RESETS_RESET_UART0);
+  debug_uart_pins_init();
+  debug_uart_init((void *)UART0_BASE, 115200, hal_cpu_clock, 0);
+  debug_puts("\nAPPL\n\n");
 
   task_init(shell_task, NULL, "shell", 2, 0, 4096);
 
+#if CONFIG_PICO_USB_ENABLE
   cdc_tx = queue_create("cdc_tx", QUEUE_TYPE_DRIVER);
   (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0);
   task_init(usb_task, NULL, "usbshell", 2, 0, 4096);
+#endif
 
   shell_info.rxq = queue_create("sh1rx", QUEUE_TYPE_TASK);
   shell_info.txq[0] = uart_open(&debug_uart, 115200, shell_info.rxq,

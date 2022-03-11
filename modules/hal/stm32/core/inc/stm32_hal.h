@@ -31,8 +31,6 @@ void led_set(unsigned int n, unsigned int v);
 #define STM32_UART_FIFO BIT(1)
 #define STM32_UART_SINGLE_WIRE BIT(2)
 
-void debug_uart_init(void *base, unsigned int baud,
-                     unsigned int clock, unsigned int flags);
 void led_init(const gpio_handle_t *led_list, unsigned int _nleds);
 
 #define LED_FLAG_INV BIT(0)

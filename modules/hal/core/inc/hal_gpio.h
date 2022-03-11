@@ -40,6 +40,7 @@ typedef unsigned int gpio_handle_t;
 #define GPIO_OUTPUT 1
 
 void gpio_init(gpio_handle_t gpio, unsigned int type);
+void xgpio_init(gpio_handle_t gpio, unsigned int type);
 
 void gpio_set(gpio_handle_t gpio, int val);
 

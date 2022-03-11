@@ -22,7 +22,8 @@
 #ifndef DEBUG_SER_H
 #define DEBUG_SER_H
 
-void debug_ser_init(void);
+void debug_uart_init(void *base, unsigned int baud,
+                     unsigned int clock, unsigned int flags);
 void debug_putc(int ch);
 int debug_getc(void);
 int debug_ser_tx_done(void);

@@ -29,29 +29,105 @@
 #include "xassert.h"
 #include "fast_log.h"
 
-#include "hardware/uart.h"
-
 #if BMOS
 #include "bmos_op_msg.h"
 #include "bmos_msg_queue.h"
 #endif
 
-#define UART_NUM(n) uart_num((int)n)
+typedef struct {
+  reg32_t dr;
+  reg32_t rsr;
+  reg32_t pad0[4];
+  reg32_t fr;
+  reg32_t pad1;
+  reg32_t ilpr;
+  reg32_t ibrd;
+  reg32_t fbrd;
+  reg32_t lcr_h;
+  reg32_t cr;
+  reg32_t ifls;
+  reg32_t imsc;
+  reg32_t ris;
+  reg32_t mis;
+  reg32_t icr;
+  reg32_t dmacr;
+} rp2040_uart_t;
 
-static uart_inst_t *uart_num(unsigned int num)
+#define UART0_BASE 0x40034000
+#define UART1_BASE 0x40038000
+
+#define UART_FR_TXFE BIT(7)
+#define UART_FR_RXFF BIT(6)
+#define UART_FR_TXFF BIT(5)
+#define UART_FR_RXFE BIT(4)
+#define UART_FR_BUSY BIT(3)
+#define UART_FR_DCD BIT(2)
+#define UART_FR_DSR BIT(1)
+#define UART_FR_CTS BIT(0)
+
+#define UART_IMSC_TXIM BIT(5)
+#define UART_IMSC_RXIM BIT(4)
+
+rp2040_uart_t *duart;
+
+void debug_putc(int ch)
 {
-  if (num == 1)
-    return uart1;
-  return uart0;
+  while (duart->fr & UART_FR_TXFF)
+    ;
+  duart->dr = ch & 0xff;
+}
+
+int debug_ser_tx_done()
+{
+  return !(duart->fr & UART_FR_BUSY);
+}
+
+static void x_uart_putc(rp2040_uart_t *uart, int ch)
+{
+  while (uart->fr & UART_FR_TXFF)
+    ;
+
+  uart->dr = ch & 0xff;
+}
+
+static int x_uart_getc(rp2040_uart_t *uart)
+{
+  return uart->dr & 0xff;
+}
+
+static int x_uart_readable(rp2040_uart_t *uart)
+{
+  return !(uart->fr & UART_FR_RXFE);
+}
+
+static int x_uart_writable(rp2040_uart_t *uart)
+{
+  return !(uart->fr & UART_FR_TXFF);
+}
+
+static void x_uart_enable_rx(rp2040_uart_t *uart, int en)
+{
+  if (en)
+    uart->imsc |= UART_IMSC_RXIM;
+  else
+    uart->imsc &= ~UART_IMSC_RXIM;
+}
+
+static void x_uart_enable_tx(rp2040_uart_t *uart, int en)
+{
+  if (en)
+    uart->imsc |= UART_IMSC_TXIM;
+  else
+    uart->imsc &= ~UART_IMSC_TXIM;
 }
 
 #if BMOS
 static void usart_tx(uart_t *u)
 {
-  uart_inst_t *uart = UART_NUM(u->base);
   bmos_op_msg_t *m;
   unsigned int len;
   unsigned char *data;
+  rp2040_uart_t *uart = (rp2040_uart_t *)u->base;
 
   m = u->msg;
 
@@ -62,14 +138,14 @@ static void usart_tx(uart_t *u)
     FAST_LOG('u', "get %s\n", queue_get_name(u->txq), 0);
     m = op_msg_get(u->txq);
     if (!m) {
-      uart_set_irq_enables(uart, true, false);
+      x_uart_enable_tx(uart, 0);
       return;
     }
     len = m->len;
     data = BMOS_OP_MSG_GET_DATA(m);
   }
 
-  uart_putc_raw(uart, *data);
+  x_uart_putc(uart, *data);
 
   len--;
   data++;
@@ -90,21 +166,21 @@ static void usart_tx(uart_t *u)
 static void uart_isr(void *data)
 {
   uart_t *u = (uart_t *)data;
-  uart_inst_t *uart = UART_NUM(u->base);
+  rp2040_uart_t *uart = (rp2040_uart_t *)u->base;
   int c;
   bmos_op_msg_t *m;
   unsigned char *msgdata;
 
   FAST_LOG('u', "usart isr\n", 0, 0);
 
-  if (uart_is_writable(uart)) {
+  if (x_uart_writable(uart)) {
     FAST_LOG('u', "usart tx\n", 0, 0);
     usart_tx(u);
   }
 
-  while (uart_is_readable(uart)) {
+  while (x_uart_readable(uart)) {
     FAST_LOG('u', "usart rx\n", 0, 0);
-    c = uart_getc(uart);
+    c = x_uart_getc(uart);
     m = op_msg_get(u->pool);
     FAST_LOG('u', "get %s %p\n", queue_get_name(u->pool), m);
     if (!m) {
@@ -125,26 +201,66 @@ static void uart_isr(void *data)
 static void _put(void *p)
 {
   uart_t *u = (uart_t *)p;
-  uart_inst_t *uart = UART_NUM(u->base);
   unsigned int saved;
-
-  uart_set_irq_enables(uart, true, true);
+  rp2040_uart_t *uart = (rp2040_uart_t *)u->base;
 
   saved = interrupt_disable();
+  x_uart_enable_tx(uart, 1);
+
   usart_tx(u);
   interrupt_enable(saved);
+}
+
+#define UART_CR_RXE BIT(9)
+#define UART_CR_TXE BIT(8)
+#define UART_CR_EN BIT(0)
+
+#define UART_LCRH_WLEN(v) (((v) & 0x3) << 5)
+#define UART_LCRH_WLEN_8 UART_LCRH_WLEN(3)
+#define UART_LCRH_FEN BIT(4)
+#define UART_LCRH_STP2 BIT(3)
+#define UART_LCRH_EPS BIT(2)
+#define UART_LCRH_PEN BIT(1)
+#define UART_LCRH_BRK BIT(0)
+
+static void uart_init(rp2040_uart_t *uart, unsigned int baud,
+                      unsigned int clock, unsigned int flags)
+{
+  unsigned int div = (8 * clock / baud);
+  unsigned int ibrd = div >> 7;
+  unsigned int fbrd = ((div & 0x7f) + 1) / 2;
+
+  if (ibrd == 0) {
+    ibrd = 1;
+    fbrd = 0;
+  } else if (ibrd >= 65535) {
+    ibrd = 65535;
+    fbrd = 0;
+  }
+
+  uart->lcr_h = UART_LCRH_WLEN_8;
+  uart->ibrd = ibrd;
+  uart->fbrd = fbrd;
+  uart->cr = UART_CR_RXE | UART_CR_TXE | UART_CR_EN;
+  uart->lcr_h |= 0;
+}
+
+void debug_uart_init(void *base, unsigned int baud,
+                     unsigned int clock, unsigned int flags)
+{
+  duart = (rp2040_uart_t *)base;
+
+  uart_init(duart, baud, clock, flags);
 }
 
 bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
                         unsigned int op)
 {
-  uart_inst_t *uart = UART_NUM(u->base);
   const char *pool_name = "upool", *tx_queue_name = "utx";
+  rp2040_uart_t *uart = (rp2040_uart_t *)u->base;
 
-  uart_init(uart, baud);
-
-  uart_set_irq_enables(uart, true, false);
-  uart_set_fifo_enabled(uart, false);
+  uart_init(uart, baud, u->clock, 0);
+  x_uart_enable_rx(uart, 1);
 
   if (u->pool_name)
     pool_name = u->pool_name;
