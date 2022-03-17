@@ -43,6 +43,9 @@
 #if STM32_H7XX
 #define APP_START 128
 #define APP_LEN 128
+#elif STM32_F4XX
+#define APP_START 64
+#define APP_LEN 64
 #elif STM32_F072
 #define APP_START 16
 #define APP_LEN 32
