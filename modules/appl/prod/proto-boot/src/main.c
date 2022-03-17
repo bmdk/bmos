@@ -38,15 +38,29 @@
 #include "xmodem.h"
 #include "xtime.h"
 
+#define FLASH_BASE 0x08000000
+
 #if STM32_H7XX
-#define APP_BASE 0x08020000
+#define APP_START 128
+#define APP_LEN 128
 #elif STM32_F072
-#define APP_BASE 0x08004000
-#elif STM32_F0XX || STM32_G030 || STM32_F103DEB
-#define APP_BASE 0x08002800
+#define APP_START 16
+#define APP_LEN 32
+#elif STM32_F103DEB
+#define APP_START 10
+#define APP_LEN 22
+#elif STM32_F0XX
+#define APP_START 4
+#define APP_LEN 12
+#elif STM32_G030
+#define APP_START 10
+#define APP_LEN 32
 #else
-#define APP_BASE 0x08008000
+#define APP_START 32
+#define APP_LEN 64
 #endif
+
+#define APP_BASE (FLASH_BASE + APP_START * 1024)
 
 typedef struct {
   unsigned char count;
@@ -124,28 +138,12 @@ static inline int _flash_erase(unsigned int start, unsigned int count);
 
 static int xmodem_flash_erase(unsigned int addr)
 {
-  int err;
-
 #if STM32_H745N
   if (addr == H745N_M4_FLASH_BASE)
     return _flash_erase(1024, 128);
 #endif
 
-#if STM32_H7XX
-  err = _flash_erase(128, 128);
-#elif STM32_F072
-  err = _flash_erase(16, 32);
-#elif STM32_G030
-  err = _flash_erase(10, 32);
-#elif STM32_F0XX
-  err = _flash_erase(4, 12);
-#elif STM32_F103DEB
-  err = _flash_erase(10, 22);
-#else
-  err = _flash_erase(32, 64);
-#endif
-
-  return err;
+  return _flash_erase(APP_START, APP_LEN);
 }
 
 static int xmodem_block(void *block_ctx, void *data, unsigned int len)
