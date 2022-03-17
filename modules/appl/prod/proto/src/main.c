@@ -46,6 +46,7 @@
 #include "xassert.h"
 #include "xslog.h"
 #include "xtime.h"
+#include "kvlog.h"
 
 #if STM32_F429 || STM32_F746 || STM32_H735DK
 #define LCD_DEMO 1
@@ -279,6 +280,10 @@ int main()
   xslog_init();
 
   xslog(LOG_INFO, "starting");
+
+#if CONFIG_KVLOG_ENABLE
+  kv_init();
+#endif
 
 #if BUTTON_INT
   stm32_exti_irq_ack(BUTTON_EXTI);

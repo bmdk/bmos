@@ -231,6 +231,7 @@ XCFLAGS.f411bp += -DI2C_DEMO
 XCFLAGS.f411bp += -DDISP
 XCFLAGS.f411bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
 XCFLAGS.f411bp += -DSTM32F411xE
+XCFLAGS.f411bp += -DCONFIG_KVLOG_ENABLE=1
 
 STACK_END.f401bp = 0x20018000
 APPL_FLASH_BASE.f401bp = 0x8010000
@@ -243,6 +244,7 @@ XCFLAGS.f401bp += -DWS2811_DISPLAY_32X8_CLOCK
 XCFLAGS.f401bp += -DWS2811_STRING_GRB
 XCFLAGS.f401bp += -DCFG_TUSB_MCU=OPT_MCU_STM32F4
 XCFLAGS.f401bp += -DSTM32F401xC
+XCFLAGS.f401bp += -DCONFIG_KVLOG_ENABLE=1
 
 
 STACK_END.f401bp64 = 0x20010000
@@ -385,6 +387,7 @@ MODULES += hal/core
 MODULES += hal/cpu/arm
 MODULES += hal/misc
 MODULES += hal/stm32/core
+MODULES += lib/kvlog
 MODULES += os/bmos
 MODULES += std
 
@@ -562,6 +565,7 @@ FILES.f411bp += i2c_test.o
 FILES.f411bp += ws2811.o
 FILES.f411bp += stm32_hal_adc_fxxx.o
 FILES.f411bp += adc.o
+FILES.f411bp += kvlog.o
 
 FILES.tusb += stm32_usbd.o
 FILES.tusb += tusb_cdc.o
@@ -587,6 +591,7 @@ FILES.f401bp += font1.o
 FILES.f401bp += fb.o
 FILES.f401bp += stm32_hal_adc_fxxx.o
 FILES.f401bp += adc.o
+FILES.f401bp += kvlog.o
 FILES.f401bp += $(FILES.tusb)
 FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
