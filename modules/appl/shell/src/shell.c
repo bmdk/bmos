@@ -139,7 +139,12 @@ int strsplit(char **argv, int max_argc, char *cmdline)
   unsigned argv_cnt = 0;
 
   while ((c = *cmdline)) {
-    if (c == ' ' || c == '\t') {
+    if (c == '\\') {
+      c = *(cmdline + 1);
+      if (c == '\\' || c == ' ' || c == '\t')
+        memmove(cmdline, cmdline + 1, strlen(cmdline));
+      cmdline++;
+    } else if (c == ' ' || c == '\t') {
       *cmdline = '\0';
       if (strlen(p) > 0) {
         argv[argv_cnt++] = p;
