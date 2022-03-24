@@ -229,7 +229,6 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
   for (i = 0; i < len; i++) {
 #if FLASH_TYPE1
     *a++ = *d++;
-    __DSB();
 #else
     *a++ = *d++;
     *a++ = *d++;
