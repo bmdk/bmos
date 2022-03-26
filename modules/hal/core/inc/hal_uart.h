@@ -37,6 +37,11 @@ typedef struct {
   unsigned int flags;
   const char *pool_name;
   const char *tx_queue_name;
+  unsigned char msg_pow2;
+  unsigned char msg_cnt;
+  /* initialized by driver */
+  unsigned char msg_len;
+  unsigned char pad0;
   struct {
     unsigned int overrun;
     unsigned int hw_overrun;

@@ -30,8 +30,8 @@
 #include "bmos_msg_queue.h"
 #endif
 
-#define MSGDATA_POW2 4
-#define MSGDATA_LEN (1 << MSGDATA_POW2)
+#define MSG_POW2 4
+#define MSG_CNT 4
 
 typedef struct {
   reg32_t sr;
@@ -175,9 +175,9 @@ static void sendcb(uart_t *u)
     u->stats.overrun++;
   else {
     msgdata = BMOS_OP_MSG_GET_DATA(m);
-    len = circ_buf_read(&u->cb, msgdata, MSGDATA_LEN);
-    if (len < MSGDATA_LEN)
-      len += circ_buf_read(&u->cb, msgdata + len, MSGDATA_LEN);
+    len = circ_buf_read(&u->cb, msgdata, u->msg_len);
+    if (len < u->msg_len)
+      len += circ_buf_read(&u->cb, msgdata + len, u->msg_len);
     op_msg_put(u->rxq, m, u->op, len);
   }
 }
@@ -228,6 +228,8 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
                         unsigned int op)
 {
   stm32_usart_a_t *usart = u->base;
+  unsigned int msg_cnt = MSG_CNT;
+  unsigned int msg_pow2 = MSG_POW2;
 
   _usart_set_baud(usart, baud, u->clock, u->flags);
 
@@ -237,9 +239,18 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
   usart->cr1 = USART_CR1_UE | USART_CR1_RXNEIE | \
                USART_CR1_IDLEIE | USART_CR1_TE | USART_CR1_RE;
 
-  circ_buf_init(&u->cb, MSGDATA_POW2);
+  if (u->msg_cnt > 0)
+    msg_cnt = u->msg_cnt;
 
-  u->pool = op_msg_pool_create("uart pool", QUEUE_TYPE_DRIVER, 4, MSGDATA_LEN);
+  if (u->msg_pow2 > 0)
+    msg_pow2 = u->msg_pow2;
+
+  u->msg_len = (1U << msg_pow2);
+
+  circ_buf_init(&u->cb, msg_pow2);
+
+  u->pool = op_msg_pool_create("uart pool", QUEUE_TYPE_DRIVER,
+                               msg_cnt, u->msg_len);
   XASSERT(u->pool);
 
   u->txq = queue_create("uart tx", QUEUE_TYPE_DRIVER);
