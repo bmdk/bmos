@@ -1,8 +1,13 @@
+#include <stdlib.h>
+
 #include <hal_common.h>
 #include <common.h>
 #include <shell.h>
 #include <io.h>
 #include <rp2040_hal_resets.h>
+#include <bmos_task.h>
+
+#include "rp2040_hal_adc.h"
 
 #define ADC_CS_READY BIT(8)
 #define ADC_CS_START_MANY BIT(3)
@@ -40,7 +45,7 @@ int rp2040_adc_conv(unsigned int chan)
   while (!(ADC->cs & ADC_CS_READY))
     ;
 
-  reg_set_field(&ADC->cs, 12, 3, chan);
+  reg_set_field(&ADC->cs, 3, 12, chan);
 
   ADC->cs |= ADC_CS_START_ONE;
 
@@ -53,10 +58,14 @@ int rp2040_adc_conv(unsigned int chan)
 int cmd_adc(int argc, char *argv[])
 {
   int res;
+  unsigned int chan = 0;
 
   rp2040_adc_init();
 
-  res = rp2040_adc_conv(0);
+  if (argc > 1)
+    chan = atoi(argv[1]);
+
+  res = rp2040_adc_conv(chan);
 
   xprintf("%d\n", res);
 
