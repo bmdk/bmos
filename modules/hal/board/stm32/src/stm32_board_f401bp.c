@@ -100,6 +100,8 @@ void pin_init()
   stm32_exti_irq_enable(0, 1);
   stm32_exti_ev_enable(0, 1);
   stm32_syscfg_set_exti(0, 0);
+
+  enable_apb2(8); /* ADC1 */
 }
 
 #define USART1_BASE (void *)0x40011000
