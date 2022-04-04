@@ -28,42 +28,42 @@
 #include "stm32_rcc_a.h"
 
 typedef struct {
-  unsigned int cr;
-  unsigned int pllcfgr;
-  unsigned int cfgr;
-  unsigned int cir;
-  unsigned int ahb1rstr;
-  unsigned int ahb2rstr;
-  unsigned int ahb3rstr;
-  unsigned int pad1;
-  unsigned int apb1rstr;
-  unsigned int apb2rstr;
-  unsigned int pad2[2];
-  unsigned int ahb1enr;
-  unsigned int ahb2enr;
-  unsigned int ahb3enr;
-  unsigned int pad3;
-  unsigned int apb1enr;
-  unsigned int apb2enr;
-  unsigned int pad4[2];
-  unsigned int ahb1lpenr;
-  unsigned int ahb2lpenr;
-  unsigned int ahb3lpenr;
-  unsigned int pad5;
-  unsigned int apb1lpenr;
-  unsigned int apb2lpenr;
-  unsigned int pad6[2];
-  unsigned int bdcr;
-  unsigned int csr;
-  unsigned int pad7[2];
-  unsigned int sscgr;
-  unsigned int pll12scfgr;
-  unsigned int pllsaicfgr;
-  unsigned int dckcfgr1;
-  unsigned int dckcfgr2;
+  reg32_t cr;
+  reg32_t pllcfgr;
+  reg32_t cfgr;
+  reg32_t cir;
+  reg32_t ahb1rstr;
+  reg32_t ahb2rstr;
+  reg32_t ahb3rstr;
+  reg32_t pad1;
+  reg32_t apb1rstr;
+  reg32_t apb2rstr;
+  reg32_t pad2[2];
+  reg32_t ahb1enr;
+  reg32_t ahb2enr;
+  reg32_t ahb3enr;
+  reg32_t pad3;
+  reg32_t apb1enr;
+  reg32_t apb2enr;
+  reg32_t pad4[2];
+  reg32_t ahb1lpenr;
+  reg32_t ahb2lpenr;
+  reg32_t ahb3lpenr;
+  reg32_t pad5;
+  reg32_t apb1lpenr;
+  reg32_t apb2lpenr;
+  reg32_t pad6[2];
+  reg32_t bdcr;
+  reg32_t csr;
+  reg32_t pad7[2];
+  reg32_t sscgr;
+  reg32_t pll12scfgr;
+  reg32_t pllsaicfgr;
+  reg32_t dckcfgr1;
+  reg32_t dckcfgr2;
 } stm32_rcc_t;
 
-#define RCC ((volatile stm32_rcc_t *)0x40023800)
+#define RCC ((stm32_rcc_t *)0x40023800)
 
 #define RCC_CR_PLLSAIRDY BIT(29)
 #define RCC_CR_PLLSAION BIT(28)
