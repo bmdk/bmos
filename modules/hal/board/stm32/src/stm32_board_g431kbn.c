@@ -40,9 +40,9 @@
 
 void pin_init()
 {
-  enable_ahb2(0); /* GPIOA */
-  enable_ahb2(1); /* GPIOB */
-  enable_ahb2(2); /* GPIOC */
+  enable_ahb2(0);  /* GPIOA */
+  enable_ahb2(1);  /* GPIOB */
+  enable_ahb2(2);  /* GPIOC */
 
   enable_ahb2(13); /* ADC12 */
 
