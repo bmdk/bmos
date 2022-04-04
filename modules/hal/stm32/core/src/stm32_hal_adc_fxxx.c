@@ -151,10 +151,10 @@ static void adc_dma_irq(void *data)
 
 static void adc_seq(stm32_adc_t *a, unsigned int num, unsigned int chan)
 {
-    unsigned int n = num % 6;
-    unsigned int reg = 2 - (num / 6);
+  unsigned int n = num % 6;
+  unsigned int reg = 2 - (num / 6);
 
-    reg_set_field(&a->sqr[reg], 5, n * 5, chan);
+  reg_set_field(&a->sqr[reg], 5, n * 5, chan);
 }
 
 static void adc_srate(stm32_adc_t *a, unsigned int chan, unsigned int rate)
