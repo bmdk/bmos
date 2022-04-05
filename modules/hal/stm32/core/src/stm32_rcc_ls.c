@@ -1,4 +1,5 @@
 #include "common.h"
+#include "hal_board.h"
 #include "hal_common.h"
 #include "stm32_rcc_ls.h"
 
@@ -27,24 +28,29 @@
 #define RCC_BDCR_RTCSEL_LSI 2
 #define RCC_BDCR_RTCSEL_HSE 3
 
-#define MAX_CYCLES 1000000
+#define MAX_CYCLES (hal_cpu_clock * 2)
 
 static int rcc_clock_type_ls(rcc_ls_t *rcc_ls)
 {
   return (rcc_ls->bdcr >> 8) & 0x3;
 }
 
+static inline void _rcc_clock_set(rcc_ls_t *rcc_ls, unsigned int clock)
+{
+  reg_set_field(&rcc_ls->bdcr, 2, 8, clock);
+}
+
 static void rcc_clock_set(rcc_ls_t *rcc_ls, unsigned int clock)
 {
   /* This will work if the backup domain has been reset by hardware -
      if there is no backup battery or it has just been connected */
-  reg_set_field(&rcc_ls->bdcr, 2, 8, clock);
+  _rcc_clock_set(rcc_ls, clock);
 
   if (rcc_clock_type_ls(rcc_ls) != clock) {
     /* clock could not be set so we need to reset the backup domain */
     rcc_ls->bdcr |= RCC_BDCR_BDRST;
     rcc_ls->bdcr &= ~RCC_BDCR_BDRST;
-    reg_set_field(&rcc_ls->bdcr, 2, 8, clock);
+    _rcc_clock_set(rcc_ls, clock);
   }
 }
 
@@ -59,11 +65,9 @@ static int rcc_clock_init_ls_ext(rcc_ls_t *rcc_ls)
 
   rcc_ls->bdcr |= RCC_BDCR_LSEON;
 
-  while ((rcc_ls->bdcr & RCC_BDCR_LSERDY) == 0) {
-    if (--cycles == 0) {
+  while ((rcc_ls->bdcr & RCC_BDCR_LSERDY) == 0)
+    if (--cycles == 0)
       return -1;
-    }
-  }
 
   rcc_clock_set(rcc_ls, RCC_BDCR_RTCSEL_LSE);
 
