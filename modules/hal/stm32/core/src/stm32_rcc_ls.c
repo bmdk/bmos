@@ -29,6 +29,25 @@
 
 #define MAX_CYCLES 1000000
 
+static int rcc_clock_type_ls(rcc_ls_t *rcc_ls)
+{
+  return (rcc_ls->bdcr >> 8) & 0x3;
+}
+
+static void rcc_clock_set(rcc_ls_t *rcc_ls, unsigned int clock)
+{
+  /* This will work if the backup domain has been reset by hardware -
+     if there is no backup battery or it has just been connected */
+  reg_set_field(&rcc_ls->bdcr, 2, 8, clock);
+
+  if (rcc_clock_type_ls(rcc_ls) != clock) {
+    /* clock could not be set so we need to reset the backup domain */
+    rcc_ls->bdcr |= RCC_BDCR_BDRST;
+    rcc_ls->bdcr &= ~RCC_BDCR_BDRST;
+    reg_set_field(&rcc_ls->bdcr, 2, 8, clock);
+  }
+}
+
 static int rcc_clock_init_ls_ext(rcc_ls_t *rcc_ls)
 {
   unsigned int cycles = MAX_CYCLES;
@@ -40,11 +59,13 @@ static int rcc_clock_init_ls_ext(rcc_ls_t *rcc_ls)
 
   rcc_ls->bdcr |= RCC_BDCR_LSEON;
 
-  while ((rcc_ls->bdcr & RCC_BDCR_LSERDY) == 0)
-    if (--cycles == 0)
+  while ((rcc_ls->bdcr & RCC_BDCR_LSERDY) == 0) {
+    if (--cycles == 0) {
       return -1;
+    }
+  }
 
-  reg_set_field(&rcc_ls->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSE);
+  rcc_clock_set(rcc_ls, RCC_BDCR_RTCSEL_LSE);
 
   return 0;
 }
@@ -63,7 +84,7 @@ static void rcc_clock_init_ls_int(rcc_ls_t *rcc_ls)
     ;
 #endif
 
-  reg_set_field(&rcc_ls->bdcr, 2, 8, RCC_BDCR_RTCSEL_LSI);
+  rcc_clock_set(rcc_ls, RCC_BDCR_RTCSEL_LSI);
 }
 
 void rcc_clock_init_ls(rcc_ls_t *rcc_ls)
@@ -74,4 +95,11 @@ void rcc_clock_init_ls(rcc_ls_t *rcc_ls)
     rcc_clock_init_ls_int(rcc_ls);
 
   rcc_ls->bdcr |= RCC_BDCR_RTCEN;
+}
+
+static const char *rtc_clock_str[] = { "none", "lse", "lsi", "hse" };
+
+const char *rcc_clock_type_ls_str(rcc_ls_t *rcc_ls)
+{
+  return rtc_clock_str[rcc_clock_type_ls(rcc_ls)];
 }

@@ -345,6 +345,11 @@ void clock_init_ls()
   rcc_clock_init_ls(&RCC->rcc_ls);
 }
 
+const char *clock_ls_name()
+{
+  return rcc_clock_type_ls_str(&RCC->rcc_ls);
+}
+
 void set_mco(unsigned int sel, unsigned int div)
 {
   reg_set_field(&RCC->cfgr[0], 4, 24, sel);

@@ -444,3 +444,8 @@ void clock_init_ls()
 {
   rcc_clock_init_ls(&RCC->rcc_ls);
 }
+
+const char *clock_ls_name()
+{
+  return rcc_clock_type_ls_str(&RCC->rcc_ls);
+}

@@ -63,5 +63,6 @@ void disable_apb3(unsigned int dev);
 void disable_apb4(unsigned int dev);
 
 void clock_init_ls(void);
+const char *clock_ls_name(void);
 
 #endif

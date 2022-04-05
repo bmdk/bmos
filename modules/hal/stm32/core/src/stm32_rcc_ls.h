@@ -8,4 +8,6 @@ typedef struct {
 
 void rcc_clock_init_ls(rcc_ls_t *rcc_ls);
 
+const char *rcc_clock_type_ls_str(rcc_ls_t *rcc_ls);
+
 #endif

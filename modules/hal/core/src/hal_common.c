@@ -28,6 +28,7 @@
 #include "hal_board.h"
 #if ARCH_STM32
 #include "stm32_flash.h"
+#include "stm32_hal.h"
 #endif
 
 extern unsigned int _fsdata, _rsdata, _redata, _sbss, _ebss, _stack_end;
@@ -129,6 +130,11 @@ static int cmd_hal(int argc, char *argv[])
   case 'c':
     xprintf("CPU clock: %d\n", hal_cpu_clock);
     break;
+#if ARCH_STM32 && !BOOT
+  case 'l':
+    xprintf("LS clock: %s\n", clock_ls_name());
+    break;
+#endif
   }
   return 0;
 }
