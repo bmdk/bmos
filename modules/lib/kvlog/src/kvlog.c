@@ -61,6 +61,61 @@ typedef struct {
 
 kv_data_t kv_data;
 
+#define KV_ITER_STATUS_OK 0
+#define KV_ITER_STATUS_INVALID -1
+typedef struct {
+  kv_hdr_t *hdr;
+  unsigned int ofs;
+  int status;
+} kv_iter_t;
+
+static int kv_iter_start(kv_data_store_t *store, kv_iter_t *it)
+{
+  kv_store_hdr_t *shdr = (kv_store_hdr_t *)store->data;
+
+  if (shdr->magic != KV_STORE_HDR_MAGIC)
+    return -1;
+
+  it->hdr = (kv_hdr_t *)(shdr + 1);
+  it->ofs = sizeof(kv_store_hdr_t);
+  it->status = KV_ITER_STATUS_OK;
+
+  return shdr->seq;
+}
+
+static kv_hdr_t *kv_iter_next(kv_iter_t *it)
+{
+  unsigned int rlen;
+  kv_hdr_t *hdr = it->hdr;
+
+  if (hdr->start != KV_HDR_START && hdr->start != KV_HDR_DELETED)
+    return NULL;
+
+  rlen = hdr->rlen;
+
+  /* if the current record size brings us past the end of the flash
+     block then something is wrong */
+  if (it->ofs + rlen > kv_data.size) {
+    it->status = KV_ITER_STATUS_OK;
+    return NULL;
+  }
+
+  it->hdr = (kv_hdr_t *)((unsigned char *)(hdr) + rlen);
+  it->ofs += rlen;
+
+  return hdr;
+}
+
+static unsigned int kv_iter_get_ofs(kv_iter_t *it)
+{
+  return it->ofs;
+}
+
+static int kv_iter_status(kv_iter_t *it)
+{
+  return it->status;
+}
+
 #if TEST
 static int _kv_write_header(kv_data_store_t *sp, unsigned int seq, int init_pos)
 {
@@ -192,61 +247,6 @@ static unsigned int kv_store_get_seq(kv_data_store_t *store)
     return KV_SEQ_INVALID;
 
   return shdr->seq;
-}
-
-#define KV_ITER_STATUS_OK 0
-#define KV_ITER_STATUS_INVALID -1
-typedef struct {
-  kv_hdr_t *hdr;
-  unsigned int ofs;
-  int status;
-} kv_iter_t;
-
-static int kv_iter_start(kv_data_store_t *store, kv_iter_t *it)
-{
-  kv_store_hdr_t *shdr = (kv_store_hdr_t *)store->data;
-
-  if (shdr->magic != KV_STORE_HDR_MAGIC)
-    return -1;
-
-  it->hdr = (kv_hdr_t *)(shdr + 1);
-  it->ofs = sizeof(kv_store_hdr_t);
-  it->status = KV_ITER_STATUS_OK;
-
-  return shdr->seq;
-}
-
-static kv_hdr_t *kv_iter_next(kv_iter_t *it)
-{
-  unsigned int rlen;
-  kv_hdr_t *hdr = it->hdr;
-
-  if (hdr->start != KV_HDR_START && hdr->start != KV_HDR_DELETED)
-    return NULL;
-
-  rlen = hdr->rlen;
-
-  /* if the current record size brings us past the end of the flash
-     block then something is wrong */
-  if (it->ofs + rlen > kv_data.size) {
-    it->status = KV_ITER_STATUS_OK;
-    return NULL;
-  }
-
-  it->hdr = (kv_hdr_t *)((unsigned char *)(hdr) + rlen);
-  it->ofs += rlen;
-
-  return hdr;
-}
-
-static unsigned int kv_iter_get_ofs(kv_iter_t *it)
-{
-  return it->ofs;
-}
-
-static int kv_iter_status(kv_iter_t *it)
-{
-  return it->status;
 }
 
 /* TODO:
