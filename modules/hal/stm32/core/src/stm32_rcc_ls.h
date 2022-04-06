@@ -6,7 +6,7 @@ typedef struct {
   reg32_t csr;
 } rcc_ls_t;
 
-void rcc_clock_init_ls(rcc_ls_t *rcc_ls);
+void rcc_clock_init_ls(rcc_ls_t *rcc_ls, int internal);
 
 const char *rcc_clock_type_ls_str(rcc_ls_t *rcc_ls);
 

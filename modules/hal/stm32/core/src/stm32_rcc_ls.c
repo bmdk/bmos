@@ -1,3 +1,24 @@
+/* Copyright (c) 2019-2021 Brian Thomas Murphy
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
+
 #include "common.h"
 #include "hal_board.h"
 #include "hal_common.h"
@@ -91,11 +112,11 @@ static void rcc_clock_init_ls_int(rcc_ls_t *rcc_ls)
   rcc_clock_set(rcc_ls, RCC_BDCR_RTCSEL_LSI);
 }
 
-void rcc_clock_init_ls(rcc_ls_t *rcc_ls)
+void rcc_clock_init_ls(rcc_ls_t *rcc_ls, int internal)
 {
   rcc_ls->bdcr &= ~RCC_BDCR_BDRST;
 
-  if (rcc_clock_init_ls_ext(rcc_ls) < 0)
+  if (internal || (rcc_clock_init_ls_ext(rcc_ls) < 0))
     rcc_clock_init_ls_int(rcc_ls);
 
   rcc_ls->bdcr |= RCC_BDCR_RTCEN;

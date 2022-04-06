@@ -340,15 +340,7 @@ void enable_apb3(unsigned int dev)
   RCC->apb3enr |= BIT(dev);
 }
 
-void clock_init_ls()
-{
-  rcc_clock_init_ls(&RCC->rcc_ls);
-}
-
-const char *clock_ls_name()
-{
-  return rcc_clock_type_ls_str(&RCC->rcc_ls);
-}
+#include "stm32_rcc_ls_int.h"
 
 void set_mco(unsigned int sel, unsigned int div)
 {

@@ -227,15 +227,7 @@ void clock_init_low(void)
   stm32_flash_latency(0);
 }
 
-void clock_init_ls()
-{
-  rcc_clock_init_ls(&RCC->rcc_ls);
-}
-
-const char *clock_ls_name()
-{
-  return rcc_clock_type_ls_str(&RCC->rcc_ls);
-}
+#include "stm32_rcc_ls_int.h"
 
 void clock_init(const struct pll_params_t *pll_params)
 {
