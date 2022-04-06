@@ -143,7 +143,7 @@ void hal_board_init()
 
 #if APPL
   backup_domain_protect(0);
-  clock_init_ls();
+  clock_init_ls(0);
 
   stm32_syscfg_set_exti(2, 13);
   stm32_exti_irq_set_edge_rising(13, 1);

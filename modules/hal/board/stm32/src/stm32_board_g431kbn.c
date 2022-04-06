@@ -128,7 +128,7 @@ void hal_board_init()
   clock_init(&pll_params);
 #if 0
   backup_domain_protect(0);
-  clock_init_ls();
+  clock_init_ls(0);
 #endif
 
   debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);

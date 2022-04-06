@@ -142,7 +142,7 @@ void hal_board_init()
 
 #if APPL
   backup_domain_protect(0);
-  clock_init_ls();
+  clock_init_ls(0);
 #endif
 
   debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
