@@ -504,6 +504,13 @@ static int kv_write(kv_hdr_t *rec)
   return 0;
 }
 
+void kv_delete(const char *key)
+{
+  kv_data_store_t *store = kv_data.current;
+
+  kv_invalidate(store, key, store->pos);
+}
+
 int kv_set_str(const char *key, const char *val)
 {
   unsigned int rlen, klen, vlen, alen, pad_len;
@@ -588,9 +595,15 @@ int cmd_kv(int argc, char *argv[])
     kv_set_str(key, value);
     break;
   case 'd':
+    if (argc < 3)
+      return -1;
+    key = argv[2];
+    kv_delete(key);
+    break;
+  case 'y':
     kv_dump(0);
     break;
-  case 'e':
+  case 'z':
     kv_dump(1);
     break;
   case 'l':
