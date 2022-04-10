@@ -41,6 +41,7 @@ typedef struct {
 #define KV_HDR_DELETED 0x00
 #define KV_HDR_ERASED 0xff
 
+#define KV_TYPE_INVALID 0
 #define KV_TYPE_STR 1
 #define KV_TYPE_INT 2
 #define KV_TYPE_UINT 3
@@ -345,6 +346,8 @@ void kv_list()
   for (;;) {
     kv_hdr_t *hdr;
     char *key, *val;
+    unsigned int uval;
+    int ival;
 
     hdr = kv_iter_next(&iter);
 
@@ -352,10 +355,25 @@ void kv_list()
       break;
 
     key = (char *)(hdr + 1);
-    val = key + strlen(key) + 1;
 
-    if (hdr->start == KV_HDR_START)
-      xprintf("%12s = %s\n", key, val);
+    if (hdr->start == KV_HDR_START) {
+      switch (hdr->type) {
+      case KV_TYPE_STR:
+        val = key + strlen(key) + 1;
+        xprintf("%12s = %s\n", key, val);
+        break;
+      case KV_TYPE_INT:
+        memcpy(&ival, key + strlen(key) + 1, sizeof(int));
+        xprintf("%12s = %d\n", key, ival);
+        break;
+      case KV_TYPE_UINT:
+        memcpy(&uval, key + strlen(key) + 1, sizeof(unsigned int));
+        xprintf("%12s = 0x%08x(%u)\n", key, uval, uval);
+        break;
+      default:
+        break;
+      }
+    }
   }
 }
 
@@ -373,19 +391,36 @@ void kv_dump(int full)
 
   for (;;) {
     char *key, *val;
-    int klen;
+    int ival;
+    unsigned int uval;
 
     hdr = kv_iter_next(&iter);
     if (!hdr)
       break;
 
     key = (char *)(hdr + 1);
-    klen = strlen(key);
-    val = key + klen + 1;
 
-    if (full || hdr->start == KV_HDR_START)
-      xprintf("%02x T:%d L:%d %s=%s\n",
-              hdr->start, hdr->type, hdr->rlen, key, val);
+    if (full || hdr->start == KV_HDR_START) {
+      switch (hdr->type) {
+      case KV_TYPE_STR:
+        val = key + strlen(key) + 1;
+        xprintf("%02x T:%d L:%d %s=%s\n",
+                hdr->start, hdr->type, hdr->rlen, key, val);
+        break;
+      case KV_TYPE_INT:
+        memcpy(&ival, key + strlen(key) + 1, sizeof(int));
+        xprintf("%02x T:%d L:%d %s=%d\n",
+                hdr->start, hdr->type, hdr->rlen, key, ival);
+        break;
+      case KV_TYPE_UINT:
+        memcpy(&uval, key + strlen(key) + 1, sizeof(unsigned int));
+        xprintf("%02x T:%d L:%d %s=0x%08x\n",
+                hdr->start, hdr->type, hdr->rlen, key, uval);
+        break;
+      default:
+        break;
+      }
+    }
   }
 
   if (kv_iter_status(&iter) == KV_ITER_STATUS_INVALID)
@@ -511,17 +546,17 @@ void kv_delete(const char *key)
   kv_invalidate(store, key, store->pos);
 }
 
-int kv_set_str(const char *key, const char *val)
+static int kv_set_data(const char *key, unsigned int type,
+                       const void *vdata, unsigned int vlen)
 {
-  unsigned int rlen, klen, vlen, alen, pad_len;
+  unsigned int rlen, klen, alen, pad_len;
   kv_hdr_t *hdr;
   unsigned char rec[FLASH_BUF_LEN];
   char *prec;
 
   klen = strlen(key);
-  vlen = strlen(val);
 
-  rlen = sizeof(kv_hdr_t) + klen + vlen + 2;
+  rlen = sizeof(kv_hdr_t) + klen + vlen + 1;
   alen = KV_ALIGN(rlen);
 
   if (alen > FLASH_BUF_LEN)
@@ -530,7 +565,7 @@ int kv_set_str(const char *key, const char *val)
   hdr = (kv_hdr_t *)rec;
 
   hdr->start = KV_HDR_START;
-  hdr->type = KV_TYPE_STR;
+  hdr->type = type;
 
   hdr->rlen = alen;
 
@@ -539,8 +574,8 @@ int kv_set_str(const char *key, const char *val)
   strcpy(prec, key);
   prec += klen + 1;
 
-  strcpy(prec, val);
-  prec += vlen + 1;
+  memcpy(prec, vdata, vlen);
+  prec += vlen;
 
   pad_len = alen - rlen;
 
@@ -556,13 +591,35 @@ int kv_set_str(const char *key, const char *val)
   return 0;
 }
 
-const char *kv_get_str(const char *skey)
+int kv_set_str(const char *key, const char *val)
+{
+  unsigned int vlen;
+
+  vlen = strlen(val) + 1;
+
+  return kv_set_data(key, KV_TYPE_STR, val, vlen);
+}
+
+int kv_set_uint(const char *key, unsigned int val)
+{
+  return kv_set_data(key, KV_TYPE_UINT, &val, sizeof(unsigned int));
+}
+
+int kv_set_int(const char *key, int val)
+{
+  return kv_set_data(key, KV_TYPE_INT, &val, sizeof(int));
+}
+
+int kv_get_val(const char *skey, int *type, void **val)
 {
   kv_iter_t iter;
-  const char *key;
+  const char *key, *cval;
+  int len = -1;
+
+  *type = KV_TYPE_INVALID;
 
   if (kv_iter_start(kv_data.current, &iter) < 0)
-    return NULL;
+    return -1;
 
   for (;;) {
     kv_hdr_t *hdr = kv_iter_next(&iter);
@@ -570,17 +627,82 @@ const char *kv_get_str(const char *skey)
       break;
 
     key = (char *)(hdr + 1);
-    if (hdr->start == KV_HDR_START && !strcmp(skey, key))
-      return key + strlen(key) + 1;
+    if (hdr->start == KV_HDR_START && !strcmp(skey, key)) {
+      cval = key + strlen(key) + 1;
+      switch (hdr->type) {
+      case KV_TYPE_STR:
+        len = strlen(cval) + 1;
+        break;
+      case KV_TYPE_UINT:
+        len = sizeof(unsigned int);
+        break;
+      case KV_TYPE_INT:
+        len = sizeof(int);
+        break;
+      default:
+        len = -1;
+        break;
+      }
+      *type = hdr->type;
+      *val = (void *)(cval);
+      break;
+    }
   }
 
-  return NULL;
+  return len;
+}
+
+const char *kv_get_str(const char *skey)
+{
+  const char *val;
+  int len, type;
+
+  len = kv_get_val(skey, &type, (void **)&val);
+  if (len < 0)
+    return NULL;
+
+  if (type != KV_TYPE_STR)
+    return NULL;
+
+  return val;
+}
+
+unsigned int kv_get_uint(const char *skey)
+{
+  void *val;
+  int len, type;
+  unsigned int uval;
+
+  len = kv_get_val(skey, &type, &val);
+  if (len != sizeof(unsigned int) || type != KV_TYPE_UINT)
+    return 0;
+
+  memcpy(&uval, val, sizeof(unsigned int));
+
+  return uval;
+}
+
+unsigned int kv_get_int(const char *skey)
+{
+  void *val;
+  int len, type;
+  int ival;
+
+  len = kv_get_val(skey, &type, &val);
+  if (len != sizeof(unsigned int) || type != KV_TYPE_INT)
+    return 0;
+
+  memcpy(&ival, val, sizeof(int));
+
+  return ival;
 }
 
 #if !TEST
 int cmd_kv(int argc, char *argv[])
 {
   char *key, *value;
+  unsigned int uval;
+  int ival;
   const char *v;
 
   if (argc < 2)
@@ -593,6 +715,20 @@ int cmd_kv(int argc, char *argv[])
     key = argv[2];
     value = argv[3];
     kv_set_str(key, value);
+    break;
+  case 'u':
+    if (argc < 4)
+      return -1;
+    key = argv[2];
+    uval = strtoul(argv[3], NULL, 0);
+    kv_set_uint(key, uval);
+    break;
+  case 'i':
+    if (argc < 4)
+      return -1;
+    key = argv[2];
+    ival = strtoul(argv[3], NULL, 0);
+    kv_set_int(key, ival);
     break;
   case 'd':
     if (argc < 3)
@@ -616,9 +752,23 @@ int cmd_kv(int argc, char *argv[])
     if (argc < 3)
       return -1;
     key = argv[2];
-    v = kv_get_str(key);
-    if (v)
-      xprintf("%s = %s\n", key, v);
+
+    switch (argv[1][1]) {
+    case 's':
+    case '\0':
+      v = kv_get_str(key);
+      if (v)
+        xprintf("%s = %s\n", key, v);
+      break;
+    case 'u':
+      uval = kv_get_uint(key);
+      xprintf("%s = %08x(%u)\n", key, uval, uval);
+      break;
+    case 'i':
+      ival = kv_get_int(key);
+      xprintf("%s = %d\n", key, ival);
+      break;
+    }
     break;
   case 'f':
     flash_erase(2, 2);
