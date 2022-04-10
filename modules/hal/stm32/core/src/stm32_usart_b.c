@@ -89,8 +89,8 @@ typedef struct {
 
 #define CR1_DEFAULT (USART_CR1_TE | USART_CR1_RE | USART_CR1_UE)
 
-#define MSGDATA_POW2 4
-#define MSGDATA_LEN (1 << MSGDATA_POW2)
+#define MSG_POW2 4
+#define MSG_CNT 4
 
 static stm32_usart_b_t *duart;
 
@@ -228,9 +228,9 @@ static void sendcb(uart_t *u)
     u->stats.overrun++;
   } else {
     msgdata = BMOS_OP_MSG_GET_DATA(m);
-    len = circ_buf_read(&u->cb, msgdata, MSGDATA_LEN);
-    if (len < MSGDATA_LEN)
-      len += circ_buf_read(&u->cb, msgdata + len, MSGDATA_LEN);
+    len = circ_buf_read(&u->cb, msgdata, u->msg_len);
+    if (len < u->msg_len)
+      len += circ_buf_read(&u->cb, msgdata + len, u->msg_len);
     op_msg_put(u->rxq, m, u->op, len);
   }
 }
@@ -259,7 +259,7 @@ static void rx_fifo(uart_t *u, unsigned int isr)
   } else
     msgdata = BMOS_OP_MSG_GET_DATA(m);
 
-  while ((isr & UART_ISR_RXNE) && (count < MSGDATA_LEN)) {
+  while ((isr & UART_ISR_RXNE) && (count < u->msg_len)) {
     c = usart->rdr & 0xff;
 
     *msgdata++ = (unsigned char)c;
@@ -348,6 +348,8 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
   stm32_usart_b_t *usart = u->base;
   const char *pool_name = "upool", *tx_queue_name = "utx";
   unsigned int cr1;
+  unsigned int msg_cnt = MSG_CNT;
+  unsigned int msg_pow2 = MSG_POW2;
 
   usart_set_baud(usart, baud, u->clock, u->flags);
 
@@ -357,19 +359,29 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
   cr1 |= USART_CR1_IDLEIE;
   usart->cr2 = 0;
 
+  if (u->msg_cnt > 0)
+    msg_cnt = u->msg_cnt;
+
+  if (u->msg_pow2 > 0)
+    msg_pow2 = u->msg_pow2;
+
+  u->msg_len = (1U << msg_pow2);
+
   if (u->flags & STM32_UART_FIFO) {
     cr1 |= USART_CR1_FIFOEN;
     reg_set_field(&usart->cr3, 3, USART_CR3_RXFTCFG_OFS, USART_FIFO_THRES_7_8);
     usart->cr3 |= USART_CR3_RXFTIE;
   } else {
     cr1 |= USART_CR1_RXNEIE;
-    circ_buf_init(&u->cb, MSGDATA_POW2);
+    circ_buf_init(&u->cb, msg_pow2);
   }
   usart->cr1 = cr1;
 
   if (u->pool_name)
     pool_name = u->pool_name;
-  u->pool = op_msg_pool_create(pool_name, QUEUE_TYPE_DRIVER, 4, MSGDATA_LEN);
+
+  u->pool = op_msg_pool_create(pool_name, QUEUE_TYPE_DRIVER,
+                               msg_cnt, u->msg_len);
   XASSERT(u->pool);
 
   if (u->tx_queue_name)
