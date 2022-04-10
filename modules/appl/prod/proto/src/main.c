@@ -47,6 +47,7 @@
 #include "xslog.h"
 #include "xtime.h"
 #include "kvlog.h"
+#include "onewire.h"
 
 #if STM32_F429 || STM32_F746 || STM32_H735DK
 #define LCD_DEMO 1
@@ -263,6 +264,7 @@ void task_led();
 void task_can();
 void tusb_cdc_init();
 void adc_init();
+void esp_init();
 
 int main()
 {
@@ -310,6 +312,10 @@ int main()
 
 #if STM32_F411BP || STM32_F401BP
   tusb_cdc_init();
+#endif
+
+#if ONE_WIRE
+  esp_init();
 #endif
 
 #if LCD_DEMO

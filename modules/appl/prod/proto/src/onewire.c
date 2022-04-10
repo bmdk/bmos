@@ -104,6 +104,7 @@ typedef struct {
   unsigned char devlist[DEVLIST_LEN][OW_DEVID_LEN];
   ow_found_cb_t *found;
   ow_temp_cb_t *temp;
+  unsigned int poll_interval;
 } one_wire_data_t;
 
 typedef struct {
@@ -551,12 +552,13 @@ restart:
           owd->temp(cur, temp);
       }
     }
-    task_delay(2000);
+    task_delay(owd->poll_interval);
   }
 }
 
 static void one_wire_init(ow_found_cb_t *found, ow_temp_cb_t *temp,
-                          one_wire_ops_t *ops, void *ops_data)
+                          one_wire_ops_t *ops, void *ops_data,
+                          unsigned int interval_ms)
 {
   one_wire_data_t *owd;
 
@@ -567,12 +569,14 @@ static void one_wire_init(ow_found_cb_t *found, ow_temp_cb_t *temp,
   owd->ops_data = ops_data;
   owd->found = found;
   owd->temp = temp;
+  owd->poll_interval = interval_ms;
 
   task_init(one_wire_task, owd, "ow", 1, 0, 512);
 }
 
 #if OW_UART
-void one_wire_init_uart(ow_found_cb_t *found, ow_temp_cb_t *temp, uart_t *uart)
+void one_wire_init_uart(ow_found_cb_t *found, ow_temp_cb_t *temp, uart_t *uart,
+                        unsigned int poll_interval)
 {
   one_wire_uart_data_t *ow_uart_data;
 
@@ -581,13 +585,13 @@ void one_wire_init_uart(ow_found_cb_t *found, ow_temp_cb_t *temp, uart_t *uart)
 
   ow_uart_init(ow_uart_data, uart);
 
-  one_wire_init(found, temp, &ow_uart_ops, ow_uart_data);
+  one_wire_init(found, temp, &ow_uart_ops, ow_uart_data, poll_interval);
 }
 #endif
 
 #if OW_GPIO
 void one_wire_init_gpio(ow_found_cb_t *found, ow_temp_cb_t *temp,
-                        gpio_handle_t gpio)
+                        gpio_handle_t gpio, unsigned int poll_interval)
 {
   one_wire_gpio_data_t *ow_gpio_data;
 
@@ -595,6 +599,6 @@ void one_wire_init_gpio(ow_found_cb_t *found, ow_temp_cb_t *temp,
 
   ow_gpio_init(ow_gpio_data, gpio);
 
-  one_wire_init(found, temp, &ow_gpio_ops, ow_gpio_data);
+  one_wire_init(found, temp, &ow_gpio_ops, ow_gpio_data, poll_interval);
 }
 #endif
