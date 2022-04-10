@@ -32,6 +32,7 @@
 #include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "hal_board.h"
+#include "hal_rtc.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
 #include "stm32_pwr.h"
@@ -126,9 +127,10 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
   led_set(0, 1);
   clock_init(&pll_params);
-#if 0
+#if APPL
   backup_domain_protect(0);
-  clock_init_ls(0);
+  clock_init_ls(1);
+  rtc_init(0);
 #endif
 
   debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
