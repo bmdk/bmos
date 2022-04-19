@@ -51,6 +51,8 @@ void pin_init()
   enable_ahb1(0);  /* DMA */
   enable_apb1(28); /* PWR */
 
+  enable_apb1(0);  /* TIM2 */
+
   enable_apb2(0);  /* SYSCFG */
   enable_apb2(11); /* TIM1 */
 }
