@@ -30,7 +30,8 @@
 #include "shell.h"
 #include "stm32_timer.h"
 
-#if STM32_F0XX || STM32_G030
+/* should probably be more flexible here */
+#if CONFIG_TIMER_16BIT
 #define TIM_BASE TIM1_BASE
 #else
 #define TIM_BASE TIM2_BASE
