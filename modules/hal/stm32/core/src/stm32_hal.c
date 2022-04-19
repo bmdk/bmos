@@ -102,6 +102,33 @@ void stm32_get_udid(void *buf, unsigned int len)
 }
 #endif
 
+#if STM32_H745NM4
+/* the m4 cannot access the system memory, including UDID and FLASH_SIZE */
+#elif STM32_F4XX
+#define FLASH_SIZE 0x1FFF7A22
+#elif STM32_F7XX
+#define FLASH_SIZE 0x1FF0F442
+#elif STM32_H7XX
+#define FLASH_SIZE 0x1FF1E880
+#elif STM32_UXXX
+#define FLASH_SIZE 0x0BFA07A0
+#elif STM32_F1XX
+#define FLASH_SIZE 0x1FFFF7E0
+#elif STM32_F0XX || STM32_F3XX
+#define FLASH_SIZE 0x1FFFF7CC
+#elif STM32_G0XX || STM32_G4XX || STM32_L4XX || STM32_WBXX || STM32_L4R
+#define FLASH_SIZE 0x1FFF75E0
+#else
+#error X
+#endif
+
+#if FLASH_SIZE
+unsigned int hal_flash_size(void)
+{
+  return (unsigned int)*(unsigned short *)FLASH_SIZE;
+}
+#endif
+
 #if CONFIG_STM32_HAL_COMMANDS
 #if STM32_F030 || STM32_F070
 /* No unique id on F030/070 */
@@ -263,33 +290,6 @@ int cmd_devid(int argc, char *argv[])
 }
 
 SHELL_CMD(devid, cmd_devid);
-#endif
-
-#if STM32_H745NM4
-/* the m4 cannot access the system memory, including UDID and FLASH_SIZE */
-#elif STM32_F4XX
-#define FLASH_SIZE 0x1FFF7A22
-#elif STM32_F7XX
-#define FLASH_SIZE 0x1FF0F442
-#elif STM32_H7XX
-#define FLASH_SIZE 0x1FF1E880
-#elif STM32_UXXX
-#define FLASH_SIZE 0x0BFA07A0
-#elif STM32_F1XX
-#define FLASH_SIZE 0x1FFFF7E0
-#elif STM32_F0XX || STM32_F3XX
-#define FLASH_SIZE 0x1FFFF7CC
-#elif STM32_G0XX || STM32_G4XX || STM32_L4XX || STM32_WBXX || STM32_L4R
-#define FLASH_SIZE 0x1FFF75E0
-#else
-#error X
-#endif
-
-#if FLASH_SIZE
-unsigned int hal_flash_size(void)
-{
-  return (unsigned int)*(unsigned short *)FLASH_SIZE;
-}
 #endif
 
 int cmd_led(int argc, char *argv[])
