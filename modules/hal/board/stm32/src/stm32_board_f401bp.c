@@ -80,15 +80,6 @@ void pin_init()
 
   enable_apb1(28); /* PWR */
 
-  /* USB */
-  enable_ahb2(7);
-
-  gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, \
-                                              GPIO_SPEED_VHI, 10, GPIO_ALT));
-  gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, \
-                                              GPIO_SPEED_VHI, 10, GPIO_ALT));
-
-
   /* KEY */
   gpio_init(GPIO(0, 0), GPIO_INPUT);
 
