@@ -35,7 +35,7 @@
 #endif
 
 #ifndef CONFIG_SHELL_MAX_LINE_LEN
-#define CONFIG_SHELL_MAX_LINE_LEN 64
+#define CONFIG_SHELL_MAX_LINE_LEN 80
 #endif
 
 typedef int shell_cmd_t (int argc, char *argv[]);
