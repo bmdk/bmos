@@ -5,6 +5,7 @@ export ROOT
 PRODUCTS += proto
 PRODUCTS += proto-boot
 PRODUCTS += proto-pico
+PRODUCTS += esptemp
 
 %-product:
 	$(MAKE) -C products/$*
