@@ -58,6 +58,16 @@ void pin_init()
   gpio_init_attr(GPIO(0, 10), GPIO_ATTR_STM32(0, \
                                               GPIO_SPEED_HIG, 7, GPIO_ALT));
 
+#if CONFIG_ESP01_UART
+  /* USART 2 - to ESP01 */
+  enable_apb1(17);
+
+  gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, \
+                                             GPIO_SPEED_HIG, 7, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(0, \
+                                             GPIO_SPEED_HIG, 7, GPIO_ALT));
+#endif
+
   /* USB */
   enable_ahb2(7);
 
@@ -132,6 +142,15 @@ void pin_init()
 
 #if BMOS
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };
+#if CONFIG_ESP01_UART
+uart_t esp_uart = {
+  .name    = "esp",
+  .base    = USART2_BASE,
+  .clock   = APB1_CLOCK,
+  .irq     = 38,
+  .msg_cnt = 8
+};
+#endif
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(2, 13) };
