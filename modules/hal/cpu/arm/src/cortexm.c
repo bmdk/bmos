@@ -54,20 +54,22 @@
 #define SYSTICK ((systick_t *)SYSTICK_BASE)
 #define NVIC ((nvic_t *)NVIC_BASE)
 
+#if ARCH_PICO
+#define VTOR 0x10000100
+#elif RAM_APPL
+#define VTOR 0x20000000
+#elif APPL
+#define VTOR APPL_FLASH_BASE
+#else
+#define VTOR 0x8000000
+#endif
+
 void hal_cpu_init()
 {
   unsigned int i;
 
-  /* reset the exception vector to flash */
-#if APPL
-#if RAM_APPL
-  SCB->vtor = 0x20000000;
-#else
-  SCB->vtor = APPL_FLASH_BASE;
-#endif
-#else
-  SCB->vtor = 0x8000000;
-#endif
+  /* set the correct exception vector */
+  SCB->vtor = VTOR;
 
   /* enable 8 byte stack alignment
      unaligned access and divide by zero exception */
