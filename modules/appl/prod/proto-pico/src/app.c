@@ -46,7 +46,7 @@
 
 void panic(const char *fmt, ...)
 {
-  for(;;)
+  for (;;)
     ;
 }
 
