@@ -22,18 +22,26 @@
 #ifndef XMODEM_H
 #define XMODEM_H
 
+#if CONFIG_XMODEM_SMALL
+extern int xmodem_block(void *block_ctx, void *data, unsigned int len);
+#else
 typedef void xmodem_putc_t (int c);
 typedef int xmodem_block_t (void *block_ctx, void *data, unsigned int len);
+#endif
 
 #define XMODEM_PKT_SIZ (1024 + 2)
 
 typedef struct {
+#if !CONFIG_XMODEM_SMALL
   xmodem_putc_t *putc;
   xmodem_block_t *block;
+#endif
   void *block_ctx;
   /* DATA */
   char data[XMODEM_PKT_SIZ];
+#if !CONFIG_XMODEM_SMALL
   unsigned short timeout;
+#endif
   unsigned short data_len;
   unsigned short pktlen;
   unsigned char state;
@@ -42,6 +50,10 @@ typedef struct {
 } xmodem_data_t;
 
 void xmodem_start(xmodem_data_t *d);
+#if CONFIG_XMODEM_SMALL
+int xmodem_data(xmodem_data_t *d, int ch);
+#else
 int xmodem_data(xmodem_data_t *d, void *data, unsigned int len);
+#endif
 
 #endif
