@@ -122,7 +122,7 @@ static int usart_xgetc(stm32_usart_b_t *usart)
   return -1;
 }
 
-static void usart_set_baud(stm32_usart_b_t *usart,
+static void _usart_set_baud(stm32_usart_b_t *usart,
                            unsigned int baud, unsigned int clock,
                            unsigned int flags)
 {
@@ -136,6 +136,13 @@ static void usart_set_baud(stm32_usart_b_t *usart,
   usart->brr = divider;
 }
 
+void uart_set_baud(uart_t *u, unsigned int baud)
+{
+  stm32_usart_b_t *usart = u->base;
+
+  _usart_set_baud(usart, baud, u->clock, u->flags);
+}
+
 void debug_uart_init(void *base, unsigned int baud,
                      unsigned int clock, unsigned int flags)
 {
@@ -143,7 +150,7 @@ void debug_uart_init(void *base, unsigned int baud,
 
   duart = usart;
 
-  usart_set_baud(usart, baud, clock, flags);
+  _usart_set_baud(usart, baud, clock, flags);
 
   duart->cr1 = CR1_DEFAULT;
 }
@@ -351,7 +358,7 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
   unsigned int msg_cnt = MSG_CNT;
   unsigned int msg_pow2 = MSG_POW2;
 
-  usart_set_baud(usart, baud, u->clock, u->flags);
+  _usart_set_baud(usart, baud, u->clock, u->flags);
 
   usart->cr1 = 0;
   cr1 = CR1_DEFAULT;
