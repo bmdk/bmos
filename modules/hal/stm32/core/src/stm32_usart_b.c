@@ -123,8 +123,8 @@ static int usart_xgetc(stm32_usart_b_t *usart)
 }
 
 static void _usart_set_baud(stm32_usart_b_t *usart,
-                           unsigned int baud, unsigned int clock,
-                           unsigned int flags)
+                            unsigned int baud, unsigned int clock,
+                            unsigned int flags)
 {
   unsigned int divider;
 
