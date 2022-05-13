@@ -44,8 +44,7 @@ typedef struct {
   reg32_t apb1rstr2;
   reg32_t iopenr;
   reg32_t ahbenr;
-  reg32_t apb1enr1;
-  reg32_t apb1enr2;
+  reg32_t apb1enr[2];
   reg32_t iopsmenr;
   reg32_t ahbsmenr;
   reg32_t apb1smenr1;
@@ -160,16 +159,24 @@ void disable_ahb1(unsigned int dev)
 
 void enable_apb1(unsigned int dev)
 {
-  if (dev >= 32)
-    RCC->apb1enr2 |= BIT(dev - 32);
-  else
-    RCC->apb1enr1 |= BIT(dev);
+  unsigned int n = 0;
+
+  if (dev >= 32) {
+    dev -= 32;
+    n = 1;
+  }
+
+  RCC->apb1enr[n] |= BIT(dev);
 }
 
 void disable_apb1(unsigned int dev)
 {
-  if (dev >= 32)
-    RCC->apb1enr2 &= ~BIT(dev - 32);
-  else
-    RCC->apb1enr1 &= ~BIT(dev);
+  unsigned int n = 0;
+
+  if (dev >= 32) {
+    dev -= 32;
+    n = 1;
+  }
+
+  RCC->apb1enr[n] &= ~BIT(dev);
 }
