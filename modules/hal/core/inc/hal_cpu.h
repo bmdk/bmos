@@ -22,6 +22,13 @@
 #ifndef HAL_CPU_H
 #define HAL_CPU_H
 
+/* define HAL_CPU_CLOCK here for special platforms - for instance to save
+   space in cortex m0 code where integer division is implemented in software */
+
+#ifndef HAL_CPU_CLOCK
+#define HAL_CPU_CLOCK hal_cpu_clock
+#endif
+
 void hal_cpu_reset(void);
 
 #endif
