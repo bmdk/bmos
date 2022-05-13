@@ -147,7 +147,9 @@ static void flash_unlock()
 
 static void flash_lock()
 {
+#if !CONFIG_FLASH_NO_LOCK
   FLASH->cr |= FLASH_CR_LOCK;
+#endif
 }
 
 static void clear_status()
@@ -185,22 +187,18 @@ int flash_erase(unsigned int start, unsigned int count)
   return 0;
 }
 
-void flash_status()
-{
-  xprintf("sr: %08x\n", FLASH->sr);
-}
-
 int flash_program(unsigned int addr, const void *data, unsigned int len)
 {
   unsigned int i;
   const unsigned int *d = (const unsigned int *)data;
   unsigned int *a;
-  unsigned int sr;
 
   clear_status();
 
+#if !CONFIG_FLASH_NO_LOCK
   flash_lock();
   flash_unlock();
+#endif
 
   /* TODO find out why this causes a crash */
 #if 0
@@ -242,9 +240,13 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
 
   flash_lock();
 
-  sr = FLASH->sr;
-  if (sr)
-    xprintf("flash error addr:%08x sr:%08x\n", addr, sr);
+#if CONFIG_FLASH_OUTPUT_ERROR
+  {
+    unsigned int sr = FLASH->sr;
+    if (sr)
+      xprintf("flash error addr:%08x sr:%08x\n", addr, sr);
+  }
+#endif
 
   return 0;
 }
@@ -319,12 +321,6 @@ int cmd_flash(int argc, char *argv[])
     return -1;
 
   switch (argv[1][0]) {
-  case 'u':
-    flash_unlock();
-    break;
-  case 'l':
-    flash_lock();
-    break;
   case 'e':
     flash_erase(4, 1);
     break;
