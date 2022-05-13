@@ -24,7 +24,16 @@
 
 #include "hal_gpio.h"
 
-void delay(unsigned int cycles);
+
+static inline void delay(unsigned int count)
+{
+  unsigned int i;
+
+  for (i = 0; i < count; i++)
+    asm volatile ("nop");
+}
+
+//void delay(unsigned int cycles);
 void led_set(unsigned int n, unsigned int v);
 
 #define STM32_UART_LP BIT(0)

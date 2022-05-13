@@ -66,14 +66,6 @@ void led_init(const gpio_handle_t *led_list, unsigned int _nleds)
   led_init_flags(led_list, 0, _nleds);
 }
 
-void delay(unsigned int count)
-{
-  unsigned int i;
-
-  for (i = 0; i < count; i++)
-    asm volatile ("nop");
-}
-
 #ifndef CONFIG_STM32_HAL_COMMANDS
 #define CONFIG_STM32_HAL_COMMANDS 1
 #endif
