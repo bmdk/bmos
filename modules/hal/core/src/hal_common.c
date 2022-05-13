@@ -41,7 +41,14 @@ static unsigned int sbrk_next = (unsigned int)&_end;
 
 void _data_init(void)
 {
-  unsigned int *si, *s, *e;
+  unsigned int *s;
+
+#if APPL
+  unsigned int *si;
+#endif
+#if CONFIG_COPY_ISR
+  unsigned int *e;
+#endif
 
 #if CONFIG_COPY_ISR
   si = &_flash_start;
@@ -56,22 +63,13 @@ void _data_init(void)
   }
 #endif
 
-  si = &_fsdata;
-  s = &_rsdata;
+#if APPL
+  for (si = &_fsdata, s = &_rsdata; s < &_redata; s++, si++)
+    *s = *si;
+#endif
 
-  /* copy initialized data from flash to ram */
-  if (s != si) {
-    e = &_redata;
-
-    while (s < e)
-      *s++ = *si++;
-  }
-
-  s = &_sbss;
-  e = &_ebss;
-
-  while (s < e)
-    *s++ = 0;
+  for (s = &_sbss; s < &_ebss; s++)
+    *s = 0;
 }
 
 static int cmd_mem(int argc, char *argv[])
