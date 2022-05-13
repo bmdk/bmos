@@ -29,6 +29,7 @@
 #include "hal_common.h"
 #include "hal_int.h"
 #include "hal_uart.h"
+#include "hal_cpu.h"
 #include "io.h"
 #include "stm32_hal.h"
 #include "xassert.h"
@@ -130,8 +131,10 @@ static void _usart_set_baud(stm32_usart_b_t *usart,
 
   divider = (clock + (baud / 2)) / baud;
 
+#if !STM32_F0XX
   if (flags & STM32_UART_LP)
     divider <<= 8;
+#endif
 
   usart->brr = divider;
 }
@@ -150,7 +153,11 @@ void debug_uart_init(void *base, unsigned int baud,
 
   duart = usart;
 
+#if DEBUG_USART_CLOCK
+  _usart_set_baud(usart, DEBUG_USART_BAUD, DEBUG_USART_CLOCK, flags);
+#else
   _usart_set_baud(usart, baud, clock, flags);
+#endif
 
   duart->cr1 = CR1_DEFAULT;
 }
