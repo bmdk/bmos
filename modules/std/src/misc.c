@@ -54,6 +54,14 @@ void xdump(void)
 #endif
 }
 
+#if CONFIG_XPANIC_SMALL
+void xpanic(const char *fmt, ...)
+{
+  INTERRUPT_OFF();
+  for (;;)
+    ;
+}
+#else
 void xpanic(const char *fmt, ...)
 {
   va_list ap;
@@ -71,6 +79,7 @@ void xpanic(const char *fmt, ...)
   for (;;)
     ;
 }
+#endif
 
 int cmd_reset(int argc, char *argv[])
 {
