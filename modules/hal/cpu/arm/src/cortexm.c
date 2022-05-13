@@ -96,10 +96,14 @@ void hal_cpu_init()
 /* Clock source 0 - AHB / 8, 1 - AHB */
 #define SYSTICK_CTRL_CLKSOURCE BIT(2)
 
+#ifndef HAL_CPU_CLOCK
+#define HAL_CPU_CLOCK hal_cpu_clock
+#endif
+
 void systick_init()
 {
   SYSTICK->ctrl = 0;
-  SYSTICK->load = hal_cpu_clock / 1000 - 1;
+  SYSTICK->load = HAL_CPU_CLOCK / 1000 - 1;
   SYSTICK->val = 0;
   SYSTICK->ctrl = SYSTICK_CTRL_CLKSOURCE | SYSTICK_CTRL_TICKINT |
                   SYSTICK_CTRL_ENABLE;
@@ -216,7 +220,8 @@ void exception_handler()
 #else
 void exception_handler()
 {
-  debug_printf("EXCEPTION");
+  hal_cpu_reset();
+
   for (;;)
     ;
 }
