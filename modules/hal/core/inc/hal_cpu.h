@@ -25,6 +25,18 @@
 /* define HAL_CPU_CLOCK here for special platforms - for instance to save
    space in cortex m0 code where integer division is implemented in software */
 
+#if BOOT
+#if STM32_F030DEMO
+#define HAL_CPU_CLOCK 8000000
+#define DEBUG_USART_CLOCK HAL_CPU_CLOCK
+#define DEBUG_USART_BAUD 115200
+#elif STM32_G030DEB
+#define HAL_CPU_CLOCK 16000000
+#define DEBUG_USART_CLOCK HAL_CPU_CLOCK
+#define DEBUG_USART_BAUD 115200
+#endif
+#endif
+
 #ifndef HAL_CPU_CLOCK
 #define HAL_CPU_CLOCK hal_cpu_clock
 #endif
