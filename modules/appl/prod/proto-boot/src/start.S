@@ -45,14 +45,10 @@ vector_table:
 .word _stack_end
 .word reset_handler
 
-.rept 9
+.rept 13
 .word exception_handler
 .endr
 
-.word exception_handler
-.word exception_handler
-.word exception_handler
-.word exception_handler
 .word systick_handler
 
 #ifdef CONFIG_N_INTS
