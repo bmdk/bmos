@@ -505,7 +505,7 @@ FILES.f0xx += stm32_rcc_f1.o
 FILES.f0xx += stm32_flash_f1.o
 FILES.f0xx += stm32_hal_bdma.o
 FILES.f0xx += stm32_pwr_f0xx.o
-FILES.f0xx += stm32_hal_rtc.o
+#FILES.f0xx += stm32_hal_rtc.o
 
 FILES.f030demo += stm32_board_f030demo.o
 XSLOG.f030demo += xslog_simple.o
