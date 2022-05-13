@@ -45,11 +45,13 @@ vector_table:
 .word _stack_end
 .word reset_handler
 
+#if !CONFIG_NO_EXCEPTIONS
 .rept 13
 .word exception_handler
 .endr
 
 .word systick_handler
+#endif
 
 #ifdef CONFIG_N_INTS
 #define N_INTS CONFIG_N_INTS

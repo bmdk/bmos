@@ -40,21 +40,27 @@
 
 void pin_init()
 {
+#if APPL
   enable_ahb1(17); /* GPIOA */
-  enable_ahb1(18); /* GPIOA */
+  enable_apb2(14); /* USART 1 */
 
-  /* USART 1 */
-  enable_apb2(14);
+  enable_apb2(11); /* TIM1 */
+  enable_ahb1(18); /* GPIOB */
+  enable_ahb1(0);  /* DMA */
+  enable_apb1(28); /* PWR */
+  enable_apb2(0);  /* SYSCFG */
 
   gpio_init_attr(GPIO(0, 9), GPIO_ATTR_STM32(0, \
                                              GPIO_SPEED_HIG, 1, GPIO_ALT));
   gpio_init_attr(GPIO(0, 10), GPIO_ATTR_STM32(0, \
                                               GPIO_SPEED_HIG, 1, GPIO_ALT));
+#else
+  RCC->ahbenr = BIT(17);  /* GPIOA */
+  RCC->apb2enr = BIT(14); /* USART 1 */
 
-  enable_apb2(11); /* TIM1 */
-  enable_ahb1(0);  /* DMA */
-  enable_apb1(28); /* PWR */
-  enable_apb2(0);  /* SYSCFG */
+  stm32_gpio_set_alt(GPIO(0, 9), 1);
+  stm32_gpio_set_alt(GPIO(0, 10), 1);
+#endif
 }
 
 #define USART1_BASE (void *)0x40013800
@@ -65,6 +71,7 @@ void pin_init()
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 27 };
 #endif
 
+#if APPL
 static const gpio_handle_t leds[] = { GPIO(0, 4) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV };
 
@@ -84,19 +91,17 @@ struct pll_params_t pll_params = {
 };
 
 unsigned int hal_cpu_clock = 48000000;
+#endif
 
 void hal_board_init()
 {
   pin_init();
+#if APPL
   led_init_flags(leds, led_flags, ARRSIZ(leds));
   clock_init(&pll_params);
-#if APPL
   backup_domain_protect(0);
   clock_init_ls(1);
-#endif
-  debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
-
-#if APPL
   stm32_memmap(SYSCFG_MEMMAP_SRAM);
 #endif
+  debug_uart_init(USART1_BASE, 115200, APB2_CLOCK, 0);
 }

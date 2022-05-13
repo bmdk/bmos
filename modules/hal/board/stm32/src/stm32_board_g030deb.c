@@ -39,14 +39,21 @@
 void pin_init()
 {
   enable_io(0); /* GPIOA */
-  enable_io(1); /* GPIOB */
-  enable_io(2); /* GPIOC */
 
   /* USART 2 */
   enable_apb1(17);
 
+#if APPL
   gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
   gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 1, GPIO_ALT));
+#else
+  stm32_gpio_set_alt(GPIO(0, 9), 1);
+  stm32_gpio_set_alt(GPIO(0, 10), 1);
+#endif
+
+#if APPL
+  enable_io(1); /* GPIOB */
+  enable_io(2); /* GPIOC */
 
   enable_apb1(46);
 
@@ -66,7 +73,6 @@ void pin_init()
   enable_apb1(28); /* PWR */
   enable_apb1(32); /* SYSCFG */
 
-#if APPL
   /* KEY */
   gpio_init_attr(GPIO(0, 0), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
                                              0, 0, GPIO_INPUT));
@@ -87,6 +93,7 @@ void pin_init()
 uart_t debug_uart = { "debugser", USART1_BASE, APB1_CLOCK, 27 };
 #endif
 
+#if APPL
 static const gpio_handle_t leds[] = { GPIO(1, 1) };
 static const led_flag_t led_flags[] = { LED_FLAG_INV };
 
@@ -104,14 +111,15 @@ struct pll_params_t pll_params = {
 };
 
 unsigned int hal_cpu_clock = 64000000;
+#endif
 
 void hal_board_init()
 {
   pin_init();
+#if APPL
   led_init_flags(leds, led_flags, ARRSIZ(leds));
   stm32_pwr_vos(1);
   clock_init(&pll_params);
-#if APPL
   backup_domain_protect(0);
   clock_init_ls(0);
 #endif
