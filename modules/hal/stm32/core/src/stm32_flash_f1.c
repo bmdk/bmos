@@ -81,7 +81,9 @@ static void flash_unlock()
 
 static void flash_lock()
 {
+#if !CONFIG_FLASH_NO_LOCK
   FLASH->cr |= FLASH_CR_LOCK;
+#endif
 }
 
 static void clear_status()
@@ -89,7 +91,7 @@ static void clear_status()
   while (FLASH->sr & FLASH_SR_BSY)
     ;
 
-  FLASH->sr = 0xffff;
+  FLASH->sr = 0xffffffff;
 }
 
 #if STM32_F072 || STM32_F3XX
@@ -114,7 +116,7 @@ int flash_erase(unsigned int start, unsigned int count)
     FLASH->cr |= FLASH_CR_STRT;
 
     while (FLASH->sr & FLASH_SR_BSY)
-      xprintf("status\n");
+      ;
   }
 
   FLASH->cr &= ~(FLASH_CR_PER | FLASH_CR_STRT);
@@ -123,21 +125,18 @@ int flash_erase(unsigned int start, unsigned int count)
   return 0;
 }
 
-void flash_status()
-{
-  xprintf("sr: %08x\n", FLASH->sr);
-}
-
 int flash_program(unsigned int addr, const void *data, unsigned int len)
 {
-  unsigned int i, sr;
+  unsigned int i;
   volatile unsigned short *a;
   const unsigned short *d = (const unsigned short *)data;
 
   clear_status();
 
+#if !CONFIG_FLASH_NO_LOCK
   flash_lock();
   flash_unlock();
+#endif
 
   len >>= 1;
   FLASH->cr |= FLASH_CR_PG;
@@ -160,9 +159,15 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
 
   flash_lock();
 
-  sr = FLASH->sr & 0x1f;
-  if (sr)
-    xprintf("flash error addr:%08x sr:%08x\n", addr, sr);
+#if CONFIG_FLASH_OUTPUT_ERROR
+  {
+    unsigned int sr = FLASH->sr & 0x1f;
+    if (sr) {
+      xprintf("flash error addr:%08x sr:%08x\n", addr, sr);
+      return -1;
+    }
+  }
+#endif
 
   return 0;
 }
