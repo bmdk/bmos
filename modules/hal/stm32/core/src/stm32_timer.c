@@ -26,6 +26,7 @@
 #include "hal_common.h"
 #include "hal_int.h"
 #include "hal_time.h"
+#include "hal_cpu.h"
 #include "io.h"
 #include "shell.h"
 #include "stm32_timer.h"
@@ -150,7 +151,7 @@ hal_time_us_t hal_time_us(void)
 
 static unsigned int timer_calc_div(void)
 {
-  return (hal_cpu_clock / TIM_DIV  + (1000000 / 2 - 1)) / 1000000;
+  return (HAL_CPU_CLOCK / TIM_DIV  + (1000000 / 2 - 1)) / 1000000;
 }
 
 void hal_time_reinit(void)
