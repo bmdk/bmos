@@ -394,9 +394,7 @@ MODULES += lib/graph/fb
 MODULES += prot/usb/tusb/if
 MODULES += prot/usb/tusb/tusb
 
-ifneq ($(CONFIG_NEWLIB), y)
 MODULES += lib/libc_min
-endif
 
 ifeq ($(LWIP.$(PROG)), y)
 include Makefile.lwip
@@ -439,6 +437,7 @@ FILES += circ_buf.o
 FILES += hal_dma.o
 FILES += stm32_dma_if.o
 FILES += stm32_rcc_ls.o
+FILES += xlib.o
 
 # BMOS
 FILES += mutex.o

@@ -289,10 +289,7 @@ MODULES += hal/core
 MODULES += hal/cpu/arm
 MODULES += hal/stm32/core
 MODULES += std
-
-ifneq ($(CONFIG_NEWLIB), y)
 MODULES += lib/libc_min
-endif
 
 XCFLAGS += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
 
@@ -313,6 +310,7 @@ FILES += stm32_hal.o
 FILES += crc_ccitt16.o
 FILES += stm32_timer.o
 FILES += xslog_simple.o
+FILES += xlib.o
 
 ifneq ($(CONFIG_NEWLIB), y)
 FILES += libc.o
