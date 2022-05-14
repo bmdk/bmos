@@ -158,7 +158,6 @@ static int _i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-
 int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
                        void *wbufp, unsigned int wbuflen,
                        void *rbufp, unsigned int rbuflen)
@@ -166,6 +165,15 @@ int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
   if (_i2c_write_buf(i2c, addr, wbufp, wbuflen) < 0)
     return -1;
 
+  if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
+    return -1;
+
+  return 0;
+}
+
+int i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+                 void *rbufp, unsigned int rbuflen)
+{
   if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
     return -1;
 

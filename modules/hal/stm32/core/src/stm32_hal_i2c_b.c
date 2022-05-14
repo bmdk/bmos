@@ -231,3 +231,12 @@ int i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
 {
   return _i2c_write_buf(i2c, addr, bufp, buflen);
 }
+
+int i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+                 void *rbufp, unsigned int rbuflen)
+{
+  if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
+    return -1;
+
+  return 0;
+}
