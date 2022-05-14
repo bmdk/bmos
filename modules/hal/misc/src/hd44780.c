@@ -22,14 +22,46 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "common.h"
+#include "hal_time.h"
 
 #include "hd44780.h"
 
-#define REG BIT(0)
+#define RS BIT(0)
 #define RW BIT(1)
 #define E BIT(2)
 #define L BIT(3)
 #define DATA(v) (((v) & 0xf) << 4)
+
+static void clk_delay(void)
+{
+  hal_delay_us(1);
+}
+
+static unsigned int read_busy(hd44780_data_t *d)
+{
+  unsigned int h;
+
+  d->write_byte(0xf0 | RW | L);
+  clk_delay();
+  d->write_byte(0xf0 | RW | L | E);
+  clk_delay();
+
+  h = d->read_byte();
+
+  d->write_byte(0xf0 | RW | L);
+  clk_delay();
+  d->write_byte(0xf0 | RW | L | E);
+  clk_delay();
+  d->write_byte(0xf0 | RW | L);
+
+  return (h & 0x80) >> 7;
+}
+
+static void busy_wait(hd44780_data_t *d)
+{
+  while (read_busy(d))
+    ;
+}
 
 static void write_byte(hd44780_data_t *d, unsigned int b)
 {
@@ -41,15 +73,17 @@ static void write_reg(hd44780_data_t *d, unsigned int b)
   unsigned int c = DATA(b >> 4);
 
   write_byte(d, c | E);
-  d->delay();
+  clk_delay();
   write_byte(d, c);
-  d->delay();
+  clk_delay();
 
   c = DATA(b);
   write_byte(d, c | E);
-  d->delay();
+  clk_delay();
   write_byte(d, c);
-  d->delay();
+  clk_delay();
+
+  busy_wait(d);
 }
 
 static void write_reg_h(hd44780_data_t *d, unsigned int b)
@@ -57,25 +91,27 @@ static void write_reg_h(hd44780_data_t *d, unsigned int b)
   unsigned int c = DATA(b);
 
   write_byte(d, c | E);
-  d->delay();
+  clk_delay();
   write_byte(d, c);
-  d->delay();
+  clk_delay();
 }
 
 static void write_data(hd44780_data_t *d, unsigned int b)
 {
-  unsigned int c = DATA(b >> 4) | REG;
+  unsigned int c = DATA(b >> 4) | RS;
 
   write_byte(d, c | E);
-  d->delay();
+  clk_delay();
   write_byte(d, c);
-  d->delay();
+  clk_delay();
 
-  c = DATA(b) | REG;
+  c = DATA(b) | RS;
   write_byte(d, c | E);
-  d->delay();
+  clk_delay();
   write_byte(d, c);
-  d->delay();
+  clk_delay();
+
+  busy_wait(d);
 }
 
 static void _hd44780_write_str(hd44780_data_t *d, const char *str)
@@ -127,9 +163,9 @@ void hd44780_shift(hd44780_data_t *d, int cursor, int right)
 static void _hd44780_init(hd44780_data_t *d)
 {
   write_reg_h(d, 0x3); /* 8bit mode */
-  d->delay();
+  clk_delay();
   write_reg_h(d, 0x3); /* 8bit mode */
-  d->delay();
+  clk_delay();
   write_reg_h(d, 0x3); /* 8bit mode */
 
   write_reg_h(d, 0x2); /* 4bit mode */

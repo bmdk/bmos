@@ -22,12 +22,12 @@
 #ifndef HD44780_H
 #define HD44780_H
 
+typedef unsigned int _hd44780_read_byte(void);
 typedef void _hd44780_write_byte(unsigned int b);
-typedef void _hd44780_delay(void);
 
 typedef struct {
   _hd44780_write_byte *write_byte;
-  _hd44780_delay *delay;
+  _hd44780_read_byte *read_byte;
 } hd44780_data_t;
 
 void hd44780_init(hd44780_data_t *d);
