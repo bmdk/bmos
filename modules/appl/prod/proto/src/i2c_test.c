@@ -29,6 +29,7 @@
 #include "io.h"
 #include "shell.h"
 #include "hal_rtc.h"
+#include "hd44780.h"
 
 #include "ssd1306_fonts.h"
 
@@ -245,18 +246,47 @@ void fb_to_i2cdisp(fb_t *fb)
     }
   }
 }
+#else
+static void hd44780_write_byte(unsigned int b)
+{
+  unsigned char c = b;
+
+  i2c_write_buf(I2C, 0x27, &c, 1);
+}
+
+static unsigned int hd44780_read_byte(void)
+{
+  unsigned char c;
+
+  i2c_read_buf(I2C, 0x27, &c, 1);
+
+  return c;
+}
+
+static hd44780_data_t hd44780_disp_data = { hd44780_write_byte,
+                                            hd44780_read_byte };
+#endif
 
 void task_i2c_clock()
 {
   rtc_time_t t, ot;
+
+#if DISP
   unsigned char digits[4];
   unsigned int yo = 16;
   unsigned int xo = 8;
 
   fb = fb_init(128, 64, 1, 0);
+#else
+  char disp[16];
+#endif
 
   i2c_init(I2C);
+#if DISP
   disp_init();
+#else
+  hd44780_init(&hd44780_disp_data);
+#endif
 
   memset(&ot, 0, sizeof(rtc_time_t));
 
@@ -264,6 +294,7 @@ void task_i2c_clock()
     rtc_get_time(&t);
 
     if (t.hours != ot.hours || t.mins != ot.mins) {
+#if DISP
       digits[0] = t.hours / 10;
       digits[1] = t.hours % 10;
       digits[2] = t.mins / 10;
@@ -277,6 +308,11 @@ void task_i2c_clock()
       disp_char_w(fb, 88 + xo, yo, 16 + digits[3]);
 
       fb_to_i2cdisp(fb);
+#else
+      snprintf(disp, sizeof(disp), "%2d:%02d", t.hours, t.mins);
+
+      hd44780_write_str(&hd44780_disp_data, 0, disp);
+#endif
 
       ot = t;
     }
@@ -284,7 +320,6 @@ void task_i2c_clock()
     task_delay(2000);
   }
 }
-#endif
 
 static int i2c_cmd(int argc, char *argv[])
 {
