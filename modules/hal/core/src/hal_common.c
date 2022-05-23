@@ -43,7 +43,7 @@ void _data_init(void)
 {
   unsigned int *s;
 
-#if APPL
+#if !CONFIG_SMALL || CONFIG_COPY_ISR
   unsigned int *si;
 #endif
 #if CONFIG_COPY_ISR
@@ -63,7 +63,7 @@ void _data_init(void)
   }
 #endif
 
-#if APPL
+#if !CONFIG_SMALL
   for (si = &_fsdata, s = &_rsdata; s < &_redata; s++, si++)
     *s = *si;
 #endif
