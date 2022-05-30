@@ -37,54 +37,46 @@
 #include "shell.h"
 
 typedef struct {
-  unsigned int mcr;
-  unsigned int msr;
-  unsigned int tsr;
-  unsigned int rfr[2];
-  unsigned int ier;
-  unsigned int esr;
-  unsigned int btr;
-  unsigned int pad0[88];
+  reg32_t mcr;
+  reg32_t msr;
+  reg32_t tsr;
+  reg32_t rfr[2];
+  reg32_t ier;
+  reg32_t esr;
+  reg32_t btr;
+  reg32_t pad0[88];
 
   struct {
-    unsigned int i;
-    unsigned int dt;
-    unsigned int d[2];
+    reg32_t i;
+    reg32_t dt;
+    reg32_t d[2];
   } t[3];
 
   struct {
-    unsigned int i;
-    unsigned int dt;
-    unsigned int d[2];
+    reg32_t i;
+    reg32_t dt;
+    reg32_t d[2];
   } r[2];
 
-  unsigned int pad1[12];
+  reg32_t pad1[12];
 
-  unsigned int fmr;
-  unsigned int fm1r;
-  unsigned int pad2;
-  unsigned int fs1r;
-  unsigned int pad3;
-  unsigned int ffa1r;
-  unsigned int pad4;
-  unsigned int fa1r;
+  reg32_t fmr;
+  reg32_t fm1r;
+  reg32_t pad2;
+  reg32_t fs1r;
+  reg32_t pad3;
+  reg32_t ffa1r;
+  reg32_t pad4;
+  reg32_t fa1r;
 
-  unsigned int pad5[8];
+  reg32_t pad5[8];
 
   struct {
-    unsigned int id;
-    unsigned int mask;
+    reg32_t id;
+    reg32_t mask;
   } f[28];
 
 } stm32_can_t;
-
-#define CAN_SJW 1
-/* for an 80MHz input clock these result in 1Mbit */
-/* TS2 + 1 + TS1 + 1 + 1 is a can bit time */
-#define CAN_TS2 (4 - 1)
-#define CAN_TS1 (3 - 1)
-/* input clock divider */
-#define CAN_BRP (10 - 1)
 
 #define CAN_MCR_INRQ BIT(0)
 #define CAN_MCR_SLEEP BIT(1)
@@ -103,7 +95,7 @@ typedef struct {
 #define CAN_RFR_FOVR BIT(4)
 #define CAN_RFR_RFOM BIT(5)
 
-static int can_send(volatile stm32_can_t *can, can_t *pkt)
+static int can_send(stm32_can_t *can, can_t *pkt)
 {
   unsigned int val[2];
 
@@ -121,7 +113,7 @@ static int can_send(volatile stm32_can_t *can, can_t *pkt)
   return 0;
 }
 
-static void _can_filter_add(volatile stm32_can_t *can,
+static void _can_filter_add(stm32_can_t *can,
                             unsigned int index, unsigned int id)
 {
   can->fs1r |= BIT(index);
@@ -130,9 +122,19 @@ static void _can_filter_add(volatile stm32_can_t *can,
   can->f[index].mask = 0x7ffUL << 21;
 }
 
-static void can_init(volatile stm32_can_t *can, const unsigned int *id,
+
+static inline unsigned int val_param(unsigned int param, unsigned int mask)
+{
+  if (param == 0)
+    return 0;
+  return (param - 1) & mask;
+}
+
+static void can_init(candev_t *c, const unsigned int *id,
                      unsigned int id_len)
 {
+  stm32_can_t *can = c->base;
+  can_params_t *p = &c->params;
   unsigned int i;
 
   can->mcr &= ~(CAN_MCR_SLEEP | CAN_MCR_DBF);
@@ -142,8 +144,8 @@ static void can_init(volatile stm32_can_t *can, const unsigned int *id,
   while ((can->msr & CAN_MCR_INRQ) == 0)
     ;
 
-
-  can->btr = (CAN_SJW << 24) | (CAN_TS2 << 20) | (CAN_TS1 << 16) | (CAN_BRP);
+  can->btr = (val_param(p->sjw, 0x3) << 24) | (val_param(p->ts2, 0x7) << 20) |
+             (val_param(p->ts1, 0xf) << 16) | val_param(p->prediv, 0x3ff);
 
   can->fmr = 1;
   can->fm1r = 0;
@@ -167,7 +169,7 @@ static void can_init(volatile stm32_can_t *can, const unsigned int *id,
 #if BMOS
 static void _tx(candev_t *c)
 {
-  volatile stm32_can_t *can = c->base;
+  stm32_can_t *can = c->base;
   bmos_op_msg_t *m;
   unsigned int len;
 
@@ -195,7 +197,7 @@ static void _tx(candev_t *c)
 void can_isr(void *arg)
 {
   candev_t *c = arg;
-  volatile stm32_can_t *can = c->base;
+  stm32_can_t *can = c->base;
   bmos_op_msg_t *m;
   can_t *cdata;
   int count;
@@ -257,7 +259,6 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
                        unsigned int id_len, bmos_queue_t *rxq,
                        unsigned int op)
 {
-  volatile stm32_can_t *candev = c->base;
   const char *pool_name = "cpool", *tx_queue_name = "ctx";
 
   if (c->pool_name)
@@ -275,7 +276,7 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
   c->rxq = rxq;
   c->op = (unsigned short)op;
 
-  can_init(candev, id, id_len);
+  can_init(c, id, id_len);
 
   irq_register(c->name, can_tx_isr, c, c->tx_irq);
   irq_register(c->name, can_isr, c, c->irq);
