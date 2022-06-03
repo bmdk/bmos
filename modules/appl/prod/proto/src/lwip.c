@@ -80,11 +80,24 @@ void task_net()
       sys_check_timeouts();
 
     if (!has_addr && dhcp_supplied_address(&ethif)) {
-      xslog(LOG_INFO, "addr:%d.%d.%d.%d\n",
+      xslog(LOG_INFO, "ip:%d.%d.%d.%d"
+                      "/%d.%d.%d.%d"
+                      " gw:%d.%d.%d.%d\n",
             BYTE(ethif.ip_addr.addr, 0),
             BYTE(ethif.ip_addr.addr, 1),
             BYTE(ethif.ip_addr.addr, 2),
-            BYTE(ethif.ip_addr.addr, 3));
+            BYTE(ethif.ip_addr.addr, 3),
+
+            BYTE(ethif.netmask.addr, 0),
+            BYTE(ethif.netmask.addr, 1),
+            BYTE(ethif.netmask.addr, 2),
+            BYTE(ethif.netmask.addr, 3),
+
+            BYTE(ethif.gw.addr, 0),
+            BYTE(ethif.gw.addr, 1),
+            BYTE(ethif.gw.addr, 2),
+            BYTE(ethif.gw.addr, 3)
+           );
       has_addr = 1;
     }
   }
@@ -99,11 +112,21 @@ static int cmd_ip(int argc, char *argv[])
 
   switch (cmd) {
   case 'a':
-    xprintf("addr:%d.%d.%d.%d\n",
+    xprintf("addr:    %d.%d.%d.%d\n",
             BYTE(ethif.ip_addr.addr, 0),
             BYTE(ethif.ip_addr.addr, 1),
             BYTE(ethif.ip_addr.addr, 2),
             BYTE(ethif.ip_addr.addr, 3));
+    xprintf("netmask: %d.%d.%d.%d\n",
+            BYTE(ethif.netmask.addr, 0),
+            BYTE(ethif.netmask.addr, 1),
+            BYTE(ethif.netmask.addr, 2),
+            BYTE(ethif.netmask.addr, 3));
+    xprintf("gateway: %d.%d.%d.%d\n",
+            BYTE(ethif.gw.addr, 0),
+            BYTE(ethif.gw.addr, 1),
+            BYTE(ethif.gw.addr, 2),
+            BYTE(ethif.gw.addr, 3));
     break;
   }
 
