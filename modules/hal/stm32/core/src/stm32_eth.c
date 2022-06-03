@@ -28,6 +28,7 @@
 #include "shell.h"
 #include "xslog.h"
 #include "fast_log.h"
+#include "stm32_eth_phy.h"
 
 #if CONFIG_LWIP
 #include "lwip/netif.h"
@@ -38,75 +39,75 @@
 #define ETH_BASE 0x40028000
 
 typedef struct {
-  unsigned int cr;
-  unsigned int ffr;
-  unsigned int hthr;
-  unsigned int htlr;
-  unsigned int miiar;
-  unsigned int miidr;
-  unsigned int fcr;
-  unsigned int vlantr;
-  unsigned int rsvd0[2];
-  unsigned int rwuffr;
-  unsigned int pmtcsr;
-  unsigned int rsvd1;
-  unsigned int dbgr;
-  unsigned int sr;
-  unsigned int imr;
+  reg32_t cr;
+  reg32_t ffr;
+  reg32_t hthr;
+  reg32_t htlr;
+  reg32_t miiar;
+  reg32_t miidr;
+  reg32_t fcr;
+  reg32_t vlantr;
+  reg32_t rsvd0[2];
+  reg32_t rwuffr;
+  reg32_t pmtcsr;
+  reg32_t rsvd1;
+  reg32_t dbgr;
+  reg32_t sr;
+  reg32_t imr;
   struct {
-    unsigned int hr;
-    unsigned int lr;
+    reg32_t hr;
+    reg32_t lr;
   } a[4];
 } stm32_eth_mac_t;
 
 typedef struct {
-  unsigned int ccr;
-  unsigned int rir;
-  unsigned int tir;
-  unsigned int rimr;
-  unsigned int timr;
-  unsigned int rsvd0[14];
-  unsigned int tgfsccr;
-  unsigned int tgfmsccr;
-  unsigned int rsvd1[5];
-  unsigned int tgfcr;
-  unsigned int rsvd2[10];
-  unsigned int rfcecr;
-  unsigned int rfaecr;
-  unsigned int rsvd3[10];
-  unsigned int rgufcr;
+  reg32_t ccr;
+  reg32_t rir;
+  reg32_t tir;
+  reg32_t rimr;
+  reg32_t timr;
+  reg32_t rsvd0[14];
+  reg32_t tgfsccr;
+  reg32_t tgfmsccr;
+  reg32_t rsvd1[5];
+  reg32_t tgfcr;
+  reg32_t rsvd2[10];
+  reg32_t rfcecr;
+  reg32_t rfaecr;
+  reg32_t rsvd3[10];
+  reg32_t rgufcr;
 } stm32_eth_mmc_t;
 
 typedef struct {
-  unsigned int tscr;
-  unsigned int ssir;
-  unsigned int tshr;
-  unsigned int tslr;
-  unsigned int tshur;
-  unsigned int tslur;
-  unsigned int tsar;
-  unsigned int tthr;
-  unsigned int ttlr;
-  unsigned int rsvd0;
-  unsigned int tssr;
+  reg32_t tscr;
+  reg32_t ssir;
+  reg32_t tshr;
+  reg32_t tslr;
+  reg32_t tshur;
+  reg32_t tslur;
+  reg32_t tsar;
+  reg32_t tthr;
+  reg32_t ttlr;
+  reg32_t rsvd0;
+  reg32_t tssr;
 } stm32_eth_ptp_t;
 
 typedef struct {
-  unsigned int bmr;
-  unsigned int tpdr;
-  unsigned int rpdr;
-  unsigned int rdlar;
-  unsigned int tdlar;
-  unsigned int sr;
-  unsigned int omr;
-  unsigned int ier;
-  unsigned int mfbocr;
-  unsigned int rswtr;
-  unsigned int rsvd0[8];
-  unsigned int chtdr;
-  unsigned int chrdr;
-  unsigned int chtbar;
-  unsigned int chrbar;
+  reg32_t bmr;
+  reg32_t tpdr;
+  reg32_t rpdr;
+  reg32_t rdlar;
+  reg32_t tdlar;
+  reg32_t sr;
+  reg32_t omr;
+  reg32_t ier;
+  reg32_t mfbocr;
+  reg32_t rswtr;
+  reg32_t rsvd0[8];
+  reg32_t chtdr;
+  reg32_t chrdr;
+  reg32_t chtbar;
+  reg32_t chrbar;
 } stm32_eth_dma_t;
 
 typedef struct {
@@ -119,7 +120,7 @@ typedef struct {
   stm32_eth_dma_t dma;
 } stm32_eth_t;
 
-#define ETH ((volatile stm32_eth_t *)ETH_BASE)
+#define ETH ((stm32_eth_t *)ETH_BASE)
 
 #define ETH_MACMIIAR_PA(v) (((v) & 0x1f) << 11)
 #define ETH_MACMIIAR_MR(v) (((v) & 0x1f) << 6)
@@ -355,8 +356,6 @@ static void eth_irq(void *data)
 
 static eth_ctx_t eth_ctx;
 
-int phy_reset(void);
-
 int hal_eth_init()
 {
   unsigned int i;
@@ -451,53 +450,6 @@ void phy_write(unsigned int phy, unsigned int reg, unsigned int val)
   }
   if (count == 0)
     xslog(LOG_ERR, "timeout waiting for phy\n");
-}
-
-#if STM32_F4D
-#define PHY_ADDR 0
-#else
-#define PHY_ADDR 1
-#endif
-
-int phy_reset(void)
-{
-  unsigned int count, reg;
-
-  phy_write(PHY_ADDR, 0, BIT(15)); /* reset phy */
-
-  hal_delay_us(100);
-  while (phy_read(PHY_ADDR, 0) & BIT(15))
-    ;
-
-  hal_delay_us(100);
-
-  // Restart and enable auto-negotiate
-  phy_write(PHY_ADDR, 0, BIT(12) | BIT(9));
-  count = 50;
-  while ((phy_read(PHY_ADDR, 0) & BIT(9)) && count) {
-    hal_delay_us(100);
-    count--;
-  }
-  if (count == 0) {
-    xslog(LOG_INFO, "phy read timeout\n");
-    return -1;
-  }
-  count = 5000;
-  while (count > 0) {
-    reg = phy_read(PHY_ADDR, 31);
-    if (reg & BIT(12))
-      break;
-    hal_delay_us(1000);
-    count--;
-  }
-  if (count == 0) {
-    xslog(LOG_INFO, "eth autonegotiate fail");
-    return -1;
-  }
-
-  xslog(LOG_INFO, "eth 10%s:%s-duplex", (reg & BIT(3)) ? "0": "", (reg & BIT(
-                                                                     4)) ? "full" : "half");
-  return (reg >> 3) & 0x3;
 }
 
 int cmd_eth(int argc, char *argv[])

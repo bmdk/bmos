@@ -27,6 +27,8 @@
 #include "io.h"
 #include "shell.h"
 #include "fast_log.h"
+#include "xslog.h"
+#include "stm32_eth_phy.h"
 
 #if CONFIG_LWIP
 #include "lwip/netif.h"
@@ -37,169 +39,169 @@
 #define ETH_BASE 0x40028000
 
 typedef struct {
-  unsigned int maccr;
-  unsigned int macecr;
-  unsigned int macpfr;
-  unsigned int macwtr;
-  unsigned int mact0r;
-  unsigned int mact1r;
-  unsigned int rsvd0[14];
-  unsigned int macvtr;
-  unsigned int macvhtr;
-  unsigned int rsvd1;
-  unsigned int macvir;
-  unsigned int macivir;
-  unsigned int rsvd2[3];
-  unsigned int macqtxfcr;
-  unsigned int rsvd3[7];
-  unsigned int macrxfcr;
-  unsigned int rsvd4[7];
-  unsigned int macisr;
-  unsigned int macier;
-  unsigned int macrxtxsr;
-  unsigned int rsvd5;
-  unsigned int macpcsr;
-  unsigned int macrwkpfr;
-  unsigned int rsvd6[2];
-  unsigned int maclcsr;
-  unsigned int macltcr;
-  unsigned int macletr;
-  unsigned int mac1ustcr;
-  unsigned int rsvd7[12];
-  unsigned int macvr;
-  unsigned int macdr;
-  unsigned int rsvd8[2];
-  unsigned int machwf1r;
-  unsigned int machwf2r;
-  unsigned int rsvd9[54];
-  unsigned int macmdioar;
-  unsigned int macmdiodr;
-  unsigned int rsvd10[2];
-  unsigned int macarpar;
-  unsigned int rsvd11[59];
+  reg32_t maccr;
+  reg32_t macecr;
+  reg32_t macpfr;
+  reg32_t macwtr;
+  reg32_t mact0r;
+  reg32_t mact1r;
+  reg32_t rsvd0[14];
+  reg32_t macvtr;
+  reg32_t macvhtr;
+  reg32_t rsvd1;
+  reg32_t macvir;
+  reg32_t macivir;
+  reg32_t rsvd2[3];
+  reg32_t macqtxfcr;
+  reg32_t rsvd3[7];
+  reg32_t macrxfcr;
+  reg32_t rsvd4[7];
+  reg32_t macisr;
+  reg32_t macier;
+  reg32_t macrxtxsr;
+  reg32_t rsvd5;
+  reg32_t macpcsr;
+  reg32_t macrwkpfr;
+  reg32_t rsvd6[2];
+  reg32_t maclcsr;
+  reg32_t macltcr;
+  reg32_t macletr;
+  reg32_t mac1ustcr;
+  reg32_t rsvd7[12];
+  reg32_t macvr;
+  reg32_t macdr;
+  reg32_t rsvd8[2];
+  reg32_t machwf1r;
+  reg32_t machwf2r;
+  reg32_t rsvd9[54];
+  reg32_t macmdioar;
+  reg32_t macmdiodr;
+  reg32_t rsvd10[2];
+  reg32_t macarpar;
+  reg32_t rsvd11[59];
   struct {
-    unsigned int hr;
-    unsigned int lr;
+    reg32_t hr;
+    reg32_t lr;
   } maca[4];
-  unsigned int rsvd12[248];
-  unsigned int mmc_control;
-  unsigned int mmc_rx_interrupt;
-  unsigned int mmc_tx_interrupt;
-  unsigned int mmc_rx_interrupt_mask;
-  unsigned int mmc_tx_interrupt_mask;
-  unsigned int rsvd13[14];
-  unsigned int txsnglcolg;
-  unsigned int txmultcolg;
-  unsigned int rsvd14[5];
-  unsigned int txpktg;
-  unsigned int rsvd15[10];
-  unsigned int rxcrcerr;
-  unsigned int rxalgnerr;
-  unsigned int rsvd16[10];
-  unsigned int rxucastg;
-  unsigned int rsvd17[9];
-  unsigned int txlpiusc;
-  unsigned int txlpitrc;
-  unsigned int rxlpiusc;
-  unsigned int rxlpitrc;
-  unsigned int rsvd18[65];
-  unsigned int macl3l4c0r;
-  unsigned int macl4a0r;
-  unsigned int rsvd19[2];
-  unsigned int macl3a00r;
-  unsigned int macl3a10r;
-  unsigned int macl3a20r;
-  unsigned int macl3a30r;
-  unsigned int rsvd20[4];
-  unsigned int macl3l4c1r;
-  unsigned int macl4a1r;
-  unsigned int rsvd21[2];
-  unsigned int macl3a01r;
-  unsigned int macl3a11r;
-  unsigned int macl3a21r;
-  unsigned int macl3a31r;
-  unsigned int rsvd22[108];
-  unsigned int mactscr;
-  unsigned int macssir;
-  unsigned int macstsr;
-  unsigned int macstnr;
-  unsigned int macstsur;
-  unsigned int macstnur;
-  unsigned int mactsar;
-  unsigned int rsvd23;
-  unsigned int mactssr;
-  unsigned int rsvd24[3];
-  unsigned int mactxtssnr;
-  unsigned int mactxtsssr;
-  unsigned int rsvd25[2];
-  unsigned int macacr;
-  unsigned int rsvd26;
-  unsigned int macatsnr;
-  unsigned int macatssr;
-  unsigned int mactsiacr;
-  unsigned int mactseacr;
-  unsigned int mactsicnr;
-  unsigned int mactsecnr;
-  unsigned int rsvd27[4];
-  unsigned int macppscr;
-  unsigned int rsvd28[3];
-  unsigned int macppsttsr;
-  unsigned int macppsttnr;
-  unsigned int macppsir;
-  unsigned int macppswr;
-  unsigned int rsvd29[12];
-  unsigned int macpocr;
-  unsigned int macspi0r;
-  unsigned int macspi1r;
-  unsigned int macspi2r;
-  unsigned int maclmir;
-  unsigned int rsvd30[11];
-  unsigned int mtlomr;
-  unsigned int rsvd31[7];
-  unsigned int mtlisr;
-  unsigned int rsvd32[55];
-  unsigned int mtltxqomr;
-  unsigned int mtltxqur;
-  unsigned int mtltxqdr;
-  unsigned int rsvd33[8];
-  unsigned int mtlqicsr;
-  unsigned int mtlrxqomr;
-  unsigned int mtlrxqmpocr;
-  unsigned int mtlrxqdr;
-  unsigned int rsvd34[177];
-  unsigned int dmamr;
-  unsigned int dmasbmr;
-  unsigned int dmaisr;
-  unsigned int dmadsr;
-  unsigned int rsvd35[60];
-  unsigned int dmaccr;
-  unsigned int dmactxcr;
-  unsigned int dmacrxcr;
-  unsigned int rsvd36[2];
-  unsigned int dmactxdlar;
-  unsigned int rsvd37;
-  unsigned int dmacrxdlar;
-  unsigned int dmactxdtpr;
-  unsigned int rsvd38;
-  unsigned int dmacrxdtpr;
-  unsigned int dmactxdrlr;
-  unsigned int dmacrxdrlr;
-  unsigned int dmacier;
-  unsigned int dmacrxiwtr;
-  unsigned int rsvd39[2];
-  unsigned int dmaccatxdr;
-  unsigned int rsvd40;
-  unsigned int dmaccarxdr;
-  unsigned int rsvd41;
-  unsigned int dmaccatxbr;
-  unsigned int rsvd42;
-  unsigned int dmaccarxbr;
-  unsigned int dmacsr;
-  unsigned int rsvd43[2];
-  unsigned int dmacmfcr;
+  reg32_t rsvd12[248];
+  reg32_t mmc_control;
+  reg32_t mmc_rx_interrupt;
+  reg32_t mmc_tx_interrupt;
+  reg32_t mmc_rx_interrupt_mask;
+  reg32_t mmc_tx_interrupt_mask;
+  reg32_t rsvd13[14];
+  reg32_t txsnglcolg;
+  reg32_t txmultcolg;
+  reg32_t rsvd14[5];
+  reg32_t txpktg;
+  reg32_t rsvd15[10];
+  reg32_t rxcrcerr;
+  reg32_t rxalgnerr;
+  reg32_t rsvd16[10];
+  reg32_t rxucastg;
+  reg32_t rsvd17[9];
+  reg32_t txlpiusc;
+  reg32_t txlpitrc;
+  reg32_t rxlpiusc;
+  reg32_t rxlpitrc;
+  reg32_t rsvd18[65];
+  reg32_t macl3l4c0r;
+  reg32_t macl4a0r;
+  reg32_t rsvd19[2];
+  reg32_t macl3a00r;
+  reg32_t macl3a10r;
+  reg32_t macl3a20r;
+  reg32_t macl3a30r;
+  reg32_t rsvd20[4];
+  reg32_t macl3l4c1r;
+  reg32_t macl4a1r;
+  reg32_t rsvd21[2];
+  reg32_t macl3a01r;
+  reg32_t macl3a11r;
+  reg32_t macl3a21r;
+  reg32_t macl3a31r;
+  reg32_t rsvd22[108];
+  reg32_t mactscr;
+  reg32_t macssir;
+  reg32_t macstsr;
+  reg32_t macstnr;
+  reg32_t macstsur;
+  reg32_t macstnur;
+  reg32_t mactsar;
+  reg32_t rsvd23;
+  reg32_t mactssr;
+  reg32_t rsvd24[3];
+  reg32_t mactxtssnr;
+  reg32_t mactxtsssr;
+  reg32_t rsvd25[2];
+  reg32_t macacr;
+  reg32_t rsvd26;
+  reg32_t macatsnr;
+  reg32_t macatssr;
+  reg32_t mactsiacr;
+  reg32_t mactseacr;
+  reg32_t mactsicnr;
+  reg32_t mactsecnr;
+  reg32_t rsvd27[4];
+  reg32_t macppscr;
+  reg32_t rsvd28[3];
+  reg32_t macppsttsr;
+  reg32_t macppsttnr;
+  reg32_t macppsir;
+  reg32_t macppswr;
+  reg32_t rsvd29[12];
+  reg32_t macpocr;
+  reg32_t macspi0r;
+  reg32_t macspi1r;
+  reg32_t macspi2r;
+  reg32_t maclmir;
+  reg32_t rsvd30[11];
+  reg32_t mtlomr;
+  reg32_t rsvd31[7];
+  reg32_t mtlisr;
+  reg32_t rsvd32[55];
+  reg32_t mtltxqomr;
+  reg32_t mtltxqur;
+  reg32_t mtltxqdr;
+  reg32_t rsvd33[8];
+  reg32_t mtlqicsr;
+  reg32_t mtlrxqomr;
+  reg32_t mtlrxqmpocr;
+  reg32_t mtlrxqdr;
+  reg32_t rsvd34[177];
+  reg32_t dmamr;
+  reg32_t dmasbmr;
+  reg32_t dmaisr;
+  reg32_t dmadsr;
+  reg32_t rsvd35[60];
+  reg32_t dmaccr;
+  reg32_t dmactxcr;
+  reg32_t dmacrxcr;
+  reg32_t rsvd36[2];
+  reg32_t dmactxdlar;
+  reg32_t rsvd37;
+  reg32_t dmacrxdlar;
+  reg32_t dmactxdtpr;
+  reg32_t rsvd38;
+  reg32_t dmacrxdtpr;
+  reg32_t dmactxdrlr;
+  reg32_t dmacrxdrlr;
+  reg32_t dmacier;
+  reg32_t dmacrxiwtr;
+  reg32_t rsvd39[2];
+  reg32_t dmaccatxdr;
+  reg32_t rsvd40;
+  reg32_t dmaccarxdr;
+  reg32_t rsvd41;
+  reg32_t dmaccatxbr;
+  reg32_t rsvd42;
+  reg32_t dmaccarxbr;
+  reg32_t dmacsr;
+  reg32_t rsvd43[2];
+  reg32_t dmacmfcr;
 } stm32_eth_h7xx_t;
 
-#define ETH ((volatile stm32_eth_h7xx_t *)ETH_BASE)
+#define ETH ((stm32_eth_h7xx_t *)ETH_BASE)
 
 #define ETH_DMAMR_SWR BIT(0)
 
@@ -426,6 +428,8 @@ static eth_ctx_t eth_ctx;
 static int hal_eth_init()
 {
   unsigned int i;
+  int speed;
+  unsigned int maccr = 0;
 
   /* reset the dma */
   ETH->dmamr |= ETH_DMAMR_SWR;
@@ -486,9 +490,21 @@ static int hal_eth_init()
 
   ETH->macqtxfcr = 0;
   ETH->macrxfcr = 0;
-  ETH->macier = 0;
-  ETH->maccr = BIT(14) | BIT(13); /* 100Mbit Full Duplex */
-  ETH->maccr |= BIT(1) | BIT(0);  /* enable tx and rx */
+  ETH->macier = 1;
+
+  speed = phy_reset();
+  if (speed < 0)
+    return -1;
+
+  if (speed & BIT(0))
+    maccr |= BIT(14);
+
+  if (speed & BIT(1))
+    maccr |= BIT(13);
+
+  maccr |= BIT(1) | BIT(0);  /* enable tx and rx */
+
+  ETH->maccr = maccr;
 
   __DSB();
 
@@ -533,30 +549,6 @@ void phy_write(unsigned int phy, unsigned int reg, unsigned int val)
   }
   if (count == 0)
     debug_printf("timeout waiting for phy\n");
-}
-
-void phy_reset()
-{
-  unsigned int count;
-
-  phy_write(0, 0, BIT(15)); /* reset phy */
-
-  hal_delay_us(100);
-  while (phy_read(0, 0) & BIT(15))
-    ;
-
-  hal_delay_us(100);
-
-  phy_write(0, 0, BIT(13) | BIT(9) | BIT(8));
-  count = 5000;
-  while ((phy_read(0, 0) & BIT(9)) && count) {
-    hal_delay_us(100);
-    count--;
-  }
-  if (count == 0) {
-    xprintf("timeout\n");
-    return;
-  }
 }
 
 int cmd_eth(int argc, char *argv[])

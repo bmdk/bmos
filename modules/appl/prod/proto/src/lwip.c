@@ -81,8 +81,8 @@ void task_net()
 
     if (!has_addr && dhcp_supplied_address(&ethif)) {
       xslog(LOG_INFO, "ip:%d.%d.%d.%d"
-                      "/%d.%d.%d.%d"
-                      " gw:%d.%d.%d.%d\n",
+            "/%d.%d.%d.%d"
+            " gw:%d.%d.%d.%d\n",
             BYTE(ethif.ip_addr.addr, 0),
             BYTE(ethif.ip_addr.addr, 1),
             BYTE(ethif.ip_addr.addr, 2),
@@ -97,7 +97,7 @@ void task_net()
             BYTE(ethif.gw.addr, 1),
             BYTE(ethif.gw.addr, 2),
             BYTE(ethif.gw.addr, 3)
-           );
+            );
       has_addr = 1;
     }
   }
