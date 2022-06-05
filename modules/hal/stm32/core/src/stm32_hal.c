@@ -110,6 +110,8 @@ void stm32_get_udid(void *buf, unsigned int len)
 #define FLASH_SIZE 0x1FFFF7CC
 #elif STM32_G0XX || STM32_G4XX || STM32_L4XX || STM32_WBXX || STM32_L4R
 #define FLASH_SIZE 0x1FFF75E0
+#elif STM32_L0XX
+#define FLASH_SIZE 0x1FF8007C
 #else
 #error X
 #endif
@@ -128,7 +130,7 @@ unsigned int hal_flash_size(void)
 #define DBGMCU_IDCODE 0x5C001000
 #elif STM32_UXXX
 #define DBGMCU_IDCODE 0xE0044000
-#elif STM32_F0XX || STM32_G0XX
+#elif STM32_F0XX || STM32_G0XX || STM32_L0XX
 #define DBGMCU_IDCODE 0x40015800
 #else
 #define DBGMCU_IDCODE 0xE0042000
@@ -247,6 +249,19 @@ int cmd_devid(int argc, char *argv[])
     break;
   case 0x464:
     idstr = "L41x/42x";
+    break;
+#elif STM32_L0XX
+  case 0x417:
+    idstr = "L0xx cat3";
+    break;
+  case 0x425:
+    idstr = "L0xx cat2";
+    break;
+  case 0x447:
+    idstr = "L0xx cat5";
+    break;
+  case 0x457:
+    idstr = "L0xx cat1";
     break;
 #elif STM32_U5XX
   case 0x482:

@@ -58,6 +58,9 @@
 #elif STM32_G030
 #define APP_START 10
 #define APP_LEN 32
+#elif STM32_L0XX
+#define APP_START 16
+#define APP_LEN 32
 #else
 #define APP_START 32
 #define APP_LEN 64
@@ -72,6 +75,8 @@ typedef struct {
 
 #if STM32_H7XX
 #define FLASH_BLKSIZE 128
+#elif STM32_L0XX
+#define FLASH_BLKSIZE 128 // FIXME Bytes
 #elif STM32_G4XX || STM32_L4XX
 #define FLASH_BLKSIZE 2
 #elif STM32_L4R || STM32_WBXX
@@ -210,6 +215,10 @@ static inline int _flash_erase(unsigned int start, unsigned int count)
 #else
 static inline int _flash_erase(unsigned int start, unsigned int count)
 {
+#if STM32_L0XX
+  start *= 8;
+  count *= 8;
+#else
   if ((start % FLASH_BLKSIZE) != 0) {
     xprintf("invalid start");
     return -1;
@@ -221,6 +230,7 @@ static inline int _flash_erase(unsigned int start, unsigned int count)
 
   start /= FLASH_BLKSIZE;
   count /= FLASH_BLKSIZE;
+#endif
 
   flash_erase(start, count);
 

@@ -33,7 +33,11 @@
 
 /* should probably be more flexible here */
 #if CONFIG_TIMER_16BIT
-#define TIM_BASE TIM1_BASE
+ #if STM32_L0XX
+ #define TIM_BASE TIM2_BASE
+ #else
+ #define TIM_BASE TIM1_BASE
+ #endif
 #else
 #define TIM_BASE TIM2_BASE
 #endif

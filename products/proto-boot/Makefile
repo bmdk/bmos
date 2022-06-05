@@ -42,6 +42,7 @@ PROG += h743wa
 PROG += h743nucleo
 PROG += h745nucleo
 PROG += h735dk
+PROG += l073n
 PROG += l4r
 PROG += f767
 PROG += f429
@@ -101,6 +102,11 @@ STACK_END.h743wa = 0x20020000
 
 XCFLAGS.h745nucleo += -DSTM32_H7XX -DSTM32_H745N -DSTM32_VOS_HACK
 STACK_END.h745nucleo = 0x20020000
+
+XCFLAGS.l073n += -DSTM32_L0XX -DSTM32_L073N
+XCFLAGS.l073n += -DCONFIG_TIMER_16BIT=1
+STACK_END.l073n = 0x20005000
+CPU.l073n = cortex-m0plus
 
 XCFLAGS.l4r += -DSTM32_L4R
 STACK_END.l4r = 0x200A0000
@@ -440,6 +446,14 @@ FILES.f767 += stm32_hal_rtc.o
 FILES.f767 += stm32_board_f767.o
 FILES.f767 += $(FILES.f7xx)
 FILES.f767 += $(FILES.fxxx)
+
+FILES.l0xx += stm32_usart_b.o
+FILES.l0xx += stm32_rcc_l0.o
+FILES.l0xx += stm32_flash_l0.o
+FILES.l0xx += stm32_pwr_l0xx.o
+
+FILES.l073n += $(FILES.l0xx)
+FILES.l073n += stm32_board_l073n.o
 
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o

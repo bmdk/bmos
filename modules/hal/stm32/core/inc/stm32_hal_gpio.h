@@ -95,7 +95,7 @@ typedef struct {
 #if STM32_L4R || STM32_L4XX || STM32_G4XX || STM32_WBXX || STM32_F0XX || \
   STM32_F3XX
 #define GPIO_BASE 0x48000000
-#elif STM32_G0XX
+#elif STM32_G0XX || STM32_L0XX
 #define GPIO_BASE 0x50000000
 #elif STM32_H7XX
 #define GPIO_BASE 0x58020000
@@ -103,8 +103,11 @@ typedef struct {
 #define GPIO_BASE 0x42020000
 #elif STM32_F1XX
 #define GPIO_BASE 0x40010800
-#else
+#elif STM32_F4XX || STM32_F7XX
 #define GPIO_BASE 0x40020000
+#else
+//#define GPIO_BASE 0x40020000
+#error X
 #endif
 
 #define STM32_GPIO(port) ((stm32_gpio_t *)(GPIO_BASE + (0x400 * (port))))
