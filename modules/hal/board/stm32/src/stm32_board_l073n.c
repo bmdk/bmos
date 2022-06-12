@@ -61,7 +61,6 @@ void pin_init()
 #define USART3_BASE (void *)0x40004800
 #define LPUART1_BASE (void *)0x40008000
 
-//#define CLOCK 2100000
 #define CLOCK 32000000
 #define APB2_CLOCK CLOCK
 #define APB1_CLOCK CLOCK
@@ -72,7 +71,6 @@ uart_t debug_uart = { "debug", USART2_BASE, APB1_CLOCK, 28 };
 
 static const gpio_handle_t leds[] = { GPIO(0, 5) };
 
-#if 1
 static const struct pll_params_t pll_params = {
   .flags   = PLL_FLAG_BYPASS,
   .pllsrc  = RCC_PLLSRC_HSE,
@@ -80,7 +78,6 @@ static const struct pll_params_t pll_params = {
   .plldiv  = RCC_PLLDIV_2,
   .latency = 1
 };
-#endif
 
 unsigned int hal_cpu_clock = CLOCK;
 
