@@ -76,7 +76,7 @@ typedef struct {
 } flash_err_t;
 
 /* *INDENT-OFF* */
-flash_err_t flerr[] = {
+static const flash_err_t flerr[] = {
   { "CRCEND", 27 },
   { "DBECCERR", 26 },
   { "SNECCERR", 25 },
@@ -96,7 +96,7 @@ static void flash_error_decode(unsigned int sr)
   unsigned int i;
 
   for (i = 0; i < ARRSIZ(flerr); i++) {
-    flash_err_t *e = &flerr[i];
+    const flash_err_t *e = &flerr[i];
     if (BIT(e->pos) & sr)
       xprintf("%s,", e->name);
   }

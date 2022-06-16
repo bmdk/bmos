@@ -116,8 +116,7 @@ uart_t debug_uart_2 =
 /* Red, Green, Blue */
 static const gpio_handle_t leds[] = { GPIO(4, 3) };
 
-#if 1
-static struct pll_params_t clock_params = {
+static const struct pll_params_t clock_params = {
   .pllsrc = RCC_C_CLK_HSE_OSC,
   .divm1  = 5,
   .divn1  = 192,
@@ -125,7 +124,6 @@ static struct pll_params_t clock_params = {
   .divq1  = 2,
   .divr1  = 2
 };
-#endif
 
 unsigned int hal_cpu_clock = 480000000;
 

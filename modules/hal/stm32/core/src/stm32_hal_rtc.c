@@ -112,8 +112,8 @@ static inline unsigned int reg_get_field(
 }
 
 /* *INDENT-OFF* */
-const char *dayname[] = { "NONE", "MON", "TUE", "WED",
-                          "THU",  "FRI", "SAT", "SUN" };
+static const char *dayname[] = { "NONE", "MON", "TUE", "WED",
+                                 "THU",  "FRI", "SAT", "SUN" };
 /* *INDENT-ON* */
 
 #define TYPE_32K 0
