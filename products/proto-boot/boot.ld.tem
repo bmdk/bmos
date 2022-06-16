@@ -116,6 +116,8 @@ SECTIONS
     _rsdata = .;
     *(.data)
     *(.data*)
+    *(.ramfunc)
+    *(.ramfunc*)
 
     . = ALIGN(8);
     _redata = .;

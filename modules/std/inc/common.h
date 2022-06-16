@@ -42,4 +42,7 @@ typedef volatile unsigned int reg32_t;
 typedef volatile unsigned short reg16_t;
 typedef volatile unsigned char reg8_t;
 
+#define RAMFUNC __attribute__((section(".ramfunc"), __long_call__, \
+                               __noinline__))
+
 #endif
