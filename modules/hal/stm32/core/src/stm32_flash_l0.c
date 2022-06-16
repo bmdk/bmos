@@ -163,11 +163,76 @@ int flash_erase(unsigned int start, unsigned int count)
   return 0;
 }
 
+static RAMFUNC int _flash_program_page(unsigned int *a,
+                                       const unsigned int *d,
+                                       unsigned int blocks)
+{
+  unsigned int i, j;
+
+  for (i = 0; i < blocks; i++) {
+    unsigned int count = 100000;
+
+    FLASH->pecr |= FLASH_PECR_PROG | FLASH_PECR_FPRG;
+
+    for (j = 0; j < 16; j++)
+      *a++ = *d++;
+
+    while (FLASH->sr & FLASH_SR_BSY)
+      if (count-- == 0)
+        return -1;
+
+    if (FLASH->sr & FLASH_SR_EOP)
+      FLASH->sr = FLASH_SR_EOP;
+
+    FLASH->pecr &= ~(FLASH_PECR_PROG | FLASH_PECR_FPRG);
+  }
+
+  return 0;
+}
+
+int flash_program_page(unsigned int addr, const void *data, unsigned int len)
+{
+  const unsigned int *d = (const unsigned int *)data;
+  unsigned int *a = (unsigned int *)addr;
+  int err;
+  unsigned int saved;
+
+  clear_status();
+
+#if !CONFIG_FLASH_NO_LOCK
+  flash_unlock();
+#endif
+
+  len >>= 6;
+  saved = interrupt_disable();
+  err = _flash_program_page(a, d, len);
+  interrupt_enable(saved);
+  if (err < 0)
+    return -1;
+
+  flash_lock();
+
+#if CONFIG_FLASH_OUTPUT_ERROR
+  {
+    unsigned int sr = FLASH->sr & ~0xf;
+    if (sr)
+      debug_printf("flash error addr:%08x sr:%08x\n", addr, sr);
+  }
+#endif
+
+  return 0;
+}
+
+#define HPAGE_MASK (BIT(6) - 1)
+
 int flash_program(unsigned int addr, const void *data, unsigned int len)
 {
   unsigned int i;
   const unsigned int *d = (const unsigned int *)data;
   unsigned int *a;
+
+  if ((addr & HPAGE_MASK) == 0 && (len & HPAGE_MASK) == 0)
+    return flash_program_page(addr, data, len);
 
   clear_status();
 
