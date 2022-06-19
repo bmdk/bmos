@@ -32,6 +32,12 @@ unsigned short adc_val[2];
 #if STM32_F1XX
 /* no calibration values in F1XX so we need to convert from datasheet values */
 unsigned char adc_seq[] = { 17, 16 };
+
+/* from the datasheet for F103 */
+#define VREFINT_V 1200
+#define V25 1430
+#define T_AVG_SLOPE 4300 // uV/C
+
 #elif STM32_L4XX || STM32_G4XX
 #if STM32_L4XX
 unsigned char adc_seq[] = { 0, 17 };
@@ -56,6 +62,7 @@ unsigned char adc_seq[] = { 17, 18 };
 #define VREFINT_V 3300
 #endif
 
+#ifdef VREFINT_CAL
 static unsigned int get_vdd(void)
 {
   if (adc_val[0] == 0)
@@ -90,17 +97,39 @@ static int get_temp(int adcval)
           (adc_conv_voltage(adcval) - ts_cal1) + diff / 2) / diff +
          TS_CAL1_TEMP * 1000;
 }
+#else
+static unsigned int get_vdd(void)
+{
+  if (adc_val[0] == 0)
+    return 0;
+
+  return VREFINT_V * 4095 / adc_val[0];
+}
+
+// Temperature (in °C) = {(V 25 - V SENSE ) / Avg_Slope} + 25.
+static int get_temp(int adcval)
+{
+  int v;
+
+  if (adc_val[0] == 0)
+    return 0;
+
+#if 1
+  v = VREFINT_V * adcval / adc_val[0];
+#else
+  v = 3300 * adcval / 4095;
+#endif
+
+  return 1000000 * (V25 - v) / T_AVG_SLOPE + 25000;
+}
+#endif
 
 static void adc_conv_done(unsigned short *data, unsigned int count)
 {
   memcpy(adc_val, data, count * sizeof(unsigned short));
 
-#if STM32_F1XX
-  FAST_LOG('A', "vals V:%d T:%d\n", adc_val[0], adc_val[1]);
-#else
   xslog(LOG_INFO, "R: VDD:%d T:%d\n", adc_val[0], adc_val[1]);
   xslog(LOG_INFO, "VDD:%d T:%d\n", get_vdd(), get_temp(adc_val[1]));
-#endif
 }
 
 static void adc_task(void *arg)
