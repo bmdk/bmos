@@ -113,15 +113,26 @@ static int can_send(stm32_can_t *can, can_t *pkt)
   return 0;
 }
 
-static void _can_filter_add(stm32_can_t *can,
-                            unsigned int index, unsigned int id)
+static void _can_filter_add_mask(stm32_can_t *can,
+                                 unsigned int index, unsigned int id,
+                                 unsigned int mask)
 {
   can->fs1r |= BIT(index);
   can->fa1r |= BIT(index);
   can->f[index].id = id << 21;
-  can->f[index].mask = 0x7ffUL << 21;
+  can->f[index].mask = mask << 21;
 }
 
+static void _can_filter_add(stm32_can_t *can,
+                            unsigned int index, unsigned int id)
+{
+  _can_filter_add_mask(can, index, id, 0x7ff);
+}
+
+static void _can_filter_add_promisc(stm32_can_t *can)
+{
+  _can_filter_add_mask(can, 0, 0, 0);
+}
 
 static inline unsigned int val_param(unsigned int param, unsigned int mask)
 {
@@ -152,8 +163,11 @@ static void can_init(candev_t *c, const unsigned int *id,
   can->fs1r = 0;
   can->ffa1r = 0; /* FIFO 0 */
 
-  for (i = 0; i < id_len; i++)
-    _can_filter_add(can, i, id[i]);
+  if (id_len == 0)
+    _can_filter_add_promisc(can);
+  else
+    for (i = 0; i < id_len; i++)
+      _can_filter_add(can, i, id[i]);
 
   can->fmr = 0;
 
