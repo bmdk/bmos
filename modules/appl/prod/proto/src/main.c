@@ -338,7 +338,7 @@ int main()
   task_init(task_led, NULL, "lcd", 4, 0, 512);
 #endif
 
-#if STM32_G4XX || STM32_H735DK || STM32_H745N || STM32_U575N
+#if STM32_G4XX || STM32_H735DK || STM32_H745N || STM32_U575N || STM32_F103BP
   task_init(task_can, NULL, "can", 4, 0, 256);
 #endif
 

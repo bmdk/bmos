@@ -53,9 +53,15 @@ static void pin_init(void)
   /* USART1 RX */
   gpio_init(GPIO(0, 10), MODE_INPUT);
 
+  /* CAN1 RX */
+  gpio_init(GPIO(0, 11), MODE_INPUT);
+  /* CAN1 TX */
+  gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32F1(CNF_ALT_PP, MODE_OUTPUT_HIG));
+
   enable_ahb1(0);  /* DMA1 */
 
   enable_apb1(0);  /* TIM2 */
+  enable_apb1(25); /* CAN1 */
   enable_apb1(27); /* BKP */
   enable_apb1(28); /* PWR */
 }

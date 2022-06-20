@@ -34,21 +34,24 @@
 #include "hal_int.h"
 #include "io.h"
 #include "shell.h"
+#include "xslog.h"
 #include "xlib.h"
 #include "common.h"
 
-#if STM32_G4XX
-#define FDCAN1_BASE 0x40006400
-#define FDCAN2_BASE 0x40006800
-#define FDCAN3_BASE 0x40006C00
+#if STM32_F1XX || STM32_F4XX || STM32_G4XX
+#define CAN1_BASE 0x40006400
+#define CAN2_BASE 0x40006800
+#define CAN3_BASE 0x40006C00
+#elif STM32_L4XX
+#define CAN1_BASE 0x40006400
 #elif STM32_UXXX
-#define FDCAN1_BASE 0x4000A400
+#define CAN1_BASE 0x4000A400
 #elif STM32_H7XX
-#define FDCAN1_BASE 0x4000A000
-#define FDCAN2_BASE 0x4000A400
-#define FDCAN3_BASE 0x4000D400
+#define CAN1_BASE 0x4000A000
+#define CAN2_BASE 0x4000A400
+#define CAN3_BASE 0x4000D400
 #else
-#error Define FDCAN base addresses
+#error Define CAN base addresses
 #endif
 
 #define OP_CAN1_DATA 1
@@ -67,11 +70,26 @@ static const unsigned int can_id_list[] = {
 #endif
 };
 
-#if STM32_G4XX
+#if STM32_F1XX
+/* APB1 clock 36 MHz */
+static candev_t can0 = {
+  .name     = "can1",
+  .base     = (void *)CAN1_BASE,
+  .irq      = 20,
+  /* 1Mbit */
+  .params   = {
+    .prediv = 4,
+    .ts1    = 4,
+    .ts2    = 4,
+    .sjw    = 1
+  },
+  .tx_irq   = 19
+};
+#elif STM32_G4XX
 /* HSE at 24MHz clock */
 static candev_t can0 = {
   .name     = "can0",
-  .base     = (void *)FDCAN1_BASE,
+  .base     = (void *)CAN1_BASE,
   .irq      = 21,
   .params   = {
     .prediv = 1,
@@ -84,7 +102,7 @@ static candev_t can0 = {
 /* PLL1Q at 160 MHz clock */
 static candev_t can0 = {
   .name     = "can0",
-  .base     = (void *)FDCAN1_BASE,
+  .base     = (void *)CAN1_BASE,
   .irq      = 39,
   .params   = {
     .prediv = 8,
@@ -97,7 +115,7 @@ static candev_t can0 = {
 /* HSE at 25MHz clock */
 static candev_t can0 = {
   .name     = "can0",
-  .base     = (void *)FDCAN1_BASE,
+  .base     = (void *)CAN1_BASE,
   .irq      = 19,
   .params   = {
     .prediv = 1,
@@ -127,6 +145,8 @@ static void send_can(unsigned int id, void *data, unsigned int len)
 
 void task_can()
 {
+  char buf[36];
+
   can_task_data.rxq = queue_create("can0rx", QUEUE_TYPE_TASK);
   can_task_data.txq = can_open(&can0, can_id_list, ARRSIZ(can_id_list),
                                can_task_data.rxq, OP_CAN1_DATA);
@@ -139,15 +159,28 @@ void task_can()
     m = op_msg_wait(can_task_data.rxq);
 
     if (m->op == OP_CAN1_DATA && m->len == sizeof(can_t)) {
+      int i, n, r = sizeof(buf) - 1;
+      char *bufp;
       can_t *pkt = BMOS_OP_MSG_GET_DATA(m);
-      xprintf("pkt: id %x len %d\n", pkt->id, pkt->len);
+
+      bufp = buf;
+      n = snprintf(bufp, r, "can rx: id %03x(%d) ", pkt->id, pkt->len);
+      bufp += n;
+      r -= n;
+
+      for (i = 0; i < pkt->len; i++) {
+        n = snprintf(bufp, r, "%02x", pkt->data[i]);
+        bufp += n;
+        r -= n;
+      }
+      xslog(LOG_INFO, buf);
     }
 
     op_msg_return(m);
   }
 }
 
-int cmd_fdcan(int argc, char *argv[])
+int cmd_can(int argc, char *argv[])
 {
   unsigned int id, i, len;
   unsigned char data[8];
@@ -185,4 +218,4 @@ int cmd_fdcan(int argc, char *argv[])
   return 0;
 }
 
-SHELL_CMD(fdcan, cmd_fdcan);
+SHELL_CMD(can, cmd_can);

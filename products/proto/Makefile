@@ -484,12 +484,12 @@ FILES.h7xx += hd44780.o
 
 FILES.h723n += stm32_board_h723n.o
 FILES.h723n += stm32_fdcan.o
-FILES.h723n += fdcan.o
+FILES.h723n += can_test.o
 
 FILES.h735dk += stm32_lcd.o
 FILES.h735dk += stm32_board_h735dk.o
 FILES.h735dk += stm32_fdcan.o
-FILES.h735dk += fdcan.o
+FILES.h735dk += can_test.o
 
 FILES.h743wa += stm32_board_h743wa.o
 FILES.h743wa += stm32_hal_spi_b.o
@@ -501,7 +501,7 @@ FILES.h743nucleo += stm32_board_h743nucleo.o
 FILES.h745nucleo += stm32_board_h745nucleo.o
 FILES.h745nucleo += stm32_wwdg.o
 FILES.h745nucleo += stm32_fdcan.o
-FILES.h745nucleo += fdcan.o
+FILES.h745nucleo += can_test.o
 
 FILES.h745nm4 += stm32_board_h745nm4.o
 
@@ -554,7 +554,8 @@ XSLOG.f103deb = xslog_simple.o
 FILES.f103bp += stm32_board_f103bp.o
 FILES.f103bp += $(FILES.f1xx)
 FILES.f103bp += adc.o
-
+FILES.f103bp += stm32_can.o
+FILES.f103bp += can_test.o
 
 FILES.f103n += stm32_board_f103n.o
 FILES.f103n += $(FILES.f1xx)
@@ -777,14 +778,14 @@ FILES.g474n += font1.o
 FILES.g474n += fb.o
 FILES.g474n += ssd1306_fonts.o
 FILES.g474n += i2c_test.o
-FILES.g474n += fdcan.o
+FILES.g474n += can_test.o
 FILES.g474n += stm32_hal_adc.o
 FILES.g474n += adc.o
 
 FILES.g431kbn += $(FILES.g4xx)
 FILES.g431kbn += stm32_hal_rtc.o
 FILES.g431kbn += stm32_board_g431kbn.o
-FILES.g431kbn += fdcan.o
+FILES.g431kbn += can_test.o
 FILES.g431kbn += stm32_hal_adc.o
 FILES.g431kbn += adc.o
 
@@ -795,7 +796,7 @@ FILES.u575n += stm32_rcc_u5.o
 FILES.u575n += stm32_usart_b.o
 FILES.u575n += stm32_hal_gpdma.o
 FILES.u575n += stm32_fdcan.o
-FILES.u575n += fdcan.o
+FILES.u575n += can_test.o
 FILES.u575n += stm32_board_u575n.o
 FILES.u575n += stm32_flash.o
 
