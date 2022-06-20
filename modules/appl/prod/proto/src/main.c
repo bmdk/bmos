@@ -273,7 +273,7 @@ int main()
   hal_init();
   hal_board_init();
   hal_time_init();
-  fast_log_init("TIS");
+  fast_log_init("");
 
   led_set(0, 1);
 
