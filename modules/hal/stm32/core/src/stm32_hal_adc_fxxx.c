@@ -126,15 +126,13 @@ static void adc_irq(void *arg)
 
   sr = a->sr;
 
-  if (sr & SR_OVR)
+  if (sr & SR_OVR) {
     FAST_LOG('A', "adc overflow\n", 0, 0);
+    a->sr |= SR_OVR;
+  }
 
   if (sr & SR_EOC)
     FAST_LOG('A', "adc EOC\n", 0, 0);
-
-#if 0
-  a->sr = 0;
-#endif
 }
 
 static void adc_dma_irq(void *data)
@@ -183,7 +181,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   hal_delay_us(2);
 
 #if STM32_F1XX
-  a->cr1 = CR1_SCAN | CR1_EOCIE;
+  a->cr1 = CR1_SCAN;
 
   reg_set_field(&a->cr2, 3, 17, CR2_EXTSEL_SWSTART);
 
@@ -192,7 +190,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   while (a->cr2 & CR2_CAL)
     ;
 #else
-  a->cr1 = CR1_OVRIE | CR1_RES_12 | CR1_SCAN | CR1_EOCIE;
+  a->cr1 = CR1_OVRIE | CR1_RES_12 | CR1_SCAN;
   ac->ccr = CCR_TSVREFE | CCR_ADCPRE_DIV8;
 #endif
 
