@@ -31,11 +31,15 @@ typedef struct {
   reg32_t apb2enr;
   reg32_t apb1enr;
   rcc_ls_t rcc_ls;
-#if STM32_F0XX || STM32_F3XX
   reg32_t ahbrstr;
-#endif
   reg32_t cfgr2;
-#if STM32_F0XX || STM32_F3XX
+#if AT32_F4XX
+  reg32_t misc1;
+  reg32_t pad1[7];
+  reg32_t misc2;
+  reg32_t misc3;
+  reg32_t intmap;
+#elif STM32_F0XX || STM32_F3XX
   reg32_t cfgr3;
   reg32_t cr2;
 #endif
@@ -71,6 +75,9 @@ static inline void enable_ahb1(unsigned int n)
 #define RCC_F1_ADCPRE_4 1
 #define RCC_F1_ADCPRE_6 2
 #define RCC_F1_ADCPRE_8 3
+/* AT32 */
+#define RCC_F1_ADCPRE_12 5
+#define RCC_F1_ADCPRE_16 7
 
 #define RCC_F1_PPRE_1 0
 #define RCC_F1_PPRE_2 4
@@ -88,8 +95,11 @@ static inline void enable_ahb1(unsigned int n)
 #define RCC_F1_HPRE_256 14
 #define RCC_F1_HPRE_512 15
 
+#define PLL_FLAGS_HSPEED BIT(0)
+
 struct pll_params_t {
   unsigned char src;
+  unsigned char flags;
   unsigned short plln;
   unsigned char pllm;
   unsigned char ppre1;

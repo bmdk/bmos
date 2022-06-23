@@ -23,6 +23,7 @@ ROOT ?= $(shell pwd)/../..
 
 ifeq ($(PROG),)
 
+PROG += at32f403bp
 PROG += f030demo
 PROG += f072n
 PROG += f100d
@@ -173,6 +174,9 @@ CPU.f103bp = cortex-m3
 XCFLAGS.f103n += -DSTM32_F103 -DSTM32_F103N -DSTM32_F1XX
 STACK_END.f103n = 0x20005000
 CPU.f103n = cortex-m3
+
+XCFLAGS.at32f403bp += -DAT32_F403 -DAT32_F403BP -DAT32_F4XX
+STACK_END.at32f403bp = 0x20018000
 
 XCFLAGS.f303rt += -DSTM32_F303 -DSTM32_F3XX
 STACK_END.f303rt = 0x2000A000
@@ -384,6 +388,11 @@ FILES.f103n += stm32_usart_a.o
 FILES.f103n += stm32_rcc_f1.o
 FILES.f103n += stm32_flash_f1.o
 FILES.f103n += stm32_board_f103n.o
+
+FILES.at32f403bp += stm32_usart_a.o
+FILES.at32f403bp += stm32_rcc_f1.o
+FILES.at32f403bp += stm32_flash_f1.o
+FILES.at32f403bp += at32_board_f403bp.o
 
 FILES.f303rt += stm32_usart_b.o
 FILES.f303rt += stm32_rcc_f1.o

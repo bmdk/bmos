@@ -24,7 +24,7 @@
 #include "hal_gpio.h"
 #include "stm32_hal_gpio.h"
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
 /* set the mode and cnf fields */
 void stm32_gpio_attr(stm32_gpio_t *gpio, unsigned int num, unsigned int attr)
 {
@@ -120,7 +120,7 @@ void gpio_init(gpio_handle_t gpio, unsigned int type)
   unsigned int bank = GPIO_BANK(gpio);
   unsigned int pin = GPIO_PIN(gpio);
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
   stm32_gpio_attr(STM32_GPIO(bank), pin, (type == GPIO_INPUT) ?
                   GPIO_ATTR_STM32F1(CNF_INP_FLO, MODE_INPUT) :
                   GPIO_ATTR_STM32F1(CNF_OUT_PP, MODE_OUTPUT_HIG));
@@ -135,7 +135,7 @@ void gpio_init_attr(gpio_handle_t gpio, unsigned int attr)
   unsigned int pin = GPIO_PIN(gpio);
   stm32_gpio_t *gpio_reg = STM32_GPIO(bank);
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
   stm32_gpio_attr(gpio_reg, pin, attr);
 #else
   stm32_gpio_alt(gpio_reg, pin, GPIO_ATTR_STM32_ALT(attr));

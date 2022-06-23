@@ -29,7 +29,15 @@
 
 unsigned short adc_val[2];
 
-#if STM32_F1XX
+#if AT32_F4XX
+unsigned char adc_seq[] = { 17, 16 };
+
+/* from the datasheet for AT32F4XX */
+#define VREFINT_V 1200
+#define V25 1280
+#define T_AVG_SLOPE -4260 // uV/C
+
+#elif STM32_F1XX
 /* no calibration values in F1XX so we need to convert from datasheet values */
 unsigned char adc_seq[] = { 17, 16 };
 

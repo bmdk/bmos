@@ -68,7 +68,7 @@
 #define GPIO_ATTR_STM32_SPEED(attr) (((attr) >> 2) & 0x3)
 #define GPIO_ATTR_STM32_TYPE(attr) ((attr) & 0x3)
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
 typedef struct {
   reg32_t cr[2];
   reg32_t idr;
@@ -101,7 +101,7 @@ typedef struct {
 #define GPIO_BASE 0x58020000
 #elif STM32_UXXX
 #define GPIO_BASE 0x42020000
-#elif STM32_F1XX
+#elif STM32_F1XX || AT32_F4XX
 #define GPIO_BASE 0x40010800
 #elif STM32_F4XX || STM32_F7XX
 #define GPIO_BASE 0x40020000
@@ -112,7 +112,7 @@ typedef struct {
 
 #define STM32_GPIO(port) ((stm32_gpio_t *)(GPIO_BASE + (0x400 * (port))))
 
-#if !STM32_F1XX
+#if !STM32_F1XX && !AT32_F4XX
 static inline void stm32_gpio_mode(stm32_gpio_t *gpio, unsigned int pin,
                                    unsigned int mode)
 {

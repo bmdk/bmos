@@ -23,6 +23,7 @@ ROOT ?= $(shell pwd)/../..
 
 ifeq ($(PROG),)
 
+PROG += at32f403bp
 PROG += f030demo
 PROG += f072n
 PROG += f100d
@@ -220,6 +221,14 @@ XCFLAGS.f103n += -DCONFIG_TIMER_16BIT=1
 XCFLAGS.f103n += -DCONFIG_ENABLE_ADC=1
 XCFLAGS.f103n += -mcpu=cortex-m3
 STACK_END.f103n = 0x20005000
+
+XCFLAGS.at32f403bp += -DAT32_F4XX
+XCFLAGS.at32f403bp += -DAT32_F403BP -DAT32_F403
+# no ethernet on at32f403
+XCFLAGS.at32f403bp += -DCONFIG_N_INTS=79
+XCFLAGS.at32f403bp += -DCONFIG_ENABLE_ADC=1
+XCFLAGS.at32f403bp += -mcpu=cortex-m4
+STACK_END.at32f403bp = 0x20018000
 
 XCFLAGS.f303rt += -DSTM32_F3XX
 XCFLAGS.f303rt += -DSTM32_F303RT -DSTM32_F303
@@ -556,6 +565,12 @@ FILES.f103bp += $(FILES.f1xx)
 FILES.f103bp += adc.o
 FILES.f103bp += stm32_can.o
 FILES.f103bp += can_test.o
+
+FILES.at32f403bp += at32_board_f403bp.o
+FILES.at32f403bp += $(FILES.f1xx)
+FILES.at32f403bp += adc.o
+FILES.at32f403bp += stm32_can.o
+FILES.at32f403bp += can_test.o
 
 FILES.f103n += stm32_board_f103n.o
 FILES.f103n += $(FILES.f1xx)

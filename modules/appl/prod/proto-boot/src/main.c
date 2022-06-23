@@ -94,6 +94,8 @@ typedef struct {
 #define FLASH_BLKSIZE 2
 #elif STM32_F1XX || STM32_F0XX
 #define FLASH_BLKSIZE 1
+#elif AT32_F4XX
+#define FLASH_BLKSIZE 2
 #elif STM32_F3XX
 #define FLASH_BLKSIZE 2
 #else

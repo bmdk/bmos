@@ -85,7 +85,7 @@ void blink()
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 24 /* EXTI13 */
 #elif STM32_F411BP || STM32_F401BP || STM32_F407DEB || STM32_F407DEBM || \
-  STM32_F4D || STM32_F1XX
+  STM32_F4D || STM32_F1XX || AT32_F4XX
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 6
 #elif STM32_G030DEB
@@ -338,7 +338,8 @@ int main()
   task_init(task_led, NULL, "lcd", 4, 0, 512);
 #endif
 
-#if STM32_G4XX || STM32_H735DK || STM32_H745N || STM32_U575N || STM32_F103BP
+#if STM32_G4XX || STM32_H735DK || STM32_H745N || STM32_U575N || \
+  STM32_F103BP || AT32_F403BP
   task_init(task_can, NULL, "can", 4, 0, 256);
 #endif
 

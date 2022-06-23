@@ -30,7 +30,7 @@
 #include "stm32_hal.h"
 #include "stm32_hal_adc.h"
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
 #define DMA_NUM 0
 #define DMA_CHAN 0
 #define DMA_DEVID 0
@@ -61,7 +61,7 @@ typedef struct {
   reg32_t ccr;
 } stm32_adc_com_t;
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
 #define ADC_BASE (void *)0x40012400
 #else
 #define ADC_BASE (void *)0x40012000
@@ -104,7 +104,7 @@ static adc_data_t adc_data;
 #define CR1_AWDIE BIT(6)
 #define CR1_EOCIE BIT(5)
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
 #define CR2_TSVREFE BIT(23)
 #define CR2_SWSTART BIT(22)
 #define CR2_EXTSEL_SWSTART 7
@@ -170,7 +170,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
 
-#if !STM32_F1XX
+#if !STM32_F1XX && !AT32_F4XX
   stm32_adc_com_t *ac = (stm32_adc_com_t *)ADC_COM_BASE;
 #endif
   unsigned int i;
@@ -180,7 +180,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->cr2 = CR2_ADON;
   hal_delay_us(2);
 
-#if STM32_F1XX
+#if STM32_F1XX || AT32_F4XX
   a->cr1 = CR1_SCAN;
 
   reg_set_field(&a->cr2, 3, 17, CR2_EXTSEL_SWSTART);

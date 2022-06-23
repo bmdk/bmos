@@ -38,7 +38,7 @@
 #include "xlib.h"
 #include "common.h"
 
-#if STM32_F1XX || STM32_F4XX || STM32_G4XX
+#if STM32_F1XX || STM32_F4XX || STM32_G4XX || AT32_F4XX
 #define CAN1_BASE 0x40006400
 #define CAN2_BASE 0x40006800
 #define CAN3_BASE 0x40006C00
@@ -70,7 +70,22 @@ static const unsigned int can_id_list[] = {
 #endif
 };
 
-#if STM32_F1XX
+#if AT32_F4XX
+/* APB1 clock 120 MHz */
+static candev_t can0 = {
+  .name     = "can1",
+  .base     = (void *)CAN1_BASE,
+  .irq      = 20,
+  /* 1Mbit */
+  .params   = {
+    .prediv = 12,
+    .ts1    = 5,
+    .ts2    = 4,
+    .sjw    = 1
+  },
+  .tx_irq   = 19
+};
+#elif STM32_F1XX
 /* APB1 clock 36 MHz */
 static candev_t can0 = {
   .name     = "can1",

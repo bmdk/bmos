@@ -63,6 +63,7 @@ typedef struct {
 } stm32_timer_t;
 
 #define CR1_CEN BIT(0)
+#define CR1_PMEN BIT(10) /* AT32 plus mode */
 
 #define EGR_UG BIT(0)
 
@@ -95,12 +96,15 @@ void timer_init(void *base, unsigned int presc)
   stm32_timer_t *t = (stm32_timer_t *)base;
 
   t->cr1 &= ~CR1_CEN;
+#if AT32_F4XX && !CONFIG_TIMER_16BIT
+  t->cr1 |= CR1_PMEN;
+#endif
   t->cnt = 0;
   t->arr = 0xffffffff;
   t->smcr = 0;
   t->psc = presc - 1;
   t->egr = EGR_UG;
-  t->cr1 = CR1_CEN;
+  t->cr1 |= CR1_CEN;
 }
 
 void hal_delay_us(hal_time_us_t us)

@@ -104,7 +104,7 @@ void stm32_get_udid(void *buf, unsigned int len)
 #define FLASH_SIZE 0x1FF1E880
 #elif STM32_UXXX
 #define FLASH_SIZE 0x0BFA07A0
-#elif STM32_F1XX
+#elif STM32_F1XX || AT32_F4XX
 #define FLASH_SIZE 0x1FFFF7E0
 #elif STM32_F0XX || STM32_F3XX
 #define FLASH_SIZE 0x1FFFF7CC
@@ -138,12 +138,74 @@ unsigned int hal_flash_size(void)
 #define DBGMCU_IDCODE_ID(val) ((val) & 0xfff)
 #define DBGMCU_IDCODE_REV(val) ((val) >> 16 & 0xffff)
 
+#define AT_MANU 0x7005
+#define AT32_ID_MANU(val) ((val) >> 16 & 0xffff)
+#define AT32_ID_DEV(val) ((val) & 0xffff)
+
+#if AT32_F4XX
+typedef struct {
+  unsigned short devid;
+  char *name;
+} at32_devid_t;
+
+static const at32_devid_t at32_devid[] =
+{
+  { 0x0240, "AT32F403AVCT7" },
+  { 0x0241, "AT32F403ARCT7" },
+  { 0x0242, "AT32F403ACCT7" },
+  { 0x0243, "AT32F403ACCU7" },
+  { 0x0344, "AT32F403AVGT7" },
+  { 0x0345, "AT32F403ARGT7" },
+  { 0x0346, "AT32F403ACGT7" },
+  { 0x0347, "AT32F403ACGU7" },
+  { 0x0249, "AT32F407VCT7"  },
+  { 0x024A, "AT32F407RCT7"  },
+  { 0x034B, "AT32F407VGT7"  },
+  { 0x034C, "AT32F407RGT7"  },
+  { 0x02CD, "AT32F403AVET7" },
+  { 0x02CE, "AT32F403ARET7" },
+  { 0x02CF, "AT32F403ACET7" },
+  { 0x02D0, "AT32F403ACEU7" },
+  { 0x02D1, "AT32F407VET7"  },
+  { 0x02D2, "AT32F407RET7"  },
+  { 0x0353, "AT32F407AVGT7" },
+  { 0x0254, "AT32F407AVCT7" }
+};
+
+static const char *at32_devname(unsigned int id)
+{
+  unsigned int i, tlen = ARRSIZ(at32_devid);
+
+  for (i = 0; i < tlen; i++) {
+    const at32_devid_t *devid = &at32_devid[i];
+
+    if (id == devid->devid)
+      return devid->name;
+  }
+
+  return "unknown";
+}
+
+static int at32_show_devid(unsigned int id)
+{
+  const char *name = at32_devname(id);
+
+  xprintf("Chip: %s (%03x)\n", name, id);
+  return 0;
+}
+#endif
+
 #if DBGMCU_IDCODE
 int cmd_devid(int argc, char *argv[])
 {
   unsigned int val = *(unsigned int *)DBGMCU_IDCODE;
   unsigned int id = DBGMCU_IDCODE_ID(val);
   const char *idstr;
+
+#if AT32_F4XX
+  if (AT32_ID_MANU(val) == AT_MANU)
+    return at32_show_devid(AT32_ID_DEV(val));
+#endif
 
   switch (id) {
 #if STM32_H7XX
