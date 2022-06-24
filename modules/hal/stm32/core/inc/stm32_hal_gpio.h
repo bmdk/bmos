@@ -33,7 +33,7 @@
 #define MODE_INPUT 0
 #define MODE_OUTPUT_LOW 1
 #define MODE_OUTPUT_MED 2
-#define MODE_OUTPUT_HIG 2
+#define MODE_OUTPUT_HIG 3
 
 #define CNF_INP_ANA 0
 #define CNF_INP_FLO 1
