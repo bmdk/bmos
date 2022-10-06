@@ -294,7 +294,7 @@ static void body_colseq(void)
   for (j = 0; j < PIXELS; j++) {
     for (i = 0; i < PIXELS; i++) {
       o = (j + i) % ARRSIZ(col);
-      ws2811_dma_enc_col(buf, i, ws2811_dma_scale(col[o], 10), 1);
+      ws2811_dma_enc_col(buf, i, ws2811_dma_scale(col[o], 10), WSBIT);
     }
 
     ws2811_dma_tx(&ws2811_dma_data, buf);
