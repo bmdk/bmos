@@ -22,9 +22,9 @@
 #include "common.h"
 #include "hal_dma_if.h"
 
-dma_controller_t stm32_bdma_controller;
-dma_controller_t stm32_dma_controller;
-dma_controller_t stm32_gpdma_controller;
+extern dma_controller_t stm32_bdma_controller;
+extern dma_controller_t stm32_dma_controller;
+extern dma_controller_t stm32_gpdma_controller;
 
 /* *INDENT-OFF* */
 #ifdef STM32_H7XX
