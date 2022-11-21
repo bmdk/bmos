@@ -22,7 +22,7 @@
 #ifndef XASSERT_H
 #define XASSERT_H
 
-void xpanic(const char *fmt, ...);
+void xpanic(const char *fmt, ...) __attribute__((noreturn));
 
 #ifdef __S_FILE__
 #define FNAME __S_FILE__
