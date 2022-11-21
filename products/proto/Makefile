@@ -737,6 +737,7 @@ FILES.l0xx += stm32_usart_b.o
 FILES.l0xx += stm32_rcc_l0.o
 FILES.l0xx += stm32_flash_l0.o
 FILES.l0xx += stm32_pwr_l0xx.o
+FILES.l0xx += stm32_hal_bdma.o
 
 FILES.l073n += $(FILES.l0xx)
 FILES.l073n += stm32_board_l073n.o
