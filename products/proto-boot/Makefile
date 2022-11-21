@@ -272,6 +272,7 @@ XCFLAGS += -Os
 #XCFLAGS += -O2
 XCFLAGS += -mno-unaligned-access
 XCFLAGS += -ffunction-sections
+XCFLAGS += -ffreestanding
 # generate dependency information
 XCFLAGS += -MD
 XCFLAGS += -DBOOT
