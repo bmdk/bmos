@@ -100,6 +100,7 @@ XCFLAGS += -mthumb
 XCFLAGS += -Wall -Werror
 XCFLAGS += -Wno-error=strict-overflow
 XCFLAGS += -mno-unaligned-access
+XCFLAGS += -ffreestanding
 XCFLAGS += -ffunction-sections
 # generate dependency information
 XCFLAGS += -MD

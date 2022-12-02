@@ -75,6 +75,7 @@ XCFLAGS += -O2
 XCFLAGS += -march=armv6-m -mcpu=cortex-m0plus -mthumb
 XCFLAGS += -Wall -Werror -Wno-unused-function
 XCFLAGS += -Wno-error=strict-overflow
+XCFLAGS += -ffreestanding
 XCFLAGS += -ffunction-sections
 XCFLAGS += -fdata-sections
 XCFLAGS += -DNDEBUG
