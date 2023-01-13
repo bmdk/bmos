@@ -328,6 +328,9 @@ static int i2c_cmd(int argc, char *argv[])
   int err, len, i;
   unsigned char wbuf;
 
+  if (argc < 2)
+    return -1;
+
 #if DISP
   if (!fb)
     fb = fb_init(128, 64, 1, 0);
