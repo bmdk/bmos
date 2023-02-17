@@ -222,6 +222,9 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 #else
   a->cr1 = CR1_OVRIE | CR1_RES_12 | CR1_SCAN;
   ac->ccr = CCR_TSVREFE | CCR_ADCPRE_DIV8;
+
+  adc_ext_type(a, ADC_EXT_TYPE_DISABLED);
+  adc_ext_sel(a, 0);
 #endif
 
   for (i = 0; i < cnt; i++) {
