@@ -34,6 +34,7 @@
 #include "stm32_hal.h"
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_hal_uart.h"
 #include "stm32_lcd.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_f7xx.h"
@@ -195,8 +196,6 @@ void pin_init()
 #endif
 }
 
-#define USART1_BASE (void *)0x40011000
-#define USART6_BASE (void *)0x40011400
 #define APB2_CLOCK 60000000
 #if BMOS
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };

@@ -141,12 +141,12 @@ static void _usart_set_baud(stm32_usart_b_t *usart,
 
 void uart_set_baud(uart_t *u, unsigned int baud)
 {
-  stm32_usart_b_t *usart = u->base;
+  stm32_usart_b_t *usart = (stm32_usart_b_t *)u->base;
 
   _usart_set_baud(usart, baud, u->clock, u->flags);
 }
 
-void debug_uart_init(void *base, unsigned int baud,
+void debug_uart_init(unsigned long base, unsigned int baud,
                      unsigned int clock, unsigned int flags)
 {
   stm32_usart_b_t *usart = (stm32_usart_b_t *)base;
@@ -180,7 +180,7 @@ int debug_ser_tx_done(void)
 #if BMOS
 static void usart_tx(uart_t *u, unsigned int isr)
 {
-  stm32_usart_b_t *usart = u->base;
+  stm32_usart_b_t *usart = (stm32_usart_b_t *)u->base;
   bmos_op_msg_t *m;
   unsigned int len;
   unsigned char *data;
@@ -251,7 +251,7 @@ static void sendcb(uart_t *u)
 
 static void rx_fifo(uart_t *u, unsigned int isr)
 {
-  stm32_usart_b_t *usart = u->base;
+  stm32_usart_b_t *usart = (stm32_usart_b_t *)u->base;
   int c;
   bmos_op_msg_t *m;
   unsigned char *msgdata;
@@ -291,7 +291,7 @@ static void rx_fifo(uart_t *u, unsigned int isr)
 static void usart_isr(void *data)
 {
   uart_t *u = (uart_t *)data;
-  stm32_usart_b_t *usart = u->base;
+  stm32_usart_b_t *usart = (stm32_usart_b_t *)u->base;
   unsigned int isr, cr1;
 
   isr = usart->isr;
@@ -335,7 +335,7 @@ static void usart_isr(void *data)
 static void _put(void *p)
 {
   uart_t *u = (uart_t *)p;
-  stm32_usart_b_t *usart = u->base;
+  stm32_usart_b_t *usart = (stm32_usart_b_t *)u->base;
 
   if (u->flags & STM32_UART_FIFO)
     usart->cr1 |= USART_CR1_TXFEIE;
@@ -359,7 +359,7 @@ static void _put_pool(void *p)
 bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
                         unsigned int op)
 {
-  stm32_usart_b_t *usart = u->base;
+  stm32_usart_b_t *usart = (stm32_usart_b_t *)u->base;
   const char *pool_name = "upool", *tx_queue_name = "utx";
   unsigned int cr1;
   unsigned int msg_cnt = MSG_CNT;

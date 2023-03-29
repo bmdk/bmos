@@ -35,6 +35,7 @@
 #include "hal_rtc.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_lxxx.h"
 #include "stm32_rcc_b.h"
@@ -78,11 +79,6 @@ void pin_init()
   gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
   gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
 }
-
-#define USART1_BASE (void *)0x40013800
-#define USART2_BASE (void *)0x40004400
-#define USART3_BASE (void *)0x40004800
-#define LPUART1_BASE (void *)0x40008000
 
 #define SPI1_BASE (void *)0x40013000
 

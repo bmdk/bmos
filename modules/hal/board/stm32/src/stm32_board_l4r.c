@@ -27,6 +27,7 @@
 #include "stm32_hal.h"
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr_lxxx.h"
 #include "stm32_rcc_b.h"
 
@@ -54,8 +55,6 @@ void pin_init()
   enable_apb1(28);
 }
 
-#define USART2_BASE (void *)0x40004400
-#define LPUART1_BASE (void *)0x40008000
 #define APB1_CLOCK 80000000
 #define APB2_CLOCK 80000000
 #if BMOS

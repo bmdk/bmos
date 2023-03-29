@@ -35,6 +35,7 @@
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_f4xx.h"
 #include "stm32_rcc_a.h"
@@ -135,8 +136,6 @@ void pin_init()
   enable_apb2(8); /* ADC1 */
 }
 
-#define USART1_BASE (void *)0x40011000
-#define USART2_BASE (void *)0x40004400
 #define APB1_CLOCK 48000000
 #define APB2_CLOCK 96000000
 

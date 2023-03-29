@@ -31,7 +31,7 @@
 
 typedef struct {
   const char *name;
-  void *base;
+  unsigned long base;
   unsigned int clock;
   unsigned char irq;
   unsigned int flags;

@@ -245,7 +245,7 @@ static void uart_init(rp2040_uart_t *uart, unsigned int baud,
   uart->lcr_h |= 0;
 }
 
-void debug_uart_init(void *base, unsigned int baud,
+void debug_uart_init(unsigned long base, unsigned int baud,
                      unsigned int clock, unsigned int flags)
 {
   duart = (rp2040_uart_t *)base;

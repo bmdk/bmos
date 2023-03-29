@@ -24,6 +24,7 @@
 #include "common.h"
 #include "cortexm.h"
 #include "debug_ser.h"
+#include "hal_board.h"
 #include "hal_common.h"
 #include "hal_gpio.h"
 #include "hal_uart.h"
@@ -31,9 +32,9 @@
 #include "shell.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
-#include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_lxxx.h"
 #include "stm32_rcc_b.h"
@@ -55,9 +56,6 @@ void pin_init()
   enable_ahb1(1);  /* DMA 2 */
   enable_ahb1(2);  /* DMAMUX */
 }
-
-#define USART1_BASE (void *)0x40013800
-#define LPUART1_BASE (void *)0x40008000
 
 #define APB2_CLOCK 64000000
 #define APB1_CLOCK 64000000

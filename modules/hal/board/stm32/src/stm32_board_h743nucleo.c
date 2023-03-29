@@ -32,6 +32,7 @@
 #include "stm32_hal.h"
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_h7xx.h"
 #include "stm32_rcc_h7.h"
@@ -119,18 +120,16 @@ static void pin_init()
   gpio_init_attr(GPIO(6, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));
 }
 
-#define USART2_BASE 0x40004400
-#define USART3_BASE 0x40004800
 #define APB2_CLOCK 100000000
 #if BMOS
 #if 0
-uart_t debug_uart = { "debugser", (void *)USART2_BASE, APB2_CLOCK, 38 };
+uart_t debug_uart = { "debugser", USART2_BASE, APB2_CLOCK, 38 };
 #else
 uart_t debug_uart =
-{ "debugser3", (void *)USART3_BASE, APB2_CLOCK, 39, STM32_UART_FIFO,
+{ "debugser3", USART3_BASE, APB2_CLOCK, 39, STM32_UART_FIFO,
   "u3pool",    "u3tx" };
 uart_t debug_uart_2 =
-{ "debugser2", (void *)USART2_BASE, APB2_CLOCK, 38, STM32_UART_FIFO,
+{ "debugser2", USART2_BASE, APB2_CLOCK, 38, STM32_UART_FIFO,
   "u2pool",    "u2tx" };
 #endif
 #endif
@@ -171,5 +170,5 @@ void hal_board_init()
 #endif
 #endif
 
-  debug_uart_init((void *)USART3_BASE, 115200, APB2_CLOCK, 0);
+  debug_uart_init(USART3_BASE, 115200, APB2_CLOCK, 0);
 }

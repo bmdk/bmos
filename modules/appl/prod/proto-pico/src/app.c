@@ -136,7 +136,7 @@ static void debug_uart_pins_init()
   gpio_init_attr(1, GPIO_ATTR_PICO(GPIO_FUNC_UART));
 }
 
-uart_t debug_uart = { "debugser", (void *)0x40034000, 125000000, 20 };
+uart_t debug_uart = { "debugser", 0x40034000, 125000000, 20 };
 
 #define SHELL_SRC_COUNT 1
 #define OP_UART1_DATA 0
@@ -296,7 +296,7 @@ int main()
 
   rp2040_reset_clr(RESETS_RESET_UART0);
   debug_uart_pins_init();
-  debug_uart_init((void *)UART0_BASE, 115200, hal_cpu_clock, 0);
+  debug_uart_init(UART0_BASE, 115200, hal_cpu_clock, 0);
   debug_puts("\nAPPL\n\n");
 
   task_init(shell_task, NULL, "shell", 2, 0, 4096);

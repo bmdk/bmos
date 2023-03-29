@@ -96,7 +96,7 @@ int debug_ser_tx_done(void)
   return usart_tx_done(duart);
 }
 
-void debug_uart_init(void *base, unsigned int baud, unsigned int clock,
+void debug_uart_init(unsigned long base, unsigned int baud, unsigned int clock,
                      unsigned int flags)
 {
   duart = (stm32_usart_a_t *)base;
@@ -119,14 +119,14 @@ static void _usart_set_baud(stm32_usart_a_t *usart,
 
 void uart_set_baud(uart_t *u, unsigned int baud)
 {
-  stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = (stm32_usart_a_t *)u->base;
 
   _usart_set_baud(usart, baud, u->clock, u->flags);
 }
 
 static void usart_tx(uart_t *u)
 {
-  stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = (stm32_usart_a_t *)u->base;
   bmos_op_msg_t *m;
   unsigned int len;
   unsigned char *data;
@@ -185,7 +185,7 @@ static void sendcb(uart_t *u)
 static void usart_isr(void *data)
 {
   uart_t *u = (uart_t *)data;
-  stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = (stm32_usart_a_t *)u->base;
   unsigned int isr;
 
   isr = usart->sr;
@@ -219,7 +219,7 @@ static void usart_isr(void *data)
 static void _put(void *p)
 {
   uart_t *u = (uart_t *)p;
-  stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = (stm32_usart_a_t *)u->base;
 
   usart->cr1 |= USART_CR1_TXEIE;
 }
@@ -227,7 +227,7 @@ static void _put(void *p)
 bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
                         unsigned int op)
 {
-  stm32_usart_a_t *usart = u->base;
+  stm32_usart_a_t *usart = (stm32_usart_a_t *)u->base;
   unsigned int msg_cnt = MSG_CNT;
   unsigned int msg_pow2 = MSG_POW2;
 

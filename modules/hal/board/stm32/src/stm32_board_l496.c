@@ -34,6 +34,7 @@
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_lxxx.h"
 #include "stm32_rcc_b.h"
@@ -100,11 +101,6 @@ void pin_init()
   stm32_exti_ev_enable(13, 1);
   stm32_syscfg_set_exti(2, 13);
 }
-
-#define USART1_BASE (void *)0x40013800
-#define USART2_BASE (void *)0x40004400
-#define USART3_BASE (void *)0x40004800
-#define LPUART1_BASE (void *)0x40008000
 
 #define SPI1_BASE (void *)0x40013000
 

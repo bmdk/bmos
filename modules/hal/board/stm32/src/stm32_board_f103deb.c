@@ -27,10 +27,9 @@
 #include "stm32_exti.h"
 #include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_rcc_f1.h"
-
-#define USART1_BASE (void *)0x40013800
 
 #define CLOCK 72000000
 #define APB1_CLOCK (CLOCK / 2)

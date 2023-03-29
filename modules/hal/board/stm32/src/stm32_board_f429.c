@@ -34,6 +34,7 @@
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr_f4xx.h"
 #include "stm32_rcc_a.h"
 #include "stm32_lcd.h"
@@ -385,7 +386,6 @@ void lcd_panel_init()
   lcd_wr_reg(LCD_GRAM);
 }
 
-#define USART1_BASE (void *)0x40011000
 #define APB2_CLOCK 60000000
 #if BMOS
 uart_t debug_uart = { "debugser", USART1_BASE, APB2_CLOCK, 37 };

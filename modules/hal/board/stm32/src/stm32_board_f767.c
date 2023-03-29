@@ -29,6 +29,7 @@
 #include "stm32_hal.h"
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_f7xx.h"
 #include "stm32_rcc_a.h"
@@ -123,11 +124,9 @@ static void pin_init()
 #endif
 }
 
-#define USART2_BASE 0x40004400
-#define USART3_BASE 0x40004800
 #define APB2_CLOCK 54000000
 #if BMOS
-uart_t debug_uart = { "debugser", (void *)USART3_BASE, APB2_CLOCK, 39 };
+uart_t debug_uart = { "debugser", USART3_BASE, APB2_CLOCK, 39 };
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(1, 14), GPIO(1, 7) };
@@ -162,5 +161,5 @@ void hal_board_init()
 #endif
   led_init(leds, ARRSIZ(leds));
 
-  debug_uart_init((void *)USART3_BASE, 115200, APB2_CLOCK, 0);
+  debug_uart_init(USART3_BASE, 115200, APB2_CLOCK, 0);
 }

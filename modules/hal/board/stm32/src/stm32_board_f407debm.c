@@ -34,6 +34,7 @@
 #include "stm32_hal.h"
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
+#include "stm32_hal_uart.h"
 #include "stm32_hal_spi.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_f4xx.h"
@@ -89,8 +90,6 @@ void pin_init()
   stm32_syscfg_set_exti(0, 0);
 }
 
-#define USART1_BASE (void *)0x40011000
-#define USART2_BASE (void *)0x40004400
 #define APB1_CLOCK 42000000
 #define APB2_CLOCK 84000000
 
