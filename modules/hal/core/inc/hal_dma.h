@@ -22,6 +22,8 @@
 #ifndef HAL_DMA_H
 #define HAL_DMA_H
 
+#include "common.h"
+
 typedef struct {
   unsigned int ssiz : 2;
   unsigned int dsiz : 2;
@@ -30,6 +32,8 @@ typedef struct {
   unsigned int sinc : 1;
   unsigned int dinc : 1;
   unsigned int irq : 1;
+  unsigned int circ : 1;
+  unsigned int irq_half : 1;
 } dma_attr_t;
 
 #define DMA_SIZ_1 0
@@ -44,6 +48,9 @@ void dma_trans(unsigned int num, unsigned int chan,
 void dma_set_chan(unsigned int num, unsigned int chan, unsigned int devid);
 void dma_en(unsigned int num, unsigned int chan, int en);
 void dma_start(unsigned int num, unsigned int chan);
-void dma_irq_ack(unsigned int num, unsigned int chan);
+/* returns status flags */
+#define DMA_IRQ_STATUS_FULL BIT(0)
+#define DMA_IRQ_STATUS_HALF BIT(1)
+unsigned int dma_irq_ack(unsigned int num, unsigned int chan);
 
 #endif

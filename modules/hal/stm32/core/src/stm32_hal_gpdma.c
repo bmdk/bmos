@@ -26,6 +26,7 @@
 #include "hal_common.h"
 #include "shell.h"
 #include "io.h"
+#include "xassert.h"
 
 #define DMA_CHANNELS 16
 
@@ -212,7 +213,7 @@ typedef struct {
 #define GPDMA_TR2_SWREQ BIT(9)
 #define GPDMA_TR2_DREQ BIT(10)
 
-void stm32_gpdma_set_chan(void *addr, unsigned int chan,
+static void stm32_gpdma_set_chan(void *addr, unsigned int chan,
                           unsigned int devid)
 {
   stm32_gpdma_t *d = addr;
@@ -221,15 +222,24 @@ void stm32_gpdma_set_chan(void *addr, unsigned int chan,
   reg_set_field(&c->tr2, 7, 0, devid);
 }
 
-void stm32_gpdma_irq_ack(void *addr, unsigned int chan)
+static unsigned int stm32_gpdma_irq_ack(void *addr, unsigned int chan)
 {
   stm32_gpdma_t *d = addr;
   stm32_gpdma_chan_t *c = &d->chan[chan];
+  unsigned int status, rstatus = 0;
 
-  c->fcr = GPDMA_TCF;
+  status = c->sr;
+  if (status & GPDMA_TCF)
+    rstatus |= DMA_IRQ_STATUS_FULL;
+  if (status & GPDMA_HTF)
+    rstatus |= DMA_IRQ_STATUS_HALF;
+
+  c->fcr = 0xffffffff;
+
+  return rstatus;
 }
 
-void stm32_gpdma_en(void *addr, unsigned int chan, int en)
+static void stm32_gpdma_en(void *addr, unsigned int chan, int en)
 {
   stm32_gpdma_t *d = addr;
   stm32_gpdma_chan_t *c = &d->chan[chan];
@@ -240,7 +250,7 @@ void stm32_gpdma_en(void *addr, unsigned int chan, int en)
     c->cr &= ~GPDMA_CR_EN;
 }
 
-void stm32_gpdma_start(void *addr, unsigned int chan)
+static void stm32_gpdma_start(void *addr, unsigned int chan)
 {
   stm32_gpdma_t *d = addr;
   stm32_gpdma_chan_t *c = &d->chan[chan];
@@ -250,7 +260,7 @@ void stm32_gpdma_start(void *addr, unsigned int chan)
   stm32_gpdma_en(addr, chan, 1);
 }
 
-void stm32_gpdma_trans(void *addr, unsigned int chan,
+static void stm32_gpdma_trans(void *addr, unsigned int chan,
                        void *src, void *dst, unsigned int n,
                        dma_attr_t attr)
 {
@@ -283,10 +293,18 @@ void stm32_gpdma_trans(void *addr, unsigned int chan,
 
   c->tr1 = flags;
 
+  /* FIXME circ needs special programming */
+  XASSERT(attr.circ == 0);
+
   if (attr.irq)
     c->cr |= GPDMA_TCF;
   else
     c->cr &= ~GPDMA_TCF;
+
+  if (attr.irq_half)
+    c->cr |= GPDMA_HTF;
+  else
+    c->cr &= ~GPDMA_HTF;
 }
 
 #if 0

@@ -30,7 +30,7 @@ typedef void dma_trans_t(void *data, unsigned int chan,
 typedef void dma_set_chan_t(void *data, unsigned int chan, unsigned int devid);
 typedef void dma_en_t(void *data, unsigned int chan, int en);
 typedef void dma_start_t(void *data, unsigned int chan);
-typedef void dma_irq_ack_t(void *data, unsigned int chan);
+typedef unsigned int dma_irq_ack_t(void *data, unsigned int chan);
 
 typedef struct {
   dma_trans_t *trans;

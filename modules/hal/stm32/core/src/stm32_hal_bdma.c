@@ -100,11 +100,20 @@ static void stm32_bdma_start(void *base, unsigned int chan)
   c->ccr |= (CCR_MEM2MEM | CCR_EN);
 }
 
-static void stm32_bdma_irq_ack(void *base, unsigned int chan)
+static unsigned int stm32_bdma_irq_ack(void *base, unsigned int chan)
 {
   volatile stm32_bdma_t *d = base;
+  unsigned int status, rstatus = 0;
 
-  reg_set_field(&d->ifcr, 4, chan << 2, IER_TCIF);
+  status = reg_get_field(&d->isr, 4, chan << 2);
+  if (status & IER_TCIF)
+    rstatus |= DMA_IRQ_STATUS_FULL;
+  if (status & IER_HTIF)
+    rstatus |= DMA_IRQ_STATUS_HALF;
+
+  reg_set_field(&d->ifcr, 4, chan << 2, 0xf);
+
+  return rstatus;
 }
 
 static void stm32_bdma_trans(void *base, unsigned int chan,
@@ -146,8 +155,14 @@ static void stm32_bdma_trans(void *base, unsigned int chan,
       flags |= CCR_MINC;
   }
 
+  if (attr.circ)
+    flags |= CCR_CIRC;
+
   if (attr.irq)
     flags |= CCR_TCIE;
+
+  if (attr.irq_half)
+    flags |= CCR_HEIE;
 
   c->ccr = flags;
 }

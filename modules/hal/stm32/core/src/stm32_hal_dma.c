@@ -68,32 +68,32 @@
 #define DMA_IER_FEIF BIT(0)
 
 typedef struct {
-  unsigned int cr;
-  unsigned int ndtr;
-  unsigned int par;
-  unsigned int mar[2];
-  unsigned int fcr;
+  reg32_t cr;
+  reg32_t ndtr;
+  reg32_t par;
+  reg32_t mar[2];
+  reg32_t fcr;
 } stm32_dma_chan_t;
 
 typedef struct {
-  unsigned int isr[2];
-  unsigned int ifcr[2];
+  reg32_t isr[2];
+  reg32_t ifcr[2];
   stm32_dma_chan_t chan[DMA_CHANNELS];
 } stm32_dma_t;
 
 static void stm32_dma_set_chan(void *addr, unsigned int chan,
                                unsigned int devid)
 {
-  volatile stm32_dma_t *d = addr;
-  volatile stm32_dma_chan_t *c = &d->chan[chan];
+  stm32_dma_t *d = addr;
+  stm32_dma_chan_t *c = &d->chan[chan];
 
   reg_set_field(&c->cr, 3, 25, devid);
 }
 
-static void stm32_dma_irq_ack(void *addr, unsigned int chan)
+static unsigned int stm32_dma_irq_ack(void *addr, unsigned int chan)
 {
-  volatile stm32_dma_t *d = addr;
-  unsigned int i = 0, ofs = 0;
+  stm32_dma_t *d = addr;
+  unsigned int i = 0, ofs = 0, status, rstatus = 0;
 
   if (chan >= 4) {
     i = 1;
@@ -105,13 +105,22 @@ static void stm32_dma_irq_ack(void *addr, unsigned int chan)
     chan -= 2;
   }
 
-  reg_set_field(&d->ifcr[i], 6, ofs + 6 * chan, DMA_IER_TCIF);
+  status = reg_get_field(&d->isr[i], 6, ofs + 6 * chan);
+  if (status & DMA_IER_TCIF)
+    rstatus |= DMA_IRQ_STATUS_FULL;
+  if (status & DMA_IER_HTIF)
+    rstatus |= DMA_IRQ_STATUS_HALF;
+
+  /* clear all pending interrupts */
+  reg_set_field(&d->ifcr[i], 6, ofs + 6 * chan, 0x3f);
+
+  return rstatus;
 }
 
 static void stm32_dma_en(void *addr, unsigned int chan, int en)
 {
-  volatile stm32_dma_t *d = addr;
-  volatile stm32_dma_chan_t *c = &d->chan[chan];
+  stm32_dma_t *d = addr;
+  stm32_dma_chan_t *c = &d->chan[chan];
 
   if (en)
     c->cr |= DMA_CR_EN;
@@ -121,8 +130,8 @@ static void stm32_dma_en(void *addr, unsigned int chan, int en)
 
 static void stm32_dma_start(void *addr, unsigned int chan)
 {
-  volatile stm32_dma_t *d = addr;
-  volatile stm32_dma_chan_t *c = &d->chan[chan];
+  stm32_dma_t *d = addr;
+  stm32_dma_chan_t *c = &d->chan[chan];
 
   c->cr &= ~(DMA_CR_DIR_M2M | DMA_CR_EN);
   c->fcr = DMA_FCR_DMDIS;
@@ -133,8 +142,8 @@ static void stm32_dma_trans(void *addr, unsigned int chan,
                             void *src, void *dst, unsigned int n,
                             dma_attr_t attr)
 {
-  volatile stm32_dma_t *d = addr;
-  volatile stm32_dma_chan_t *c = &d->chan[chan];
+  stm32_dma_t *d = addr;
+  stm32_dma_chan_t *c = &d->chan[chan];
   unsigned int ifcr_reg = 0, ofs = 0, flags;
 
   if (chan > 8)
@@ -184,6 +193,12 @@ static void stm32_dma_trans(void *addr, unsigned int chan,
   if (attr.irq)
     flags |= DMA_CR_TCIE;
 
+  if (attr.irq_half)
+    flags |= DMA_CR_HTIE;
+
+  if (attr.circ)
+    flags |= DMA_CR_CIRC;
+
   c->fcr &= ~DMA_FCR_DMDIS; /* disable fifo */
   c->ndtr = n;
 
@@ -193,11 +208,11 @@ static void stm32_dma_trans(void *addr, unsigned int chan,
 #if 0
 void stm32_dma_chan_dump(void *addr)
 {
-  volatile stm32_dma_t *d = addr;
+  stm32_dma_t *d = addr;
   unsigned int i;
 
   for (i = 0; i < DMA_CHANNELS; i++) {
-    volatile stm32_dma_chan_t *c = &d->chan[i];
+    stm32_dma_chan_t *c = &d->chan[i];
     xprintf("%d F: %08x P: %08x M: %08x, %08x N: %d\n", i,
             c->cr, c->par, c->mar[0], c->mar[1], c->ndtr);
   }

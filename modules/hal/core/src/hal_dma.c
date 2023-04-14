@@ -62,10 +62,10 @@ void dma_start(unsigned int num, unsigned int chan)
   cont->start(cont_data->data, chan);
 }
 
-void dma_irq_ack(unsigned int num, unsigned int chan)
+unsigned int dma_irq_ack(unsigned int num, unsigned int chan)
 {
   GET_CONT_DATA;
-  cont->irq_ack(cont_data->data, chan);
+  return cont->irq_ack(cont_data->data, chan);
 }
 
 #if 0
