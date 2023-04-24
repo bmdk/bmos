@@ -51,6 +51,14 @@ static inline void reg_set_field(
   reg_set_clear(reg, mask << pos, (set & mask) << pos);
 }
 
+static inline unsigned int reg_get_field(
+  volatile unsigned int *reg, unsigned int width, unsigned int pos)
+{
+  unsigned int mask = (BIT(width) - 1);
+
+  return ((*reg) >> pos) & mask;
+}
+
 static inline void bit_en(volatile unsigned int *reg, unsigned int n, int en)
 {
   if (n >= 32)

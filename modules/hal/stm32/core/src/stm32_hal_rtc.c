@@ -103,7 +103,7 @@ typedef struct {
 #define RTC_CR_SUB1H BIT(17)
 #define RTC_CR_ADD1H BIT(16)
 
-static inline unsigned int reg_get_field(
+static inline unsigned int _get_field(
   unsigned int val, unsigned int width, unsigned int pos)
 {
   unsigned int mask = (BIT(width) - 1);
@@ -198,14 +198,14 @@ void rtc_get_time(rtc_time_t *t)
   unsigned int tr = RTC->tr;
   unsigned int dr = RTC->dr;
 
-  t->secs = 10 * reg_get_field(tr, 3, 4) + reg_get_field(tr, 4, 0);
-  t->mins = 10 * reg_get_field(tr, 3, 12) + reg_get_field(tr, 4, 8);
-  t->hours = 10 * reg_get_field(tr, 2, 20) + reg_get_field(tr, 4, 16);
+  t->secs = 10 * _get_field(tr, 3, 4) + _get_field(tr, 4, 0);
+  t->mins = 10 * _get_field(tr, 3, 12) + _get_field(tr, 4, 8);
+  t->hours = 10 * _get_field(tr, 2, 20) + _get_field(tr, 4, 16);
 
-  t->day = 10 * reg_get_field(dr, 2, 4) + reg_get_field(dr, 4, 0);
-  t->month = 10 * reg_get_field(dr, 1, 12) + reg_get_field(dr, 4, 8);
-  t->dayno = reg_get_field(dr, 3, 13);
-  t->year = 10 * reg_get_field(dr, 4, 20) + reg_get_field(dr, 4, 16);
+  t->day = 10 * _get_field(dr, 2, 4) + _get_field(dr, 4, 0);
+  t->month = 10 * _get_field(dr, 1, 12) + _get_field(dr, 4, 8);
+  t->dayno = _get_field(dr, 3, 13);
+  t->year = 10 * _get_field(dr, 4, 20) + _get_field(dr, 4, 16);
 
   t->pm = (tr >> 22) & 1;
 }
