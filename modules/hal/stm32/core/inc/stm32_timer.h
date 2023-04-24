@@ -47,6 +47,9 @@ void timer_init_dma(void *base, unsigned int presc, unsigned int max,
                     const unsigned int *compare, unsigned int compare_len,
                     int update_en);
 
+void timer_init_pwm(void *base, unsigned int presc, unsigned int max,
+                    const unsigned int *compare, unsigned int compare_len);
+
 void timer_stop(void *base);
 
 #endif
