@@ -26,6 +26,8 @@
 #define CONFIG_FAST_LOG_ENABLE 1
 #endif
 
+void fast_log(const char *fmt, unsigned long v1, unsigned long v2);
+
 #if CONFIG_FAST_LOG_ENABLE
 extern unsigned char fast_log_mask[];
 extern unsigned char fast_log_enabled;
@@ -44,8 +46,6 @@ static inline void fast_log_enable(unsigned int en)
   fast_log_stop_count = -1;
 }
 
-void fast_log(const char *fmt, unsigned long v1, unsigned long v2);
-
 void fast_log_dump(unsigned int ent, int debug);
 
 void fast_log_init(const char *enable);
@@ -56,7 +56,13 @@ static inline void fast_log_stop(int count)
     fast_log_stop_count = count;
 }
 #else
-#define FAST_LOG(_m_, fmt, v1, v2)
+#define FAST_LOG(_m_, fmt, v1, v2)                             \
+  do {                                                         \
+    if (0) {                                                   \
+      fast_log(fmt, (unsigned long)(v1), (unsigned long)(v2)); \
+    }                                                          \
+  } while (0)
+
 static inline void fast_log_init(const char *enable)
 {
 }
