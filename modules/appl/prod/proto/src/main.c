@@ -274,6 +274,7 @@ void task_led();
 void task_can();
 void tusb_cdc_init();
 void adc_init();
+void adc_init_dma();
 void esp_init();
 
 int main()
@@ -308,6 +309,8 @@ int main()
 
 #if CONFIG_ENABLE_ADC
   adc_init();
+#elif CONFIG_ENABLE_ADC_DMA
+  adc_init_dma();
 #endif
 
   shell_info_init(&shell_info, "sh1rx", 0);

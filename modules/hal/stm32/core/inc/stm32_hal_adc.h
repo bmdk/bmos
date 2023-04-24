@@ -25,6 +25,8 @@
 typedef void conv_done_f (unsigned short *adc_dat, unsigned int count);
 
 void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt);
+void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
+                        void *buf, unsigned int buflen);
 int stm32_adc_conv(conv_done_f *conv_done);
 
 #endif

@@ -29,6 +29,8 @@
 #include "shell.h"
 #include "stm32_hal.h"
 #include "stm32_hal_adc.h"
+#include "stm32_timer.h"
+#include "xassert.h"
 
 #if STM32_F1XX || AT32_F4XX
 #define DMA_NUM 0
@@ -68,8 +70,10 @@ typedef struct {
 #endif
 #define ADC_COM_BASE (void *)(ADC_BASE + 0x300)
 
+#define ADC_DMA_LEN 16
+
 typedef struct {
-  unsigned short res[16];
+  unsigned short res[ADC_DMA_LEN];
   conv_done_f *conv_done;
   unsigned char tcount;
   unsigned char flags;
@@ -137,11 +141,19 @@ static void adc_irq(void *arg)
 
 static void adc_dma_irq(void *data)
 {
-  stm32_adc_t *a = (stm32_adc_t *)data;
+  unsigned int status;
 
-  a->cr2 &= ~CR2_DMA;
-  dma_irq_ack(DMA_NUM, DMA_CHAN);
+  status = dma_irq_ack(DMA_NUM, DMA_CHAN);
+  if (status & DMA_IRQ_STATUS_FULL)
+    FAST_LOG('A', "adc dma full\n", 0, 0);
+  if (status & DMA_IRQ_STATUS_HALF)
+    FAST_LOG('A', "adc dma half\n", 0, 0);
+
   if (adc_data.conv_done) {
+    stm32_adc_t *a = (stm32_adc_t *)data;
+
+    a->cr2 &= ~CR2_DMA;
+
     adc_data.conv_done(adc_data.res, adc_data.tcount);
     adc_data.conv_done = 0;
   }
@@ -163,6 +175,22 @@ static void adc_srate(stm32_adc_t *a, unsigned int chan, unsigned int rate)
   reg = 1 - chan / 10;
 
   reg_set_field(&a->smpr[reg], 3, n * 3, rate);
+}
+
+/* external trigger selection */
+#define ADC_EXT_TYPE_DISABLED 0
+#define ADC_EXT_TYPE_RISING 1
+#define ADC_EXT_TYPE_FALLING 2
+#define ADC_EXT_TYPE_BOTH 3
+static void adc_ext_type(stm32_adc_t *a, unsigned int type)
+{
+  reg_set_field(&a->cr2, 2, 28, type);
+}
+
+/* select external trigger source */
+static void adc_ext_sel(stm32_adc_t *a, unsigned int sel)
+{
+  reg_set_field(&a->cr2, 4, 24, sel);
 }
 
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
@@ -196,7 +224,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 
   for (i = 0; i < cnt; i++) {
     adc_seq(a, i, reg_seq[i]);
-    adc_srate(a, reg_seq[i], 7);
+    /* 3 + 12 clocks */
+    adc_srate(a, reg_seq[i], 0);
   }
 
   reg_set_field(&a->sqr[0], 4, 20, cnt - 1);
@@ -205,7 +234,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   irq_register("adc_dma", adc_dma_irq, a, DMA_IRQ);
 }
 
-static void _stm32_adc_dma_init(stm32_adc_t *a)
+static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
+                                void *buf, unsigned int cnt)
 {
   dma_attr_t attr;
 
@@ -221,15 +251,42 @@ static void _stm32_adc_dma_init(stm32_adc_t *a)
   attr.dinc = 1;
   attr.irq = 1;
 
-  dma_trans(DMA_NUM, DMA_CHAN, (void *)&a->dr, adc_data.res,
-            adc_data.tcount, attr);
+  if (circ) {
+    attr.circ = 1;
+    attr.irq_half = 1;
+  }
+
+  dma_trans(DMA_NUM, DMA_CHAN, (void *)&a->dr, buf, cnt, attr);
   dma_en(DMA_NUM, DMA_CHAN, 1);
 }
 
 void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt)
 {
+  XASSERT(cnt <= ADC_DMA_LEN);
+
   _stm32_adc_init(ADC_BASE, reg_seq, cnt);
   adc_data.tcount = cnt;
+}
+
+void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
+                        void *buf, unsigned int buflen)
+{
+  unsigned int compare[] = { 10 };
+
+  _stm32_adc_init(ADC_BASE, reg_seq, cnt);
+
+  adc_data.tcount = ADC_DMA_LEN;
+
+  stm32_adc_t *a = (stm32_adc_t *)ADC_BASE;
+
+  adc_ext_type(a, ADC_EXT_TYPE_RISING);
+  adc_ext_sel(a, 0); /* timer 1 cc1 */
+
+  _stm32_adc_dma_init(a, 1, buf, buflen / 2);
+
+  a->cr2 |= CR2_DDS | CR2_DMA;
+
+  timer_init_pwm(TIM1_BASE, 96, 19, compare, 1);
 }
 
 static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
@@ -241,7 +298,7 @@ static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
 
   a->cr2 &= ~(CR2_DMA | CR2_SWSTART);
 
-  _stm32_adc_dma_init(a);
+  _stm32_adc_dma_init(a, 0, &adc_data.res, adc_data.tcount);
   adc_data.conv_done = _conv_done;
 
   a->cr2 |= (CR2_DMA | CR2_SWSTART);

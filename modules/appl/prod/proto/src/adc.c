@@ -187,3 +187,10 @@ void adc_init()
 {
   task_init(adc_task, NULL, "adc", 2, 0, 194);
 }
+
+unsigned short dma_buf[5000 * 2 * 2];
+
+void adc_init_dma()
+{
+  stm32_adc_init_dma(adc_seq, sizeof(adc_seq), dma_buf, sizeof(dma_buf));
+}
