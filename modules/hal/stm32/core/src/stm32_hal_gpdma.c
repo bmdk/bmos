@@ -214,7 +214,7 @@ typedef struct {
 #define GPDMA_TR2_DREQ BIT(10)
 
 static void stm32_gpdma_set_chan(void *addr, unsigned int chan,
-                          unsigned int devid)
+                                 unsigned int devid)
 {
   stm32_gpdma_t *d = addr;
   stm32_gpdma_chan_t *c = &d->chan[chan];
@@ -261,8 +261,8 @@ static void stm32_gpdma_start(void *addr, unsigned int chan)
 }
 
 static void stm32_gpdma_trans(void *addr, unsigned int chan,
-                       void *src, void *dst, unsigned int n,
-                       dma_attr_t attr)
+                              void *src, void *dst, unsigned int n,
+                              dma_attr_t attr)
 {
   stm32_gpdma_t *d = addr;
   stm32_gpdma_chan_t *c = &d->chan[chan];
