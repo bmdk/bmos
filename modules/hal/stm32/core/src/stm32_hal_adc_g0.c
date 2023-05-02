@@ -120,7 +120,7 @@ static void adc_dma_irq(void *data)
   dma_irq_ack(DMA_NUM, DMA_CHAN);
 
   if (adc_data.conv_done) {
-    adc_data.conv_done(adc_data.res, adc_data.tcount);
+    adc_data.conv_done(adc_data.res, adc_data.tcount, 0);
     adc_data.conv_done = 0;
   }
 }
@@ -169,7 +169,7 @@ static void adc_seq(stm32_adc_t *a, unsigned int num, unsigned int chan)
 #endif
 
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
-                            unsigned int cnt)
+                            unsigned int cnt, conv_done_f *_conv_done)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
   stm32_adc_com_t *ac = ADC_COM;
@@ -202,6 +202,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
     cnt = 8;
 #endif
   adc_data.tcount = cnt;
+  adc_data.conv_done = _conv_done;
 
   for (i = 0; i < cnt; i++) {
     unsigned int seq = reg_seq[i];
@@ -238,12 +239,12 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->ier = ADC_IRQ_EN_MSK;
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt)
+void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt, conv_done_f *_conv_done)
 {
-  _stm32_adc_init(ADC, reg_seq, cnt);
+  _stm32_adc_init(ADC, reg_seq, cnt, _conv_done);
 }
 
-static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
+static int _stm32_adc_conv(void *base)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
 
@@ -254,8 +255,6 @@ static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
 
   _stm32_adc_dma_init(a);
 
-  adc_data.conv_done = _conv_done;
-
   a->cfgr1 |= REG_ADC_CFGR1_DMAEN;
 
   a->cr |= CR_ADSTART;
@@ -263,7 +262,7 @@ static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
   return 0;
 }
 
-int stm32_adc_conv(conv_done_f *conv_done)
+int stm32_adc_conv()
 {
-  return _stm32_adc_conv(ADC, conv_done);
+  return _stm32_adc_conv(ADC);
 }

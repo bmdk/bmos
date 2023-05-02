@@ -140,18 +140,20 @@ static void adc_irq(void *arg)
   if (isr & ISR_EOS) {
     a->isr |= ISR_EOS;
     if (adc_data.conv_done)
-      adc_data.conv_done(adc_data.res, adc_data.count);
+      adc_data.conv_done(adc_data.res, adc_data.count, 0);
     adc_data.conv_done = 0;
     adc_data.count = 0;
   }
 }
 
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
-                            unsigned int cnt)
+                            unsigned int cnt, conv_done_f *conv_done)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
   stm32_adc_com_t *ac = ADC_COM;
   unsigned int i;
+
+  adc_data.conv_done = conv_done;
 
   cnt &= 0xf;
 
@@ -197,26 +199,24 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->ier |= IER_OVRIE | IER_EOCIE | IER_EOSIE;
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt)
+void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt, conv_done_f *conv_done)
 {
-  _stm32_adc_init(ADC, reg_seq, cnt);
+  _stm32_adc_init(ADC, reg_seq, cnt, conv_done);
 }
 
-static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
+static int _stm32_adc_conv(void *base)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
 
   if ((a->cr & CR_ADSTART))
     return -1;
 
-  adc_data.conv_done = _conv_done;
-
   a->cr |= CR_ADSTART;
 
   return 0;
 }
 
-int stm32_adc_conv(conv_done_f *conv_done)
+int stm32_adc_conv()
 {
-  return _stm32_adc_conv(ADC, conv_done);
+  return _stm32_adc_conv(ADC);
 }

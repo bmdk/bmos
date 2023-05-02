@@ -160,7 +160,7 @@ static int get_temp(int adcval)
 
 int temp;
 
-static void adc_conv_done(unsigned short *data, unsigned int count)
+static void adc_conv_done(unsigned short *data, unsigned int count, unsigned int flags)
 {
   memcpy(adc_val, data, count * sizeof(unsigned short));
 
@@ -175,11 +175,11 @@ static void adc_conv_done(unsigned short *data, unsigned int count)
 
 static void adc_task(void *arg)
 {
-  stm32_adc_init(adc_seq, sizeof(adc_seq));
+  stm32_adc_init(adc_seq, sizeof(adc_seq), adc_conv_done);
 
   for (;;) {
     task_delay(2000);
-    stm32_adc_conv(adc_conv_done);
+    stm32_adc_conv();
   }
 }
 
@@ -192,5 +192,5 @@ unsigned short dma_buf[5000 * 2 * 2];
 
 void adc_init_dma()
 {
-  stm32_adc_init_dma(adc_seq, sizeof(adc_seq), dma_buf, sizeof(dma_buf));
+  stm32_adc_init_dma(adc_seq, sizeof(adc_seq), dma_buf, sizeof(dma_buf), 0);
 }

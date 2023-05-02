@@ -72,6 +72,8 @@ typedef struct {
 
 #define ADC_DMA_LEN 16
 
+#define ADC_DATA_FLAGS_CONV_ACTIVE BIT(0)
+
 typedef struct {
   unsigned short res[ADC_DMA_LEN];
   conv_done_f *conv_done;
@@ -149,13 +151,13 @@ static void adc_dma_irq(void *data)
   if (status & DMA_IRQ_STATUS_HALF)
     FAST_LOG('A', "adc dma half\n", 0, 0);
 
-  if (adc_data.conv_done) {
+  if (adc_data.flags & ADC_DATA_FLAGS_CONV_ACTIVE) {
     stm32_adc_t *a = (stm32_adc_t *)data;
 
     a->cr2 &= ~CR2_DMA;
 
-    adc_data.conv_done(adc_data.res, adc_data.tcount);
-    adc_data.conv_done = 0;
+    adc_data.conv_done(adc_data.res, adc_data.tcount, 0);
+    adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
   }
 }
 
@@ -260,22 +262,23 @@ static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
   dma_en(DMA_NUM, DMA_CHAN, 1);
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt)
+void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt, conv_done_f *conv_done)
 {
   XASSERT(cnt <= ADC_DMA_LEN);
 
   _stm32_adc_init(ADC_BASE, reg_seq, cnt);
   adc_data.tcount = cnt;
+  adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
 }
 
 void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
-                        void *buf, unsigned int buflen)
+                        void *buf, unsigned int buflen, conv_done_f *conv_done)
 {
   unsigned int compare[] = { 10 };
 
   _stm32_adc_init(ADC_BASE, reg_seq, cnt);
 
-  adc_data.tcount = ADC_DMA_LEN;
+  adc_data.tcount = 0;
 
   stm32_adc_t *a = (stm32_adc_t *)ADC_BASE;
 
@@ -289,24 +292,24 @@ void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
   timer_init_pwm(TIM1_BASE, 96, 19, compare, 1);
 }
 
-static int _stm32_adc_conv(void *base, conv_done_f *_conv_done)
+static int _stm32_adc_conv(void *base)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
 
-  if (adc_data.conv_done)
+  if (adc_data.flags & ADC_DATA_FLAGS_CONV_ACTIVE)
     return -1;
 
   a->cr2 &= ~(CR2_DMA | CR2_SWSTART);
 
   _stm32_adc_dma_init(a, 0, &adc_data.res, adc_data.tcount);
-  adc_data.conv_done = _conv_done;
+  adc_data.flags |= ADC_DATA_FLAGS_CONV_ACTIVE;
 
   a->cr2 |= (CR2_DMA | CR2_SWSTART);
 
   return 0;
 }
 
-int stm32_adc_conv(conv_done_f *conv_done)
+int stm32_adc_conv()
 {
-  return _stm32_adc_conv(ADC_BASE, conv_done);
+  return _stm32_adc_conv(ADC_BASE);
 }

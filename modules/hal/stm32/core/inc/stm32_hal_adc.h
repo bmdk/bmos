@@ -22,11 +22,13 @@
 #ifndef STM32_HAL_ADC_H
 #define STM32_HAL_ADC_H
 
-typedef void conv_done_f (unsigned short *adc_dat, unsigned int count);
+typedef void conv_done_f (unsigned short *adc_dat, unsigned int count,
+                          unsigned int type);
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt);
+void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+                    conv_done_f *conv_done);
 void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
-                        void *buf, unsigned int buflen);
-int stm32_adc_conv(conv_done_f *conv_done);
+                        void *buf, unsigned int buflen, conv_done_f *conv_done);
+int stm32_adc_conv(void);
 
 #endif
