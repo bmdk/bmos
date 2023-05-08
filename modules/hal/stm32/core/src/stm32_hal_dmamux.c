@@ -35,7 +35,7 @@ typedef struct {
 
 #ifdef STM32_H7XX
 #define DMAMUX { (void *)0x40020800, (void *)0x58025800 };
-#elif STM32_G0XX || STM32_G4XX
+#elif STM32_G0XX || STM32_G4XX || STM32_C0XX
 #define DMAMUX { (void *)0x40020800 };
 #else
 #error Define dmamux for this platform

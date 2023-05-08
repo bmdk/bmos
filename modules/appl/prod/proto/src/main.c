@@ -75,7 +75,17 @@ void blink()
   }
 }
 
-#if STM32_F103N
+#ifndef CONFIG_BUTTON_INT
+#define BUTTON_INT 1
+#else
+#define BUTTON_INT CONFIG_BUTTON_INT
+#endif
+
+#if BUTTON_INT
+#if STM32_C031N
+#define BUTTON_EXTI 13
+#define BUTTON_IRQ 7 /* EXTI4_15 */
+#elif STM32_F103N
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 40
 #elif STM32_H7XX || STM32_F767 || STM32_L4XX || STM32_G4XX
@@ -94,16 +104,16 @@ void blink()
 #elif STM32_F103DEB
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 6 /* EXTI0 */
-#else
+#elif STM32_F429 || STM32_F469D || STM32_F746 || STM32_L4R || STM32_WB55N || \
+  STM32_WB55USB
+/* FIXME - check this */
 #define BUTTON_EXTI 11
 #define BUTTON_IRQ 40
+#else
+#error Error button is enabled but missing config.
+#endif
 #endif
 
-#ifndef CONFIG_BUTTON_INT
-#define BUTTON_INT 1
-#else
-#define BUTTON_INT CONFIG_BUTTON_INT
-#endif
 
 #if BUTTON_INT
 void button_int(void *data)

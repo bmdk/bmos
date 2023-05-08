@@ -69,12 +69,6 @@ typedef struct {
 #define RCC_PLLCFGR_PLLQEN BIT(24)
 #define RCC_PLLCFGR_PLLPEN BIT(16)
 
-#define RCC_CFGR_SW_HSISYS 0
-#define RCC_CFGR_SW_HSE 1
-#define RCC_CFGR_SW_PLLRCLK 2
-#define RCC_CFGR_SW_LSI 3
-#define RCC_CFGR_SW_LSE 4
-
 #define PLLCFGR(pllr, pllq, pllp, plln, pllm, src) \
   (((((pllr) - 1) & 0x7) << 29) | ((((pllq) - 1) & 0x7) << 25) | \
    (((pllp) & 0x1f) << 17) | \
@@ -83,6 +77,32 @@ typedef struct {
 #define CFGR(ppre, hpre, src) \
   ( (((ppre) & 0x7) << 12) | (((hpre) & 0xf) << 8) | ((src) & 0x7))
 
+static void _clock_select(unsigned int clk)
+{
+  RCC->cfgr = CFGR(0, 0, clk);
+  while (((RCC->cfgr >> 3) & 0x7) != clk)
+    ;
+}
+
+#if STM32_C0XX
+static void _clock_init(const struct pll_params_t *p)
+{
+  if (p->cfgrsrc == RCC_CFGR_SW_HSE) {
+    unsigned int flags = RCC_CR_HSEON;
+
+    if (p->flags & PLL_FLAG_BYPASS)
+      flags |= RCC_CR_HSEBYP;
+
+    RCC->cr |= flags;
+    while ((RCC->cr & RCC_CR_HSERDY) == 0)
+      ;
+  }
+
+  stm32_flash_latency(p->latency);
+
+  _clock_select(p->cfgrsrc);
+}
+#else
 static void _clock_init(const struct pll_params_t *p)
 {
   unsigned int pllcfgr;
@@ -98,9 +118,7 @@ static void _clock_init(const struct pll_params_t *p)
       ;
   }
 
-  RCC->cfgr = CFGR(0, 0, RCC_CFGR_SW_HSISYS);
-  while (((RCC->cfgr >> 3) & 0x7) != RCC_CFGR_SW_HSISYS)
-    ;
+  _clock_select(RCC_CFGR_SW_HSISYS);
 
   RCC->cr &= ~RCC_CR_PLLON;
   while (RCC->cr & RCC_CR_PLLRDY)
@@ -125,10 +143,9 @@ static void _clock_init(const struct pll_params_t *p)
 
   stm32_flash_latency(p->latency);
 
-  RCC->cfgr = CFGR(0, 0, RCC_CFGR_SW_PLLRCLK);
-  while (((RCC->cfgr >> 3) & 0x7) != RCC_CFGR_SW_PLLRCLK)
-    ;
+  _clock_select(RCC_CFGR_SW_PLLRCLK);
 }
+#endif
 
 #include "stm32_rcc_ls_int.h"
 

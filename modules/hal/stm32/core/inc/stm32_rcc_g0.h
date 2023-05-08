@@ -24,12 +24,16 @@
 
 struct pll_params_t {
   unsigned char flags;
+#if STM32_C0XX
+  unsigned char cfgrsrc;
+#else
   unsigned char pllsrc;
   unsigned char pllm;
   unsigned char plln;
   unsigned char pllp;
   unsigned char pllq;
   unsigned char pllr;
+#endif
   /* FLASH latency */
   unsigned char latency;
 };
@@ -44,6 +48,12 @@ void clock_init(const struct pll_params_t *pll_params);
 #define RCC_PLLCFGR_PLLSRC_NONE 0
 #define RCC_PLLCFGR_PLLSRC_HSI16 2
 #define RCC_PLLCFGR_PLLSRC_HSE 3
+
+#define RCC_CFGR_SW_HSISYS 0
+#define RCC_CFGR_SW_HSE 1
+#define RCC_CFGR_SW_PLLRCLK 2
+#define RCC_CFGR_SW_LSI 3
+#define RCC_CFGR_SW_LSE 4
 
 void enable_io(unsigned int dev);
 void disable_io(unsigned int dev);

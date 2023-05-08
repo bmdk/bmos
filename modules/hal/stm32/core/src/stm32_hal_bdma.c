@@ -26,7 +26,11 @@
 
 #include "hal_dma_if.h"
 
-#if STM32_G0XX || STM32_G4XX
+#if STM32_G0XX || STM32_G4XX || STM32_C0XX
+#define STM32_HAS_DMAMUX 1
+#endif
+
+#if STM32_HAS_DMAMUX
 #include "stm32_hal_dmamux.h"
 #endif
 
@@ -68,7 +72,7 @@ typedef struct {
 static void stm32_bdma_set_chan(void *base, unsigned int chan,
                                 unsigned int devid)
 {
-#if STM32_G0XX || STM32_G4XX
+#if STM32_HAS_DMAMUX
   if (base == (void *)0x40020400)
     chan += 8;
 

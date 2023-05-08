@@ -45,7 +45,7 @@ typedef struct {
   reg32_t emr1;
 } stm32_exti_uxxx_t;
 
-#if STM32_G0XX
+#if STM32_G0XX || STM32_C0XX
 #define EXTI_BASE 0x40021800
 #elif STM32_UXXX
 #define EXTI_BASE 0x46022000

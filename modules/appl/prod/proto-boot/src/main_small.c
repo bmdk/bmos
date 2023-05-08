@@ -48,6 +48,9 @@
 #elif STM32_F030
 #define APP_START 1
 #define APP_LEN 31
+#elif STM32_C0XX
+#define APP_START 2
+#define APP_LEN 30
 #elif STM32_F072
 #define APP_START 16
 #define APP_LEN 32
@@ -79,7 +82,7 @@ typedef struct {
   { 4, 16 }, { 1, 64 }, { 7, 128 }
 #elif STM32_F7XX
 #define FLASH_BLKSIZE 32
-#elif STM32_G0XX
+#elif STM32_G0XX || STM32_C0XX
 #define FLASH_BLKSIZE 2
 #elif STM32_F072
 #define FLASH_BLKSIZE 2
