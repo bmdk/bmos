@@ -39,13 +39,15 @@
 #define NAK 0x15
 #define CAN 0x18
 
-#define XMODEM_RETRIES 3
+#define XMODEM_RETRIES 0
 
 void xmodem_start(xmodem_data_t *d)
 {
   d->state = XMODEM_STATE_INIT;
   d->data_len = 0;
+#if XMODEM_RETRIES > 0
   d->retries = XMODEM_RETRIES;
+#endif
   d->pktnum = 1;
   debug_putc('C');
 }
@@ -58,10 +60,14 @@ int xmodem_data(xmodem_data_t *d, int ch)
       debug_putc(NAK);
       d->state = XMODEM_STATE_START;
     } else {
+#if XMODEM_RETRIES > 0
       debug_putc('C');
       d->retries--;
       if (d->retries == 0)
         goto abort;
+#else
+      goto abort;
+#endif
     }
     return 1;
   }
