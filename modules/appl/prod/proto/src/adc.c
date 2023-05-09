@@ -68,6 +68,19 @@ unsigned char adc_seq[] = { 17, 18 };
 #define TS_CAL2_TEMP 110
 #define VREFINT_CAL *(unsigned short *)0x1FFF7A2A
 #define VREFINT_V 3300
+#elif STM32_C0XX
+unsigned char adc_seq[] = { 10, 9 };
+
+#define TS_CAL1 *(unsigned short *)0x1FFF7568
+#define TS_CAL1_TEMP 30
+#define VREFINT_CAL *(unsigned short *)0x1FFF756A
+#define VREFINT_V 3000
+#define T_AVG_SLOPE 2783 // 2.53*3300/3000*1000
+
+/* from datasheet: ((941*3.3/3) - 1042)/(2.53*3300/3000)+30 */
+
+#else
+#error Define ADC parameters
 #endif
 
 #ifdef VREFINT_CAL
@@ -92,6 +105,7 @@ static int adc_conv_voltage(int adc_raw_val)
   return (vrefint * adc_raw_val + aval / 2) / aval;
 }
 
+#ifdef TS_CAL2
 /* calculate a temperature from an adc measurement */
 static int get_temp(int adcval)
 {
@@ -106,12 +120,24 @@ static int get_temp(int adcval)
          TS_CAL1_TEMP * 1000;
 }
 #else
+static int get_temp(int adcval)
+{
+  int ts_cal1;
+
+  ts_cal1 = TS_CAL1;
+
+  return (1000000 *
+          (adc_conv_voltage(adcval) - ts_cal1) + T_AVG_SLOPE / 2) / T_AVG_SLOPE +
+         TS_CAL1_TEMP * 1000;
+}
+#endif
+#else
 static unsigned int get_vdd(void)
 {
   if (adc_val[0] == 0)
     return 0;
 
-  return VREFINT_V * 4095 / adc_val[0];
+  return VREFINT_V * 4096 / adc_val[0];
 }
 
 // Temperature (in °C) = {(V 25 - V SENSE ) / Avg_Slope} + 25.
@@ -125,7 +151,7 @@ static int get_temp(int adcval)
 #if 1
   v = VREFINT_V * adcval / adc_val[0];
 #else
-  v = 3300 * adcval / 4095;
+  v = 3300 * adcval / 4096;
 #endif
 
   return 1000000 * (V25 - v) / T_AVG_SLOPE + 25000;
@@ -136,7 +162,9 @@ static void adc_conv_done(unsigned short *data, unsigned int count)
 {
   memcpy(adc_val, data, count * sizeof(unsigned short));
 
+#if 0
   xslog(LOG_INFO, "R: VDD:%d T:%d\n", adc_val[0], adc_val[1]);
+#endif
   xslog(LOG_INFO, "VDD:%d T:%d\n", get_vdd(), get_temp(adc_val[1]));
 }
 
@@ -152,5 +180,5 @@ static void adc_task(void *arg)
 
 void adc_init()
 {
-  task_init(adc_task, NULL, "adc", 2, 0, 128);
+  task_init(adc_task, NULL, "adc", 2, 0, 194);
 }

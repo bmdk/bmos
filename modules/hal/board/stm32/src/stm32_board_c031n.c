@@ -40,6 +40,7 @@
 void pin_init()
 {
   enable_io(0); /* GPIOA */
+  enable_io(2); /* GPIOC */
 
   /* USART 2 */
   enable_apb1(17);
@@ -71,6 +72,13 @@ void pin_init()
 
   enable_apb1(28); /* PWR */
   enable_apb1(32); /* SYSCFG */
+
+  enable_apb1(52); /* ADC */
+
+#if 0
+  /* analogue 0 */
+  gpio_init(GPIO(0, 0), GPIO_ANALOG);
+#endif
 
   /* KEY */
   gpio_init_attr(GPIO(2, 13), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,
