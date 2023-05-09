@@ -197,8 +197,6 @@ static int xmodem_dl(void)
 
   xmdat.block_ctx = &bd;
 
-  delay(1000000);
-
   count = 0;
   xmodem_start(&xmdat);
 
