@@ -19,6 +19,14 @@
  * IN THE SOFTWARE.
  */
 
+#if BOOT
+#define SVC_HANDLER exception_handler
+#define PENDSV_HANDLER exception_handler
+#else
+#define SVC_HANDLER svc_handler
+#define PENDSV_HANDLER pendsv_handler
+#endif
+
 .syntax unified
 .thumb
 
@@ -27,15 +35,17 @@ vector_table:
 .word _stack_end
 .word reset_handler
 
+#if !CONFIG_NO_EXCEPTIONS
 .rept 9
 .word exception_handler
 .endr
 
-.word svc_handler
+.word SVC_HANDLER
 .word exception_handler
 .word exception_handler
-.word pendsv_handler
+.word PENDSV_HANDLER
 .word systick_handler
+#endif
 
 #ifdef CONFIG_N_INTS
 #define N_INTS CONFIG_N_INTS
