@@ -20,10 +20,12 @@
  */
 
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include "fast_log.h"
 #include "hal_cpu.h"
 #include "hal_int.h"
+#include "hal_time.h"
 #include "io.h"
 #include "shell.h"
 #include "xassert.h"
@@ -83,6 +85,19 @@ void xpanic(const char *fmt, ...)
 
 int cmd_reset(int argc, char *argv[])
 {
+#if !ARCH_PICO
+  unsigned int delay = 3;
+#endif
+
+  INTERRUPT_OFF();
+
+#if !ARCH_PICO
+  if (argc > 1)
+    delay = atoi(argv[1]);
+
+  hal_delay_us(1000000 * delay);
+#endif
+
   hal_cpu_reset();
   return 0;
 }
