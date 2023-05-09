@@ -312,6 +312,7 @@ static int flash_cmd(int argc, char *argv[])
 SHELL_CMD(flash, flash_cmd);
 #endif
 
+#if FLASH_TEST_CMD
 char data[4096];
 
 int cmd_flash(int argc, char *argv[])
@@ -344,4 +345,6 @@ int cmd_flash(int argc, char *argv[])
 }
 
 SHELL_CMD(flash, cmd_flash);
+#endif
+
 #endif
