@@ -32,7 +32,7 @@
 
 #define FAST_LOG_ITEMS_LEN 128
 unsigned char fast_log_mask[FAST_LOG_ITEMS_LEN];
-unsigned char fast_log_enabled;
+char fast_log_enabled;
 int fast_log_stop_count = -1;
 
 typedef struct fast_log_entry_t {
@@ -154,7 +154,7 @@ static void fast_log_show_items(void)
 
 void fast_log_init(const char *enable_items)
 {
-  fast_log_enable(1);
+  fast_log_enable(strlen(enable_items) != 0);
   fast_log_enable_items(enable_items, 1);
 }
 

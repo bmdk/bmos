@@ -30,7 +30,7 @@ void fast_log(const char *fmt, unsigned long v1, unsigned long v2);
 
 #if CONFIG_FAST_LOG_ENABLE
 extern unsigned char fast_log_mask[];
-extern unsigned char fast_log_enabled;
+extern char fast_log_enabled;
 extern int fast_log_stop_count;
 
 #define FAST_LOG(_m_, fmt, v1, v2)                             \
@@ -40,7 +40,7 @@ extern int fast_log_stop_count;
     }                                                          \
   } while (0)
 
-static inline void fast_log_enable(unsigned int en)
+static inline void fast_log_enable(int en)
 {
   fast_log_enabled = en;
   fast_log_stop_count = -1;
