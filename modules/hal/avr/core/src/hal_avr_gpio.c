@@ -39,7 +39,7 @@ typedef struct {
 
 static const avr_gpio_regs_t avr_gpio_regs[N_GPIOS] = {
 #if __AVR_ATmega328P__
-  { 0, 0, 0 },
+  { 0,     0,      0     },
   { &PINB, &PORTB, &DDRB },
   { &PINC, &PORTC, &DDRC },
   { &PIND, &PORTD, &DDRD },
