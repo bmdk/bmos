@@ -23,7 +23,11 @@
 #include <avr/io.h>
 #include <hal_gpio.h>
 
+#if __AVR_ATmega328P__
+#define N_GPIOS 4
+#else
 #define N_GPIOS 7
+#endif
 
 typedef volatile unsigned char reg8_t;
 
@@ -34,6 +38,12 @@ typedef struct {
 } avr_gpio_regs_t;
 
 static const avr_gpio_regs_t avr_gpio_regs[N_GPIOS] = {
+#if __AVR_ATmega328P__
+  { 0, 0, 0 },
+  { &PINB, &PORTB, &DDRB },
+  { &PINC, &PORTC, &DDRC },
+  { &PIND, &PORTD, &DDRD },
+#else
   { &PINA, &PORTA, &DDRA },
   { &PINB, &PORTB, &DDRB },
   { &PINC, &PORTC, &DDRC },
@@ -41,6 +51,7 @@ static const avr_gpio_regs_t avr_gpio_regs[N_GPIOS] = {
   { &PINE, &PORTE, &DDRE },
   { &PINF, &PORTF, &DDRF },
   { &PING, &PORTG, &DDRG }
+#endif
 };
 
 void gpio_init(gpio_handle_t gpio, unsigned int type)
@@ -49,6 +60,9 @@ void gpio_init(gpio_handle_t gpio, unsigned int type)
   unsigned char pin = GPIO_PIN(gpio);
 
   if (bank >= N_GPIOS)
+    return;
+
+  if (avr_gpio_regs[bank].ddr == 0)
     return;
 
   if (type == GPIO_INPUT)

@@ -33,7 +33,7 @@
 
 #define USART_DIV AVR_USART_DIV(CLOCK, BAUD)
 
-#if __AVR_AT90CAN128__
+#if __AVR_AT90CAN128__ || __AVR_ATmega328P__
 void uart_init(void)
 {
   UBRR0H = (USART_DIV >> 8) & 0xff;
@@ -45,16 +45,24 @@ void uart_init(void)
   UCSR0B = BIT(3) | BIT(4); /* Enable RX and TX */
 }
 
+#if __AVR_ATmega328P__
+#define UDREX UDRE0
+#define RXCX RXC0
+#else
+#define UDREX UDRE
+#define RXCX RXC
+#endif
+
 void debug_putc(int ch)
 {
-  while ( !( UCSR0A & BIT(UDRE)) )
+  while ( !( UCSR0A & BIT(UDREX)) )
     ;
   UDR0 = ch & 0xff;
 }
 
 int debug_getc(void)
 {
-  if ( !(UCSR0A & BIT(RXC)) )
+  if ( !(UCSR0A & BIT(RXCX)) )
     return -1;
   return UDR0;
 }

@@ -25,6 +25,7 @@ export ROOT ?= $(shell pwd)/../..
 
 PROG += a128st
 PROG += at90can128ol
+PROG += am328pard
 
 PROG_TRG = $(addprefix board-, $(PROG))
 
@@ -68,6 +69,11 @@ XCFLAGS.at90can128ol += -DAT90CAN128OL -DAT90CAN128
 XCFLAGS.at90can128ol += -DCONFIG_FAST_LOG_SHIFT=4
 XCFLAGS.at90can128ol += -DCONFIG_SHELL_HELP=0
 CPU.at90can128ol = -mmcu=at90can128
+
+XCFLAGS.am328pard += -DAM328PARD -DATMEGA328P
+XCFLAGS.am328pard += -DCONFIG_FAST_LOG_SHIFT=4
+XCFLAGS.am328pard += -DCONFIG_SHELL_HELP=0
+CPU.am328pard = -mmcu=atmega328p
 
 #XLDFLAGS += -nostartfiles
 

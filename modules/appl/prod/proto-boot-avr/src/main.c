@@ -57,6 +57,8 @@ static unsigned int count = 0;
 #define LED GPIO(0, 0)
 #elif __AVR_AT90CAN128__
 #define LED GPIO(4, 4)
+#elif __AVR_ATmega328P__
+#define LED GPIO(1, 5)
 #else
 #error FIXME
 #endif
@@ -66,8 +68,26 @@ static unsigned int count = 0;
 void avr_reset()
 {
   hal_delay_us(5000000);
+#if __AVR_ATmega328P__
+  WDTCSR = WDTCR_WDE;
+#else
   WDTCR = WDTCR_WDE;
+#endif
 }
+
+#if __AVR_ATmega328P__
+#define LED_ACTIVE_HIGH 1
+#else
+#define LED_ACTIVE_HIGH 0
+#endif
+
+#if LED_ACTIVE_HIGH
+#define LED_ACTIVE 1
+#define LED_INACTIVE 0
+#else
+#define LED_ACTIVE 0
+#define LED_INACTIVE 1
+#endif
 
 void blink()
 {
@@ -76,9 +96,9 @@ void blink()
   if (count - last_blink >= wait) {
     led_state ^= 1;
     if (led_state)
-      gpio_set(LED, 0);
+      gpio_set(LED, LED_ACTIVE);
     else
-      gpio_set(LED, 1);
+      gpio_set(LED, LED_INACTIVE);
     last_blink = count;
     if (wait == LONG_WAIT)
       wait = SHORT_WAIT;
@@ -161,6 +181,8 @@ void timer_init(void)
   TIMSK = BIT(OCIE1A);  /* enable output compare 1 */
 #elif __AVR_AT90CAN128__
   TIMSK1 = BIT(OCIE1A); /* enable output compare 1 */
+#elif __AVR_ATmega328P__
+  TIMSK1 = BIT(OCIE1A); /* enable output compare 1 */
 #else
 #error FIXME
 #endif
@@ -228,8 +250,12 @@ void extint(unsigned char n, unsigned char type)
   type &= 0x3;
 
   if (n >= 4) {
+#if __AVR_ATmega328P__
+    return;
+#else
     n -= 4;
     eicr = &EICRB;
+#endif
   } else
     eicr = &EICRA;
 
