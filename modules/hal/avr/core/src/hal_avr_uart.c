@@ -26,7 +26,11 @@
 #include "hal_avr_uart.h"
 #include "io.h"
 
+#if  __AVR_ATmega328P__
+#define BAUD 115200
+#else
 #define BAUD 57600
+#endif
 
 #define AVR_USART_DIV(_clk_, _baud_) ((_clk_ + (16 * (_baud_) / 2) - 1) / \
                                       16 / (_baud_) - 1)

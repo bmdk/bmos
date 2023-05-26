@@ -7,6 +7,8 @@ PRODUCTS += proto-boot
 PRODUCTS += proto-pico
 PRODUCTS += esptemp
 
+PRODUCTS += proto-boot-avr
+
 %-product:
 	$(MAKE) -C products/$*
 
