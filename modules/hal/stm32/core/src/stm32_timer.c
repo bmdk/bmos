@@ -109,9 +109,9 @@ void timer_init(void *base, unsigned int presc)
 
 void hal_delay_us(hal_time_us_t us)
 {
-  unsigned int now = timer_get(TIM_BASE);
+  unsigned int now = hal_time_us();
 
-  while (timer_get(TIM_BASE) - now < us)
+  while (hal_time_us() - now < us)
     ;
 }
 
