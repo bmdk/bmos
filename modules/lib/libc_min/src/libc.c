@@ -39,6 +39,7 @@ int memcmp(const void *_s1, const void *_s2, size_t n);
 void *memcpy(void *dest, const void *src, size_t n);
 void *memset(void *p, int v, size_t s);
 int atoi(const char *nptr);
+int abs(int j);
 #if 0
 void *malloc(size_t size);
 void free(void *ptr);
@@ -617,4 +618,9 @@ void *memmove(void *dest, const void *src, size_t n)
     *d++ = *s++;
 
   return dest;
+}
+
+int abs(int j)
+{
+  return (j < 0 ? -j : j);
 }
