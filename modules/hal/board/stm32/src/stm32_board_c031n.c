@@ -40,7 +40,6 @@
 void pin_init()
 {
   enable_io(0); /* GPIOA */
-  enable_io(2); /* GPIOC */
 
   /* USART 2 */
   enable_apb1(17);
@@ -79,6 +78,12 @@ void pin_init()
   /* analogue 0 */
   gpio_init(GPIO(0, 0), GPIO_ANALOG);
 #endif
+
+  enable_apb1(21);
+  gpio_init_attr(GPIO(1, 8), GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                 GPIO_SPEED_LOW, 6, GPIO_ALT));
+  gpio_init_attr(GPIO(1, 9), GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                 GPIO_SPEED_LOW, 6, GPIO_ALT));
 
   /* KEY */
   gpio_init_attr(GPIO(2, 13), GPIO_ATTR_STM32(GPIO_FLAG_PULL_PU,

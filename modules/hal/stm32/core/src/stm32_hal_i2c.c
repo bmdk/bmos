@@ -74,9 +74,15 @@ void i2c_init(stm32_i2c_t *i2c)
 {
   i2c->cr1 &= ~I2C_CR1_PE;
 
+#if STM32_C0XX
+  i2c->timingr = I2C_TIMINGR_PRESC(0x2) | \
+                 I2C_TIMINGR_SCLDEL(0x3) | I2C_TIMINGR_SDADEL(0x0) | \
+                 I2C_TIMINGR_SCLH(0x3e) | I2C_TIMINGR_SCLL(0x5d);
+#else
   i2c->timingr = I2C_TIMINGR_PRESC(0x2) | \
                  I2C_TIMINGR_SCLDEL(0xc) | I2C_TIMINGR_SDADEL(0x0) | \
                  I2C_TIMINGR_SCLH(0x08) | I2C_TIMINGR_SCLL(0x08);
+#endif
 
   i2c->cr1 |= I2C_CR1_PE;
 }

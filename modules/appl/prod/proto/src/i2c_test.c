@@ -39,6 +39,8 @@
 #define I2C ((stm32_i2c_t *)I2C1_BASE)
 #elif STM32_G4XX
 #define I2C ((stm32_i2c_t *)I2C1_BASE)
+#elif STM32_C0XX
+#define I2C ((stm32_i2c_t *)I2C1_BASE)
 #elif STM32_H7XX
 #define I2C ((stm32_i2c_t *)I2C2_BASE)
 #else
@@ -267,13 +269,16 @@ static hd44780_data_t hd44780_disp_data = { hd44780_write_byte,
                                             hd44780_read_byte };
 #endif
 
+extern int temp;
+
 void task_i2c_clock()
 {
   rtc_time_t t, ot;
+  int otemp = 0;
 
 #if DISP
   unsigned char digits[4];
-  unsigned int yo = 16;
+  unsigned int yo = 4;
   unsigned int xo = 8;
 
   fb = fb_init(128, 64, 1, 0);
@@ -293,7 +298,7 @@ void task_i2c_clock()
   for (;;) {
     rtc_get_time(&t);
 
-    if (t.hours != ot.hours || t.mins != ot.mins) {
+    if (t.hours != ot.hours || t.mins != ot.mins || abs(otemp - temp) > 100) {
 #if DISP
       digits[0] = t.hours / 10;
       digits[1] = t.hours % 10;
@@ -306,6 +311,16 @@ void task_i2c_clock()
       disp_char_w(fb, 24 + xo, yo, 16 + digits[1]);
       disp_char_w(fb, 64 + xo, yo, 16 + digits[2]);
       disp_char_w(fb, 88 + xo, yo, 16 + digits[3]);
+
+#define TEMP 1
+#if TEMP
+      char tempstr[8];
+      unsigned int dtemp = (temp - 2000 + 50) / 100;
+      otemp = temp;
+
+      snprintf(tempstr, sizeof(tempstr), "%d.%d", dtemp / 10, dtemp % 10);
+      disp_str(fb, 8, 40, tempstr, strlen(tempstr));
+#endif
 
       fb_to_i2cdisp(fb);
 #else

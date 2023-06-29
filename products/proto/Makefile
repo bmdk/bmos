@@ -361,6 +361,8 @@ XCFLAGS.c031n += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.c031n += -DCONFIG_SYSLOG_NUM_LINES=32
 XCFLAGS.c031n += -mcpu=cortex-m0plus
 XCFLAGS.c031n += -DCONFIG_ENABLE_ADC
+XCFLAGS.c031n += -DDISP
+XCFLAGS.c031n += -DI2C_DEMO
 APPL_FLASH_BASE.c031n = 0x8000800
 STACK_END.c031n = 0x20003000
 OPTFLAGS.c031n = -Os
@@ -397,6 +399,7 @@ XCFLAGS += -Wno-error=strict-overflow
 XCFLAGS += -mno-unaligned-access
 XCFLAGS += -ffreestanding
 XCFLAGS += -ffunction-sections
+XCFLAGS += -fdata-sections
 # generate dependency information
 XCFLAGS += -MD
 XCFLAGS += -DAPPL
@@ -737,6 +740,11 @@ FILES.c0xx += stm32_pwr_g0xx.o
 FILES.c0xx += stm32_rcc_g0.o
 FILES.c0xx += stm32_usart_b.o
 FILES.c0xx += stm32_hal_adc_g0.o
+FILES.c0xx += stm32_hal_i2c.o
+FILES.c0xx += font1.o
+FILES.c0xx += ssd1306_fonts.o
+FILES.c0xx += fb.o
+FILES.c0xx += i2c_test.o
 
 FILES.c031n += $(FILES.c0xx)
 FILES.c031n += stm32_exti_uxxx.o
