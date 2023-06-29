@@ -158,6 +158,8 @@ static int get_temp(int adcval)
 }
 #endif
 
+int temp;
+
 static void adc_conv_done(unsigned short *data, unsigned int count)
 {
   memcpy(adc_val, data, count * sizeof(unsigned short));
@@ -165,7 +167,10 @@ static void adc_conv_done(unsigned short *data, unsigned int count)
 #if 0
   xslog(LOG_INFO, "R: VDD:%d T:%d\n", adc_val[0], adc_val[1]);
 #endif
-  xslog(LOG_INFO, "VDD:%d T:%d\n", get_vdd(), get_temp(adc_val[1]));
+  temp = get_temp(adc_val[1]);
+
+  xslog(LOG_INFO, "VDD:%d T:%d\n", get_vdd(), temp);
+
 }
 
 static void adc_task(void *arg)
