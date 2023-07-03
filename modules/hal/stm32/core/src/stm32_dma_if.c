@@ -45,6 +45,11 @@ dma_cont_data_t dma_cont_data[] = {
   { &stm32_bdma_controller, (void *)0x40020000 },
   { &stm32_bdma_controller, (void *)0x40020400 }
 };
+#elif STM32_H5XX
+dma_cont_data_t dma_cont_data[] = {
+  { &stm32_gpdma_controller, (void *)0x40020000 },
+  { &stm32_gpdma_controller, (void *)0x40021000 }
+};
 #elif STM32_UXXX
 dma_cont_data_t dma_cont_data[] = {
   { &stm32_gpdma_controller, (void *)0x40020000 },

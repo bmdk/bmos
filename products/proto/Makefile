@@ -42,6 +42,7 @@ PROG += f429
 PROG += f469d
 PROG += f746
 PROG += f767
+PROG += h563n
 PROG += h723n
 PROG += h735dk
 PROG += h743wa
@@ -139,6 +140,14 @@ APPL_RAM_BASE.h745nm4 = 0x30000000
 STACK_END.h745nm4 = 0x30020000
 APPL_FLASH_BASE.h745nm4 = 0x8100000
 XCFLAGS.h745nm4 += -mcpu=cortex-m4
+
+XCFLAGS.h563n += -DSTM32_H5XX
+XCFLAGS.h563n += -DSTM32_H563N
+#XCFLAGS.h563n += -DCONFIG_BUTTON_INT=0
+STACK_END.h563n = 0x200a0000
+XCFLAGS.h563n += -mcpu=cortex-m33
+LWIP.h563n = y
+APPL_FLASH_BASE.h563n = 0x8020000
 
 XCFLAGS.l073n += -DSTM32_L0XX -DSTM32_L073N
 XCFLAGS.l073n += -DCONFIG_TIMER_16BIT=1
@@ -499,6 +508,18 @@ FILES += libc.o
 FILES += malloc.o
 endif
 
+FILES.h5xx += stm32_usart_b.o
+FILES.h5xx += stm32_rcc_h5.o
+FILES.h5xx += stm32_pwr_h5xx.o
+FILES.h5xx += stm32_flash.o
+FILES.h5xx += stm32_hal_gpdma.o
+FILES.h5xx += stm32_exti_uxxx.o
+#FILES.h5xx += stm32_hal_rtc.o
+#FILES.h5xx += stm32_wdog.o
+FILES.h5xx += stm32_eth_h7xx.o
+
+FILES.h563n += $(FILES.h5xx)
+
 FILES.h7xx += stm32_usart_b.o
 FILES.h7xx += stm32_rcc_h7.o
 FILES.h7xx += stm32_hal_rtc.o
@@ -539,6 +560,8 @@ FILES.h745nucleo += stm32_fdcan.o
 FILES.h745nucleo += can_test.o
 
 FILES.h745nm4 += stm32_board_h745nm4.o
+
+FILES.h563n += stm32_board_h563n.o
 
 FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f7xx += stm32_flash.o

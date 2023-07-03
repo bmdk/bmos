@@ -47,6 +47,8 @@ typedef struct {
 
 #if STM32_G0XX || STM32_C0XX
 #define EXTI_BASE 0x40021800
+#elif STM32_H5XX
+#define EXTI_BASE 0x44022000
 #elif STM32_UXXX
 #define EXTI_BASE 0x46022000
 #endif

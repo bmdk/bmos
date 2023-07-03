@@ -36,6 +36,12 @@
 #include "stm32_eth.h"
 #endif
 
+#if STM32_H5XX
+#define ETH_IRQ 106
+#else
+#define ETH_IRQ 61
+#endif
+
 #define ETH_BASE 0x40028000
 
 typedef struct {
@@ -265,7 +271,11 @@ typedef struct {
 #define ETH_PKT_LEN 1524
 #define AETH_PKT_LEN ALIGN(ETH_PKT_LEN, 3)
 
+#if STM32_H7XX
 #define ETHSECT __attribute__((section(".eth"), aligned(8)))
+#else
+#define ETHSECT
+#endif
 
 static unsigned char rx_data[N_RX_DES][AETH_PKT_LEN] ETHSECT;
 static eth_des_t rx_des[N_RX_DES] ETHSECT;
@@ -512,7 +522,7 @@ static int hal_eth_init()
 
   memset(&eth_ctx, 0, sizeof(eth_ctx_t));
 
-  irq_register("eth", eth_irq, &eth_ctx, 61);
+  irq_register("eth", eth_irq, &eth_ctx, ETH_IRQ);
 
   return 0;
 }

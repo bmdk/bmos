@@ -43,6 +43,9 @@
 #if STM32_H7XX
 #define APP_START 128
 #define APP_LEN 128
+#elif STM32_H5XX
+#define APP_START 128
+#define APP_LEN 128
 #elif STM32_F4XX
 #define APP_START 64
 #define APP_LEN 64
@@ -76,7 +79,9 @@ typedef struct {
   unsigned char size;
 } flash_block_t;
 
-#if STM32_H7XX
+#if STM32_H5XX
+#define FLASH_BLKSIZE 8
+#elif STM32_H7XX
 #define FLASH_BLKSIZE 128
 #elif STM32_L0XX
 #define FLASH_BLKSIZE 128 // FIXME Bytes

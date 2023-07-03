@@ -35,6 +35,8 @@
 #define FLASH_TYPE2 1
 #elif STM32_UXXX
 #define FLASH_TYPE3 1
+#elif STM32_H5XX
+#define FLASH_TYPE4 1
 #else
 #error CHECK FLASH BASE AND TYPE
 #endif
@@ -87,17 +89,48 @@ typedef struct {
   reg32_t optr;
   /* TBD */
 } stm32_flash_t;
+#elif FLASH_TYPE4
+typedef struct {
+  reg32_t acr;
+  reg32_t keyr; /* NSKEYR */
+  reg32_t seckeyr;
+  reg32_t optkeyr;
+  reg32_t nsobkkeyr;
+  reg32_t secobkkeyr;
+  reg32_t opsr;
+  reg32_t optcr;
+  reg32_t sr; /* NSSR */
+  reg32_t secsr;
+  reg32_t cr; /* NSCR */
+  reg32_t seccr;
+  reg32_t nsccr;
+  reg32_t secccr;
+  reg32_t privcfgr;
+  reg32_t nsobkcfgr;
+  reg32_t secobkcfgr;
+  reg32_t hdpextr;
+  reg32_t pad0;
+  reg32_t optsr_cur;
+} stm32_flash_t;
 #endif
 
 #define FLASH_ACR_PRFTEN BIT(8)
 #define FLASH_ACR_ICEN BIT(9)
 #define FLASH_ACR_DCEN BIT(10)
 
+#if FLASH_TYPE4
+#define FLASH_CR_BKSEL BIT(31)
+#define FLASH_CR_STRT BIT(5)
+#define FLASH_CR_PER BIT(2)
+#define FLASH_CR_PG BIT(1)
+#define FLASH_CR_LOCK BIT(0)
+#else
 #define FLASH_CR_LOCK BIT(31)
 #define FLASH_CR_OPTSTRT BIT(17)
 #define FLASH_CR_STRT BIT(16)
 #define FLASH_CR_PER BIT(1)
 #define FLASH_CR_PG BIT(0)
+#endif
 
 #if FLASH_TYPE1
 #define FLASH_CR_PSIZE(page) (((page) & 0x3) << 8)
@@ -106,12 +139,18 @@ typedef struct {
 #define FLASH_CR_OPTLOCK BIT(30)
 #define FLASH_CR_PNB(page) (((page) & 0xff) << 3)
 #define FLASH_CR_MER1 BIT(2)
+#elif FLASH_TYPE4
+#define FLASH_CR_PNB(page) (((page) & 0x3f) << 6)
 #endif
 
+#if FLASH_TYPE4
+#define FLASH_SR_BSY BIT(0)
+#else
 #define FLASH_SR_BSY BIT(16)
 #define FLASH_SR_PROGERR BIT(3)
 #define FLASH_SR_OPERR BIT(1)
 #define FLASH_SR_EOP BIT(0)
+#endif
 
 #define FLASH_KEYR_KEY1 0x45670123
 #define FLASH_KEYR_KEY2 0xcdef89ab
@@ -123,7 +162,7 @@ typedef struct {
 #define FLASH ((stm32_flash_t *)0x58004000)
 #elif FLASH_TYPE1
 #define FLASH ((stm32_flash_t *)0x40023C00)
-#elif FLASH_TYPE2 || FLASH_TYPE3
+#elif FLASH_TYPE2 || FLASH_TYPE3 || FLASH_TYPE4
 #define FLASH ((stm32_flash_t *)0x40022000)
 #endif
 
@@ -216,17 +255,24 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
 #if FLASH_TYPE1
   len >>= 2;
   FLASH->cr = FLASH_CR_PSIZE(2);
-  FLASH->cr |= FLASH_CR_PG;
+#elif FLASH_TYPE4
+  len >>= 4;
+  FLASH->cr &= ~0x3f;
 #else
   len >>= 3;
   FLASH->cr &= ~0x7;
-  FLASH->cr |= FLASH_CR_PG;
 #endif
+  FLASH->cr |= FLASH_CR_PG;
 
   a = (unsigned int *)addr;
 
   for (i = 0; i < len; i++) {
 #if FLASH_TYPE1
+    *a++ = *d++;
+#elif FLASH_TYPE4
+    *a++ = *d++;
+    *a++ = *d++;
+    *a++ = *d++;
     *a++ = *d++;
 #else
     *a++ = *d++;

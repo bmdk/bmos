@@ -92,9 +92,10 @@ clean:
 	rm -fr $(BUILD_DIR)
 
 XCFLAGS.h563n += -DSTM32_H5XX
-STACK_END.h563n = 0x20020000
+STACK_END.h563n = 0x200a0000
+CPU.h563n = cortex-m33
 
-XCFLAGS.h735dk += -DSTM32_H5XX
+XCFLAGS.h735dk += -DSTM32_H7XX
 STACK_END.h735dk = 0x20020000
 
 XCFLAGS.h723n += -DSTM32_H7XX
@@ -524,6 +525,15 @@ FILES.l4r += stm32_rcc_b.o
 FILES.l4r += stm32_board_l4r.o
 FILES.l4r += stm32_pwr_lxxx.o
 FILES.l4r += stm32_flash.o
+
+FILES.h5xx += stm32_usart_b.o
+FILES.h5xx += stm32_rcc_h5.o
+#FILES.h5xx += stm32_exti_h5xx.o
+FILES.h5xx += stm32_pwr_h5xx.o
+FILES.h5xx += stm32_flash.o
+
+FILES.h563n += $(FILES.h5xx)
+FILES.h563n += stm32_board_h563n.o
 
 FILES.uxxx += stm32_usart_b.o
 FILES.uxxx += stm32_rcc_u5.o

@@ -100,6 +100,8 @@ void stm32_get_udid(void *buf, unsigned int len)
 #define FLASH_SIZE 0x1FFF7A22
 #elif STM32_F7XX
 #define FLASH_SIZE 0x1FF0F442
+#elif STM32_H5XX
+#define FLASH_SIZE 0x08FFF80C
 #elif STM32_H7XX
 #define FLASH_SIZE 0x1FF1E880
 #elif STM32_UXXX
@@ -128,6 +130,8 @@ unsigned int hal_flash_size(void)
 #if CONFIG_STM32_HAL_COMMANDS
 #if STM32_F030 || STM32_F070
 /* No unique id on F030/070 */
+#elif STM32_H5XX
+#define DBGMCU_IDCODE 0x44024000
 #elif STM32_H7XX
 #define DBGMCU_IDCODE 0x5C001000
 #elif STM32_UXXX
@@ -210,7 +214,11 @@ int cmd_devid(int argc, char *argv[])
 #endif
 
   switch (id) {
-#if STM32_H7XX
+#if STM32_H5XX
+  case 0x484:
+    idstr = "H563/H573/H562";
+    break;
+#elif STM32_H7XX
   case 0x450:
     idstr = "H743/45/47/53/55/57/50";
     break;
