@@ -333,7 +333,7 @@ int main()
 #endif
 
 #if I2C_DEMO
-  task_init(task_i2c_clock, NULL, "clk", 2, 0, 256);
+  task_init(task_i2c_clock, NULL, "clk", 2, 0, 288);
 #endif
 
 #if STM32_H743WA
