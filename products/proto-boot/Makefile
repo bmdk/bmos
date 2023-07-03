@@ -39,6 +39,7 @@ PROG += f407deb
 PROG += f407debm
 PROG += g0b1n
 PROG += g030deb
+PROG += h563n
 PROG += h723n
 PROG += h743wa
 PROG += h743nucleo
@@ -90,7 +91,10 @@ all: $(BUILD_DIR)/$(PROG).bin
 clean:
 	rm -fr $(BUILD_DIR)
 
-XCFLAGS.h735dk += -DSTM32_H7XX
+XCFLAGS.h563n += -DSTM32_H5XX
+STACK_END.h563n = 0x20020000
+
+XCFLAGS.h735dk += -DSTM32_H5XX
 STACK_END.h735dk = 0x20020000
 
 XCFLAGS.h723n += -DSTM32_H7XX
