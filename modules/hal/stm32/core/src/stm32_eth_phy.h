@@ -1,6 +1,8 @@
 #ifndef STM32_ETH_PHY_H
 #define STM32_ETH_PHY_H
 
+#include "bmos_task.h"
+
 int phy_read(unsigned int phy, unsigned int reg);
 void phy_write(unsigned int phy, unsigned int reg, unsigned int val);
 
@@ -10,23 +12,32 @@ void phy_write(unsigned int phy, unsigned int reg, unsigned int val);
 #define PHY_ADDR 0
 #endif
 
+static inline void phy_delay(unsigned int ms)
+{
+#if 1
+  task_delay(ms);
+#else
+  hal_delay_us(ms * 1000);
+#endif
+}
+
 static inline int phy_reset(void)
 {
   unsigned int count, reg;
 
   phy_write(PHY_ADDR, 0, BIT(15)); /* reset phy */
 
-  hal_delay_us(100);
+  phy_delay(1);
   while (phy_read(PHY_ADDR, 0) & BIT(15))
     ;
 
-  hal_delay_us(100);
+  phy_delay(1);
 
   // Restart and enable auto-negotiate
   phy_write(PHY_ADDR, 0, BIT(12) | BIT(9));
   count = 50;
   while ((phy_read(PHY_ADDR, 0) & BIT(9)) && count) {
-    hal_delay_us(100);
+    phy_delay(1);
     count--;
   }
   if (count == 0) {
@@ -38,7 +49,7 @@ static inline int phy_reset(void)
     reg = phy_read(PHY_ADDR, 31);
     if (reg & BIT(12))
       break;
-    hal_delay_us(1000);
+    phy_delay(1);
     count--;
   }
   if (count == 0) {
