@@ -138,6 +138,7 @@ void hal_board_init()
   clock_init(&pll_params);
 #endif
 #if APPL
+  /* errata means RTC is reset on chip reset */
   backup_domain_protect(0);
   clock_init_ls(0);
 #endif
