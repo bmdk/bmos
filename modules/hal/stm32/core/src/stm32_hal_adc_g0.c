@@ -95,8 +95,8 @@ typedef struct {
 #define ADC_IRQ_EN_MSK (IER_OVRIE)
 
 #define CCR_VBATEN BIT(24) /* Vbat */
-#define CCR_TSEN BIT(23) /* Temp */
-#define CCR_VREFEN BIT(22)  /* Vref */
+#define CCR_TSEN BIT(23)   /* Temp */
+#define CCR_VREFEN BIT(22) /* Vref */
 #define CCR_PRESC(_m_) (((_m_) & 0xf) << 18)
 
 #define MAX_SAMPLES 16
