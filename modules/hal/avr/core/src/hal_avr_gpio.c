@@ -37,6 +37,7 @@ typedef struct {
   reg8_t *ddr;
 } avr_gpio_regs_t;
 
+/* *INDENT-OFF* */
 static const avr_gpio_regs_t avr_gpio_regs[N_GPIOS] = {
 #if __AVR_ATmega328P__
   { 0,     0,      0     },
@@ -53,6 +54,7 @@ static const avr_gpio_regs_t avr_gpio_regs[N_GPIOS] = {
   { &PING, &PORTG, &DDRG }
 #endif
 };
+/* *INDENT-ON* */
 
 void gpio_init(gpio_handle_t gpio, unsigned int type)
 {
