@@ -127,8 +127,8 @@ static int get_temp(int adcval)
   ts_cal1 = TS_CAL1;
 
   return (1000000 *
-          (adc_conv_voltage(adcval) - ts_cal1) + T_AVG_SLOPE / 2) / T_AVG_SLOPE +
-         TS_CAL1_TEMP * 1000;
+          (adc_conv_voltage(adcval) - ts_cal1) + T_AVG_SLOPE / 2) /
+         T_AVG_SLOPE + TS_CAL1_TEMP * 1000;
 }
 #endif
 #else
