@@ -622,5 +622,5 @@ void *memmove(void *dest, const void *src, size_t n)
 
 int abs(int j)
 {
-  return (j < 0 ? -j : j);
+  return j < 0 ? -j : j;
 }
