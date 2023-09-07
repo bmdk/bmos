@@ -55,4 +55,8 @@ void timer_init_pwm(void *base, unsigned int presc, unsigned int max,
 
 void timer_stop(void *base);
 
+void timer_init_pwm(void *base, unsigned int presc, unsigned int max,
+                    const unsigned int *compare, unsigned int compare_len);
+void timer_set_compare(void *base, unsigned int num, unsigned int v);
+
 #endif
