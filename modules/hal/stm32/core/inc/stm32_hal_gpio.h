@@ -108,8 +108,7 @@ typedef struct {
 #elif STM32_F4XX || STM32_F7XX
 #define GPIO_BASE 0x40020000
 #else
-//#define GPIO_BASE 0x40020000
-#error X
+#error define GPIO_BASE for this board
 #endif
 
 #define STM32_GPIO(port) ((stm32_gpio_t *)(GPIO_BASE + (0x400 * (port))))
