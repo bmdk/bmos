@@ -38,9 +38,10 @@ typedef struct {
   const char *name;
   void *base;
   unsigned char irq;
-  can_params_t params;
   unsigned char tx_irq;
-  unsigned int flags;
+  unsigned char inst;
+  unsigned char pad0;
+  can_params_t params;
   const char *pool_name;
   const char *tx_queue_name;
   struct {

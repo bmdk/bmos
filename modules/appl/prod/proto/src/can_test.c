@@ -48,15 +48,27 @@
 #define CAN1_BASE 0x4000A000
 #define CAN2_BASE 0x4000A400
 #define CAN3_BASE 0x4000D400
+#elif STM32_H5XX
+#define CAN1_BASE 0x4000A400
+#define CAN2_BASE 0x4000A800
 #else
 #error Define CAN base addresses
 #endif
 
 #define OP_CAN1_DATA 1
+#define OP_CAN2_DATA 2
+
+#if STM32_L496
+#define MAX_CAN_DEV 2
+#elif STM32_H563N
+#define MAX_CAN_DEV 2
+#else
+#define MAX_CAN_DEV 1
+#endif
 
 typedef struct {
   bmos_queue_t *rxq;
-  bmos_queue_t *txq;
+  bmos_queue_t *txq[MAX_CAN_DEV];
   bmos_queue_t *tx_pool;
 } can_task_data_t;
 
@@ -124,7 +136,7 @@ static candev_t can0 = {
     .sjw    = 3
   }
 };
-#else
+#elif STM32_H7XX
 /* HSE at 25MHz clock */
 static candev_t can0 = {
   .name     = "can0",
@@ -137,12 +149,71 @@ static candev_t can0 = {
     .sjw    = 3
   }
 };
+#elif STM32_H5XX
+/* HSE at 8MHz clock */
+static candev_t can0 = {
+  .name     = "can0",
+  .base     = (void *)CAN1_BASE,
+  .irq      = 39,
+  .inst     = 0,
+  .params   = {
+    .prediv = 1,
+    .ts1    = 4,
+    .ts2    = 3,
+    .sjw    = 1
+  }
+};
+
+static candev_t can1 = {
+  .name     = "can1",
+  .base     = (void *)CAN2_BASE,
+  .irq      = 109,
+  .inst     = 1,
+  .params   = {
+    .prediv = 1,
+    .ts1    = 4,
+    .ts2    = 3,
+    .sjw    = 1
+  }
+};
+#elif STM32_L4XX
+/* APB1 at 80MHz clock */
+static candev_t can0 = {
+  .name     = "can0",
+  .base     = (void *)CAN1_BASE,
+  .irq      = 20,
+  .params   = {
+    .prediv = 10,
+    .ts1    = 4,
+    .ts2    = 3,
+    .sjw    = 1
+  },
+  .tx_irq   = 19
+};
+
+static candev_t can1 = {
+  .name     = "can1",
+  .base     = (void *)CAN2_BASE,
+  .irq      = 87,
+  .params   = {
+    .prediv = 10,
+    .ts1    = 4,
+    .ts2    = 3,
+    .sjw    = 1
+  },
+  .tx_irq   = 86
+};
+#else
+#error Configure can device
 #endif
 
-static void send_can(unsigned int id, void *data, unsigned int len)
+static void send_can(unsigned int id, void *data, unsigned int len, int tx)
 {
   bmos_op_msg_t *m;
   can_t *pkt;
+
+  if (tx >= MAX_CAN_DEV)
+    return;
 
   m = op_msg_wait(can_task_data.tx_pool);
 
@@ -153,17 +224,21 @@ static void send_can(unsigned int id, void *data, unsigned int len)
 
   memcpy(pkt->data, data, len);
 
-  op_msg_put(can_task_data.txq, m, 0, sizeof(can_t));
+  op_msg_put(can_task_data.txq[tx], m, 0, sizeof(can_t));
 }
 
 void task_can()
 {
   char buf[36];
 
-  can_task_data.rxq = queue_create("can0rx", QUEUE_TYPE_TASK);
-  can_task_data.txq = can_open(&can0, can_id_list, ARRSIZ(can_id_list),
-                               can_task_data.rxq, OP_CAN1_DATA);
-  can_task_data.tx_pool = op_msg_pool_create("can1tx", QUEUE_TYPE_TASK,
+  can_task_data.rxq = queue_create("canrx", QUEUE_TYPE_TASK);
+  can_task_data.txq[0] = can_open(&can0, can_id_list, ARRSIZ(can_id_list),
+                                  can_task_data.rxq, OP_CAN1_DATA);
+#if MAX_CAN_DEV > 1
+  can_task_data.txq[1] = can_open(&can1, can_id_list, ARRSIZ(can_id_list),
+                                  can_task_data.rxq, OP_CAN2_DATA);
+#endif
+  can_task_data.tx_pool = op_msg_pool_create("cantx", QUEUE_TYPE_TASK,
                                              4, sizeof(can_t));
 
   for (;;) {
@@ -171,13 +246,14 @@ void task_can()
 
     m = op_msg_wait(can_task_data.rxq);
 
-    if (m->op == OP_CAN1_DATA && m->len == sizeof(can_t)) {
+    if (m->len == sizeof(can_t)) {
       int i, n, r = sizeof(buf) - 1;
       char *bufp;
       can_t *pkt = BMOS_OP_MSG_GET_DATA(m);
 
       bufp = buf;
-      n = snprintf(bufp, r, "can rx: id %03x(%d) ", pkt->id, pkt->len);
+      n = snprintf(bufp, r, "can rx(%d): id %03x(%d) ",
+                   m->op, pkt->id, pkt->len);
       bufp += n;
       r -= n;
 
@@ -198,12 +274,19 @@ int cmd_can(int argc, char *argv[])
   unsigned int id, i, len;
   unsigned char data[8];
   char *b;
+  unsigned int tx_dev = 0;
 
   if (argc < 3)
     return -1;
 
   id = strtoul(argv[1], 0, 16);
   len = strlen(argv[2]);
+
+  if (argc > 3) {
+    tx_dev = atoi(argv[3]);
+    if (tx_dev >= MAX_CAN_DEV)
+      tx_dev = 0;
+  }
 
   if (len % 2 == 1)
     return -1;
@@ -226,7 +309,7 @@ int cmd_can(int argc, char *argv[])
     b += 2;
   }
 
-  send_can(id, data, len);
+  send_can(id, data, len, tx_dev);
 
   return 0;
 }

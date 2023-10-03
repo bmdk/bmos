@@ -332,8 +332,8 @@ void enable_apb3(unsigned int dev)
 
 void set_mco(unsigned int sel, unsigned int div)
 {
-  reg_set_field(&RCC->cfgr[0], 4, 24, sel);
-  reg_set_field(&RCC->cfgr[0], 3, 28, div);
+  reg_set_field(&RCC->cfgr[0], 4, 18, sel);
+  reg_set_field(&RCC->cfgr[0], 3, 22, div);
 }
 
 void set_hsi_div(unsigned int div)
@@ -343,5 +343,5 @@ void set_hsi_div(unsigned int div)
 
 void set_fdcansel(unsigned int sel)
 {
-  reg_set_field(&RCC->ccipr[0], 2, 24, sel);
+  reg_set_field(&RCC->ccipr[4], 2, 8, sel);
 }

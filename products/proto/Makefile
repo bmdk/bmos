@@ -144,6 +144,7 @@ XCFLAGS.h745nm4 += -mcpu=cortex-m4
 XCFLAGS.h563n += -DSTM32_H5XX
 XCFLAGS.h563n += -DSTM32_H563N
 #XCFLAGS.h563n += -DCONFIG_BUTTON_INT=0
+XCFLAGS.h563n += -DCONFIG_CAN_TEST
 STACK_END.h563n = 0x200a0000
 XCFLAGS.h563n += -mcpu=cortex-m33
 LWIP.h563n = y
@@ -563,6 +564,8 @@ FILES.h745nucleo += can_test.o
 FILES.h745nm4 += stm32_board_h745nm4.o
 
 FILES.h563n += stm32_board_h563n.o
+FILES.h563n += stm32_fdcan.o
+FILES.h563n += can_test.o
 
 FILES.f7xx += stm32_pwr_f7xx.o
 FILES.f7xx += stm32_flash.o

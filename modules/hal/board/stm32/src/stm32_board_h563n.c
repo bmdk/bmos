@@ -101,13 +101,25 @@ static void pin_init()
   gpio_init_attr(GPIO(6, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));
   gpio_init_attr(GPIO(6, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 11, GPIO_ALT));
 
-#if 0
-  /* FDCAN1 */
-  enable_apb1(40);
-
+  /* CAN1 PD0 RX PD1 TX */
+  enable_apb1(41); /* FDCAN 1,2 Enable */
   gpio_init_attr(GPIO(3, 0), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
   gpio_init_attr(GPIO(3, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+  /* Interrupts 39 (40) */
+
+  /* CAN2 PB12 RX */
+  gpio_init_attr(GPIO(1, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+
+#if 0
+  /* PB13 TX - on h563 nucleo PB13 is connected to a USB CC1 -
+     a power delivery signal and requires some solder bridge work to be
+     connected */
+  gpio_init_attr(GPIO(1, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+#else
+  /* PB6 TX */
+  gpio_init_attr(GPIO(1, 6), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
 #endif
+  /* Interrupts 109 (110) */
 }
 
 #define APB1_CLOCK 250000000
@@ -142,6 +154,8 @@ void hal_board_init()
   stm32_pwr_vos(3); /* VOS 0 */
 
   clock_init(&clock_params);
+
+  set_fdcansel(FDCANSEL_HSE_CK);
 
 #if APPL
   backup_domain_protect(0);

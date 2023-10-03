@@ -124,10 +124,9 @@ typedef struct {
 } fdcan_buf_t;
 
 #ifdef STM32_G4XX
-#define FDCAN_MES_BASE 0x4000A400
+#define FDCAN_MES_BASE(_i_) 0x4000A400
 #elif STM32_H7XX || STM32_UXXX || STM32_H5XX
-#define FDCAN_MES_BASE (0x4000AC00 + 0x350)
-//#define FDCAN_MES_BASE (0x4000AC00)
+#define FDCAN_MES_BASE(_i_) (0x4000AC00 + 0x350 * (_i_))
 #else
 #error define FDCAN_MES_BASE
 #endif
@@ -200,9 +199,9 @@ void fdcan_rx();
   ( (((sft) & 0x3) << 30) | (((sfec) & 0x7) << 27) | \
     (((sfid1) & 0x7ff) << 16) | ((sfid2) & 0x7ff))
 
-static int fdcan_send(stm32_fdcan_t *fdcan, can_t *pkt)
+static int fdcan_send(stm32_fdcan_t *fdcan, unsigned int inst, can_t *pkt)
 {
-  fdcan_buf_t *tx = (void *)(FDCAN_MES_BASE + MESRAM_TXBUF_OFS);
+  fdcan_buf_t *tx = (void *)(FDCAN_MES_BASE(inst) + MESRAM_TXBUF_OFS);
   unsigned int txfqs, idx, val;
 
   txfqs = fdcan->txfqs;
@@ -245,7 +244,7 @@ static void _tx(candev_t *c)
   if (len == sizeof(can_t)) {
     can_t *pkt = (can_t *)BMOS_OP_MSG_GET_DATA(m);
 
-    fdcan_send(fdcan, pkt);
+    fdcan_send(fdcan, c->inst, pkt);
   }
 
   op_msg_return(m);
@@ -264,7 +263,7 @@ void irq_fdcan(void *arg)
 
   if (ir & FDCAN_IR_RF0N) {
     unsigned int rxs, flags, id, idx, cnt;
-    fdcan_buf_t *rx = (void *)(FDCAN_MES_BASE + MESRAM_RXFIFO0_OFS);
+    fdcan_buf_t *rx = (void *)(FDCAN_MES_BASE(c->inst) + MESRAM_RXFIFO0_OFS);
 
     for (;;) {
       rxs = fdcan->rxf0s;
@@ -307,9 +306,10 @@ static void _put(void *p)
   interrupt_enable(saved);
 }
 
-static void fdcan_filter(const unsigned int *id, unsigned int id_len)
+static void fdcan_filter(unsigned int inst,
+                         const unsigned int *id, unsigned int id_len)
 {
-  unsigned int *filt = (void *)(FDCAN_MES_BASE + MESRAM_FILTER_OFS);
+  unsigned int *filt = (void *)(FDCAN_MES_BASE(inst) + MESRAM_FILTER_OFS);
   unsigned int i;
 
   for (i = 0; i < id_len; i++)
@@ -348,7 +348,7 @@ static void fdcan_init(candev_t *c, const unsigned int *id, unsigned int id_len)
   fdcan->ile = BIT(0);
 
   if (id_len > 0) {
-    fdcan_filter(id, id_len);
+    fdcan_filter(c->inst, id, id_len);
     fdcan->gfc = FDCAN_GFC(0, id_len, 2, 2);
   } else
     fdcan->gfc = FDCAN_GFC(0, 0, 0, 0);
