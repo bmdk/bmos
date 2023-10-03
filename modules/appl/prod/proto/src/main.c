@@ -352,7 +352,7 @@ int main()
 #endif
 
 #if STM32_G4XX || STM32_H735DK || STM32_H745N || STM32_U575N || \
-  STM32_F103BP || AT32_F403BP
+  STM32_F103BP || AT32_F403BP || CONFIG_CAN_TEST
   task_init(task_can, NULL, "can", 4, 0, 256);
 #endif
 

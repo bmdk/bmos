@@ -333,6 +333,7 @@ STACK_END.l452 = 0x20028000
 
 XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
 XCFLAGS.l496 += -mcpu=cortex-m4
+XCFLAGS.l496 += -DCONFIG_CAN_TEST
 STACK_END.l496 = 0x20040000
 
 XCFLAGS.g0b1n += -DSTM32_G0B1 -DSTM32_G0B1N -DSTM32_G0XX
@@ -836,6 +837,8 @@ FILES.l496 += stm32_hal_bdma.o
 FILES.l496 += stm32_hal_spi.o
 FILES.l496 += stm32_hal_adc.o
 FILES.l496 += stm32_board_l496.o
+FILES.l496 += stm32_can.o
+FILES.l496 += can_test.o
 
 FILES.l432 += $(FILES.l4xx)
 FILES.l452 += $(FILES.l4xx)
