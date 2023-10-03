@@ -48,34 +48,10 @@ void pin_init()
   enable_ahb2(4); /* GPIOE */
   enable_ahb2(6); /* GPIOG */
 
-  gpio_init_attr(GPIO(2, 13),
-                 GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
-
   /* USART2 */
   enable_apb1(17);
   gpio_init_attr(GPIO(3, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
   gpio_init_attr(GPIO(3, 6), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
-
-  /* LPUART1 */
-  enable_apb1(32);
-  gpio_init_attr(GPIO(6, 7), GPIO_ATTR_STM32(0,
-                                             GPIO_SPEED_LOW, 8, GPIO_ALT));
-  gpio_init_attr(GPIO(6, 8), GPIO_ATTR_STM32(0,
-                                             GPIO_SPEED_LOW, 8, GPIO_ALT));
-
-  /* TIM1_CH4 */
-  gpio_init_attr(GPIO(4, 14), GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 1, GPIO_ALT));
-
-  /* SPI1 */
-  enable_apb2(12);
-
-  gpio_init_attr(GPIO(4, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
-  gpio_init_attr(GPIO(4, 15), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
-#if 0
-  gpio_init_attr(GPIO(4, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_VHI, 5, GPIO_ALT));
-#else
-  gpio_init(GPIO(4, 12), GPIO_OUTPUT);
-#endif
 
   /* SYSCFG */
   enable_apb2(0);
@@ -95,6 +71,22 @@ void pin_init()
   enable_ahb1(1);
   /* ADC */
   enable_ahb2(13);
+
+  /* CAN1 PD0 RX PD1 TX */
+  enable_apb1(25);
+  gpio_init_attr(GPIO(3, 0), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+  gpio_init_attr(GPIO(3, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+  /* Interrupts TX 19 RX0 20 RX1 21 SCE 22 */
+
+  /* CAN2 PB12 RX PB13 TX */
+  enable_apb1(26);
+  gpio_init_attr(GPIO(1, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 10, GPIO_ALT));
+  gpio_init_attr(GPIO(1, 13), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 10, GPIO_ALT));
+  /* Interrupts TX 86 RX0 87 RX1 88 SCE 89 */
+
+  /* Button */
+  gpio_init_attr(GPIO(2, 13),
+                 GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
 
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);
