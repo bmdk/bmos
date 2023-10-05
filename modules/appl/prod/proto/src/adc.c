@@ -160,7 +160,8 @@ static int get_temp(int adcval)
 
 int temp;
 
-static void adc_conv_done(unsigned short *data, unsigned int count, unsigned int flags)
+static void adc_conv_done(unsigned short *data, unsigned int count,
+                          unsigned int flags)
 {
   memcpy(adc_val, data, count * sizeof(unsigned short));
 

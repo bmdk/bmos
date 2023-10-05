@@ -199,7 +199,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->ier |= IER_OVRIE | IER_EOCIE | IER_EOSIE;
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt, conv_done_f *conv_done)
+void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+                    conv_done_f *conv_done)
 {
   _stm32_adc_init(ADC, reg_seq, cnt, conv_done);
 }

@@ -239,7 +239,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->ier = ADC_IRQ_EN_MSK;
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt, conv_done_f *_conv_done)
+void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+                    conv_done_f *_conv_done)
 {
   _stm32_adc_init(ADC, reg_seq, cnt, _conv_done);
 }

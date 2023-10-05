@@ -265,7 +265,8 @@ static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
   dma_en(DMA_NUM, DMA_CHAN, 1);
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt, conv_done_f *conv_done)
+void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+                    conv_done_f *conv_done)
 {
   XASSERT(cnt <= ADC_DMA_LEN);
 
