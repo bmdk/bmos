@@ -37,96 +37,97 @@
 #endif
 
 typedef struct {
-  unsigned int crel;
-  unsigned int endn;
-  unsigned int pad1;
-  unsigned int dbtp;
-  unsigned int test;
-  unsigned int rwd;
-  unsigned int cccr;
-  unsigned int nbtp;
-  unsigned int tscc;
-  unsigned int tscv;
-  unsigned int tocc;
-  unsigned int tocv;
-  unsigned int pad2[4];
-  unsigned int ecr;
-  unsigned int psr;
-  unsigned int tdcr;
-  unsigned int pad3;
-  unsigned int ir;
-  unsigned int ie;
-  unsigned int ils;
-  unsigned int ile;
-  unsigned int pad4[8];
-  unsigned int gfc;
+  reg32_t crel;
+  reg32_t endn;
+  reg32_t pad1;
+  reg32_t dbtp;
+  reg32_t test;
+  reg32_t rwd;
+  reg32_t cccr;
+  reg32_t nbtp;
+  reg32_t tscc;
+  reg32_t tscv;
+  reg32_t tocc;
+  reg32_t tocv;
+  reg32_t pad2[4];
+  reg32_t ecr;
+  reg32_t psr;
+  reg32_t tdcr;
+  reg32_t pad3;
+  reg32_t ir;
+  reg32_t ie;
+  reg32_t ils;
+  reg32_t ile;
+  reg32_t pad4[8];
+  reg32_t gfc;
 #if STM32_H7XX
-  unsigned int sidfc;
-  unsigned int xidfc;
-  unsigned int pad5;
+  reg32_t sidfc;
+  reg32_t xidfc;
+  reg32_t pad5;
 #endif
-  unsigned int xidam;
-  unsigned int hpms;
+  reg32_t xidam;
+  reg32_t hpms;
 #if STM32_H7XX
-  unsigned int ndnat[2];
-  unsigned int rxf0c;
+  reg32_t ndnat[2];
+  reg32_t rxf0c;
 #else
-  unsigned int pad5;
+  reg32_t pad5;
 #endif
-  unsigned int rxf0s;
-  unsigned int rxf0a;
+  reg32_t rxf0s;
+  reg32_t rxf0a;
 #if STM32_H7XX
-  unsigned int rxbc;
-  unsigned int rxf1c;
+  reg32_t rxbc;
+  reg32_t rxf1c;
 #endif
-  unsigned int rxf1s;
-  unsigned int rxf1a;
+  reg32_t rxf1s;
+  reg32_t rxf1a;
 
 #if STM32_H7XX
-  unsigned int rxesc;
+  reg32_t rxesc;
 #else
-  unsigned int pad6[8];
+  reg32_t pad6[8];
 #endif
 
-  unsigned int txbc;
-  unsigned int txfqs;
+  reg32_t txbc;
+  reg32_t txfqs;
 #if STM32_H7XX
-  unsigned int txesc;
+  reg32_t txesc;
 #endif
-  unsigned int txbrp;
-  unsigned int txbar;
-  unsigned int txbcr;
-  unsigned int txbto;
-  unsigned int txbcf;
-  unsigned int txbtie;
-  unsigned int txbcie;
+  reg32_t txbrp;
+  reg32_t txbar;
+  reg32_t txbcr;
+  reg32_t txbto;
+  reg32_t txbcf;
+  reg32_t txbtie;
+  reg32_t txbcie;
 #if STM32_H7XX
-  unsigned int pad6[2];
-  unsigned int txefc;
+  reg32_t pad6[2];
+  reg32_t txefc;
 #endif
-  unsigned int txefs;
-  unsigned int txefa;
+  reg32_t txefs;
+  reg32_t txefa;
 
 #if !STM32_H7XX
-  unsigned int pad7[5];
+  reg32_t pad7[5];
 
-  unsigned int ckdiv;
+  reg32_t ckdiv;
 #endif
 } stm32_fdcan_t;
 
 typedef struct {
-  unsigned int id;
-  unsigned int flags;
+  reg32_t id;
+  reg32_t flags;
   union {
     unsigned char c[64];
-    unsigned int i[8];
+    reg32_t i[8];
   } data;
 } fdcan_buf_t;
 
 #ifdef STM32_G4XX
 #define FDCAN_MES_BASE 0x4000A400
-#elif STM32_H7XX || STM32_UXXX
-#define FDCAN_MES_BASE 0x4000AC00
+#elif STM32_H7XX || STM32_UXXX || STM32_H5XX
+#define FDCAN_MES_BASE (0x4000AC00 + 0x350)
+//#define FDCAN_MES_BASE (0x4000AC00)
 #else
 #error define FDCAN_MES_BASE
 #endif
@@ -199,7 +200,7 @@ void fdcan_rx();
   ( (((sft) & 0x3) << 30) | (((sfec) & 0x7) << 27) | \
     (((sfid1) & 0x7ff) << 16) | ((sfid2) & 0x7ff))
 
-static int fdcan_send(volatile stm32_fdcan_t *fdcan, can_t *pkt)
+static int fdcan_send(stm32_fdcan_t *fdcan, can_t *pkt)
 {
   fdcan_buf_t *tx = (void *)(FDCAN_MES_BASE + MESRAM_TXBUF_OFS);
   unsigned int txfqs, idx, val;
@@ -226,7 +227,7 @@ static int fdcan_send(volatile stm32_fdcan_t *fdcan, can_t *pkt)
 #if BMOS
 static void _tx(candev_t *c)
 {
-  volatile stm32_fdcan_t *fdcan = c->base;
+  stm32_fdcan_t *fdcan = c->base;
   bmos_op_msg_t *m;
   unsigned int len, txfqs;
 
@@ -253,7 +254,7 @@ static void _tx(candev_t *c)
 void irq_fdcan(void *arg)
 {
   candev_t *c = arg;
-  volatile stm32_fdcan_t *fdcan = c->base;
+  stm32_fdcan_t *fdcan = c->base;
   bmos_op_msg_t *m;
   can_t *cdata;
   unsigned int ir = fdcan->ir;
@@ -318,7 +319,7 @@ static void fdcan_filter(const unsigned int *id, unsigned int id_len)
 
 static void fdcan_init(candev_t *c, const unsigned int *id, unsigned int id_len)
 {
-  volatile stm32_fdcan_t *fdcan = c->base;
+  stm32_fdcan_t *fdcan = c->base;
   can_params_t *p = &c->params;
 
   fdcan->cccr = (FDCAN_CCCR_CCE | FDCAN_CCCR_INIT);
