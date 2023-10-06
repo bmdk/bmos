@@ -58,4 +58,9 @@ void clock_init(const struct pll_params_t *pll_params);
 void enable_io(unsigned int dev);
 void disable_io(unsigned int dev);
 
+#define FDCANSEL_PCLK 0
+#define FDCANSEL_PLLQ 1
+#define FDCANSEL_HSE 2
+void set_fdcansel(unsigned int sel);
+
 #endif

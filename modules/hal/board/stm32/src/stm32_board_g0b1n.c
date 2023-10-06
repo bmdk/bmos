@@ -41,6 +41,8 @@ void pin_init()
 {
   enable_io(0); /* GPIOA */
   enable_io(1); /* GPIOB */
+  enable_io(2); /* GPIOC */
+  enable_io(3); /* GPIOD */
 
   /* USART 2 */
   enable_apb1(17);
@@ -56,6 +58,18 @@ void pin_init()
 
   enable_apb1(28); /* PWR */
   enable_apb1(32); /* SYSCFG */
+
+  /* CAN1 PD0 RX PD1 TX */
+  enable_apb1(12); /* FDCAN 1,2 Enable */
+  gpio_init_attr(GPIO(3, 0), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 3, GPIO_ALT));
+  gpio_init_attr(GPIO(3, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 3, GPIO_ALT));
+  /* Interrupts 21 (22) */
+
+  /* CAN2 PC2 RX */
+  gpio_init_attr(GPIO(2, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 3, GPIO_ALT));
+  /* PC3 TX */
+  gpio_init_attr(GPIO(2, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 3, GPIO_ALT));
+  /* Interrupts shared with CAN1 */
 }
 
 #define APB1_CLOCK 64000000
@@ -89,6 +103,8 @@ void hal_board_init()
 #if APPL
   led_init(leds, ARRSIZ(leds));
   clock_init(&pll_params);
+
+  set_fdcansel(FDCANSEL_PCLK);
 #if 0
   backup_domain_protect(0);
   clock_init_ls(0);

@@ -127,6 +127,8 @@ typedef struct {
 #define FDCAN_MES_BASE(_i_) 0x4000A400
 #elif STM32_H7XX || STM32_UXXX || STM32_H5XX
 #define FDCAN_MES_BASE(_i_) (0x4000AC00 + 0x350 * (_i_))
+#elif STM32_G0XX
+#define FDCAN_MES_BASE(_i_) (0x4000B400 + 0x350 * (_i_))
 #else
 #error define FDCAN_MES_BASE
 #endif
@@ -342,10 +344,21 @@ static void fdcan_init(candev_t *c, const unsigned int *id, unsigned int id_len)
 
   /* enable rx fifo 0 interrupt */
   fdcan->ie = FDCAN_IR_RF0N;
+  /* enable interrupt 0 */
+#if STM32_G0XX
+  /* map interrupts per instance so we don't have to share
+     interrupts for the moment */
+  if (c->inst)
+    fdcan->ils = 0x7f;
+  else
+    fdcan->ils = 0;
+
+  fdcan->ile = BIT(c->inst);
+#else
   /* all interrupts on interrupt 0 */
   fdcan->ils = 0;
-  /* enable interrupt 0 */
   fdcan->ile = BIT(0);
+#endif
 
   if (id_len > 0) {
     fdcan_filter(c->inst, id, id_len);

@@ -38,7 +38,8 @@
 #include "xlib.h"
 #include "common.h"
 
-#if STM32_F1XX || STM32_F4XX || STM32_G4XX || AT32_F4XX || STM32_L4XX
+#if STM32_F1XX || STM32_F4XX || STM32_G0XX || \
+    STM32_G4XX || AT32_F4XX || STM32_L4XX
 #define CAN1_BASE 0x40006400
 #define CAN2_BASE 0x40006800
 #define CAN3_BASE 0x40006C00
@@ -58,7 +59,9 @@
 #define OP_CAN1_DATA 1
 #define OP_CAN2_DATA 2
 
-#if STM32_L496
+#if STM32_G0B1
+#define MAX_CAN_DEV 2
+#elif STM32_L496
 #define MAX_CAN_DEV 2
 #elif STM32_H563N
 #define MAX_CAN_DEV 2
@@ -171,6 +174,33 @@ static candev_t can1 = {
   .inst     = 1,
   .params   = {
     .prediv = 1,
+    .ts1    = 4,
+    .ts2    = 3,
+    .sjw    = 1
+  }
+};
+#elif STM32_G0B1
+/* PLL at 64MHz clock */
+static candev_t can0 = {
+  .name     = "can0",
+  .base     = (void *)CAN1_BASE,
+  .irq      = 21,
+  .inst     = 0,
+  .params   = {
+    .prediv = 8,
+    .ts1    = 4,
+    .ts2    = 3,
+    .sjw    = 1
+  }
+};
+
+static candev_t can1 = {
+  .name     = "can1",
+  .base     = (void *)CAN2_BASE,
+  .irq      = 22,
+  .inst     = 1,
+  .params   = {
+    .prediv = 8,
     .ts1    = 4,
     .ts2    = 3,
     .sjw    = 1

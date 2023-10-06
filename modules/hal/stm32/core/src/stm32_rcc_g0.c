@@ -49,8 +49,7 @@ typedef struct {
   reg32_t ahbsmenr;
   reg32_t apb1smenr1;
   reg32_t apb1smenr2;
-  reg32_t ccipr;
-  reg32_t ccipr2;
+  reg32_t ccipr[2];
   rcc_ls_t rcc_ls;
 } stm32_rcc_t;
 
@@ -196,4 +195,9 @@ void disable_apb1(unsigned int dev)
   }
 
   RCC->apb1enr[n] &= ~BIT(dev);
+}
+
+void set_fdcansel(unsigned int sel)
+{
+  reg_set_field(&RCC->ccipr[1], 2, 8, sel);
 }

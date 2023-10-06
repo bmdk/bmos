@@ -340,6 +340,7 @@ STACK_END.l496 = 0x20040000
 XCFLAGS.g0b1n += -DSTM32_G0B1 -DSTM32_G0B1N -DSTM32_G0XX
 XCFLAGS.g0b1n += -DCONFIG_N_INTS=32
 XCFLAGS.g0b1n += -DCONFIG_BUTTON_INT=0
+XCFLAGS.g0b1n += -DCONFIG_CAN_TEST
 XCFLAGS.g0b1n += -mcpu=cortex-m0plus
 APPL_FLASH_BASE.g0b1n = 0x8000800
 STACK_END.g0b1n = 0x20024000
@@ -759,6 +760,8 @@ FILES.g0xx += stm32_usart_b.o
 
 FILES.g0b1n += $(FILES.g0xx)
 FILES.g0b1n += stm32_board_g0b1n.o
+FILES.g0b1n += stm32_fdcan.o
+FILES.g0b1n += can_test.o
 
 FILES.c0xx += stm32_flash.o
 FILES.c0xx += stm32_hal_bdma.o

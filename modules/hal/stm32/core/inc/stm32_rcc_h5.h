@@ -70,7 +70,6 @@ void clock_init(const struct pll_params_t *params);
 #define USART234578SEL_CSI_KER_CK 4
 #define USART234578SEL_LSE_CK 5
 
-void set_fdcansel(unsigned int sel);
 void set_usbsel(unsigned int sel);
 void set_usart234578sel(unsigned int sel);
 
