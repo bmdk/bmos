@@ -54,7 +54,10 @@
 #elif STM32_F072
 #define APP_START 16
 #define APP_LEN 32
-#elif STM32_F0XX || STM32_G030 || STM32_F103DEB
+#elif STM32_G0XX
+#define APP_START 2
+#define APP_LEN 64
+#elif STM32_F0XX || STM32_F103DEB
 #define APP_START 10
 #define APP_LEN 22
 #else

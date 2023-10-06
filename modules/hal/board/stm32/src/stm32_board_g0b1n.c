@@ -64,6 +64,7 @@ void pin_init()
 uart_t debug_uart = { "debugser", USART2_BASE, APB1_CLOCK, 28 };
 #endif
 
+#if APPL
 static const gpio_handle_t leds[] = { GPIO(0, 5) };
 
 /* 16MHz clock input
@@ -80,15 +81,18 @@ struct pll_params_t pll_params = {
 };
 
 unsigned int hal_cpu_clock = 64000000;
+#endif
 
 void hal_board_init()
 {
   pin_init();
+#if APPL
   led_init(leds, ARRSIZ(leds));
   clock_init(&pll_params);
 #if 0
   backup_domain_protect(0);
   clock_init_ls(0);
+#endif
 #endif
   debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
 }
