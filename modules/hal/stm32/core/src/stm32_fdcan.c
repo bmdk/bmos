@@ -346,8 +346,10 @@ static void fdcan_init(candev_t *c, const unsigned int *id, unsigned int id_len)
   fdcan->ie = FDCAN_IR_RF0N;
   /* enable interrupt 0 */
 #if STM32_G0XX
-  /* map interrupts per instance so we don't have to share
-     interrupts for the moment */
+  /* there is only one set of can interrupts 0,1 shared between the
+     two can instances but both can interrupts are mapped to cpu interrupts.
+     This maps instance 0 interrupts to can0 interrupt and instance 1
+     interrupts to the can1 interrupt. */
   if (c->inst)
     fdcan->ils = 0x7f;
   else
