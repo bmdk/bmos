@@ -247,19 +247,19 @@ int cmd_devid(int argc, char *argv[])
     break;
 #elif STM32_F0XX
   case 0x440:
-    idstr = "F070x8";
+    idstr = "F05x";
     break;
   case 0x442:
-    idstr = "F030xC";
+    idstr = "F09x";
     break;
   case 0x444:
-    idstr = "F030x4/6";
+    idstr = "F03x";
     break;
   case 0x445:
-    idstr = "F070x6";
+    idstr = "F04x";
     break;
   case 0x448:
-    idstr = "F070xB";
+    idstr = "F07x";
     break;
 #elif STM32_F1XX
   case 0x0:
