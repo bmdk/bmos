@@ -43,6 +43,7 @@
 #include "shell.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
+#include "stm32_wdog.h"
 #include "xassert.h"
 #include "xslog.h"
 #include "xtime.h"
@@ -239,6 +240,9 @@ void systick_hook(void)
   hal_time_us_update();
 #endif
   blink();
+#if WDOG_KICK
+  stm32_wdog_kick();
+#endif
 }
 
 bmos_queue_t *syspool;

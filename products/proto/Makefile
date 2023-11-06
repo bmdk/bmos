@@ -249,6 +249,7 @@ XCFLAGS.f303rt += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.f303rt += -DCONFIG_N_INTS=60
 XCFLAGS.f303rt += -DCONFIG_BUTTON_INT=0
 XCFLAGS.f303rt += -mcpu=cortex-m4
+XCFLAGS.f303rt += -DWDOG_KICK
 APPL_FLASH_BASE.f303rt = 0x8004000
 STACK_END.f303rt = 0x2000a000
 
@@ -633,6 +634,7 @@ FILES.f103n += $(FILES.f1xx)
 FILES.f103n += adc.o
 
 FILES.f303rt += stm32_board_f303rt.o
+FILES.f303rt += stm32_wdog.o
 FILES.f303rt += $(FILES.f3xx)
 
 FILES.f411bp += stm32_hal_rtc.o
