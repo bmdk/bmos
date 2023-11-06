@@ -52,7 +52,7 @@
 #elif STM32_F072
 #define APP_START 16
 #define APP_LEN 32
-#elif STM32_F103DEB
+#elif BOARD_F103DEB
 #define APP_START 10
 #define APP_LEN 22
 #elif STM32_F0XX
@@ -156,7 +156,7 @@ static inline int _flash_erase(unsigned int start, unsigned int count);
 
 static int xmodem_flash_erase(unsigned int addr)
 {
-#if STM32_H745N
+#if BOARD_H745NUCLEO
   if (addr == H745N_M4_FLASH_BASE)
     return _flash_erase(1024, 128);
 #endif
@@ -265,7 +265,7 @@ static int cmd_xmodem(int argc, char *argv[])
   int err;
   xtime_ms_t start = xtime_ms();
 
-#if STM32_H745N
+#if BOARD_H745NUCLEO
   if (argc > 1 && argv[1][0] == 'm')
     bd.addr = H745N_M4_FLASH_BASE;
   else

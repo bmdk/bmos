@@ -70,7 +70,7 @@ void led_init(const gpio_handle_t *led_list, unsigned int _nleds)
 #define CONFIG_STM32_HAL_COMMANDS 1
 #endif
 
-#if STM32_H745NM4
+#if BOARD_H745NM4
 /* the m4 cannot access the system memory, including UDID and FLASH_SIZE */
 #elif STM32_H7XX
 #define UDID_ADDR 0x1FF1E800
@@ -94,7 +94,7 @@ void stm32_get_udid(void *buf, unsigned int len)
 }
 #endif
 
-#if STM32_H745NM4
+#if BOARD_H745NM4
 /* the m4 cannot access the system memory, including UDID and FLASH_SIZE */
 #elif STM32_F4XX
 #define FLASH_SIZE 0x1FFF7A22
@@ -395,7 +395,7 @@ int cmd_led(int argc, char *argv[])
 
 SHELL_CMD(led, cmd_led);
 
-#if STM32_H745N
+#if BOARD_H745NUCLEO
 #include "stm32_rcc_h7.h"
 #include "stm32_pwr_h7xx.h"
 #include "stm32_flash.h"

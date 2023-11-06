@@ -35,7 +35,7 @@
 
 #include "stm32_hal_i2c.h"
 
-#if STM32_F411BP
+#if BOARD_F411BP
 #define I2C ((stm32_i2c_t *)I2C1_BASE)
 #elif STM32_G4XX
 #define I2C ((stm32_i2c_t *)I2C1_BASE)

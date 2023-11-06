@@ -63,7 +63,7 @@
 #define MAX_CAN_DEV 2
 #elif STM32_L496
 #define MAX_CAN_DEV 2
-#elif STM32_H563N
+#elif BOARD_H563N
 #define MAX_CAN_DEV 2
 #else
 #define MAX_CAN_DEV 1

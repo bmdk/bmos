@@ -41,7 +41,7 @@
 #include "stm32_timer.h"
 #include "ws2811_dma.h"
 
-#if STM32_F411BP || STM32_F401BP
+#if BOARD_F411BP || BOARD_F401BP || BOARD_F401BP64
 
 /* the bit in the bank that is used */
 #define WSBIT 0
@@ -73,7 +73,7 @@
 #define DEVID_TIM1_CH2 43
 #define DEVID_TIM1_UP 46
 
-#elif STM32_F100D || STM32_F103N
+#elif BOARD_F100D || BOARD_F103N
 
 #define WSGPIO 1
 #define WSBIT 0

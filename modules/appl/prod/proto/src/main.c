@@ -50,7 +50,7 @@
 #include "kvlog.h"
 #include "onewire.h"
 
-#if STM32_F429 || STM32_F746 || STM32_H735DK
+#if BOARD_F429 || BOARD_F746 || BOARD_H735DK
 #define LCD_DEMO 1
 #endif
 
@@ -83,10 +83,10 @@ void blink()
 #endif
 
 #if BUTTON_INT
-#if STM32_C031N
+#if BOARD_C031N
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 7 /* EXTI4_15 */
-#elif STM32_F103N
+#elif BOARD_F103N
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 40
 #elif STM32_H7XX || STM32_F767 || STM32_L4XX || STM32_G4XX
@@ -95,18 +95,18 @@ void blink()
 #elif STM32_UXXX || STM32_H5XX
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 24 /* EXTI13 */
-#elif STM32_F411BP || STM32_F401BP || STM32_F407DEB || STM32_F407DEBM || \
-  STM32_F4D || STM32_F1XX || AT32_F4XX
+#elif BOARD_F411BP || BOARD_F401BP || BOARD_F401BP64 || BOARD_F407DEB || \
+      BOARD_F407DEBM || BOARD_F4D || STM32_F1XX || AT32_F4XX
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 6
-#elif STM32_G030DEB
+#elif BOARD_G030DEB
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 5 /* EXTI0_1 */
-#elif STM32_F103DEB
+#elif BOARD_F103DEB
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 6 /* EXTI0 */
-#elif STM32_F429 || STM32_F469D || STM32_F746 || STM32_L4R || STM32_WB55N || \
-  STM32_WB55USB
+#elif BOARD_F429 || BOARD_F469D || BOARD_F746 || BOARD_L4R || BOARD_WB55N || \
+  BOARD_WB55USB
 /* FIXME - check this */
 #define BUTTON_EXTI 11
 #define BUTTON_IRQ 40
@@ -137,7 +137,7 @@ static void polled_shell(void)
   }
 }
 
-#if STM32_H7XX || STM32_G474N
+#if STM32_H7XX || BOARD_G474N
 #define SHELL_SRC_COUNT 2
 #else
 #define SHELL_SRC_COUNT 1
@@ -252,7 +252,7 @@ extern uart_t debug_uart_2;
 #if LCD_DEMO
 void set_lcd(unsigned int start, unsigned int width, unsigned int height);
 
-#if STM32_F429
+#if BOARD_F429
 #define LCD_X 240
 #define LCD_Y 320
 #else
@@ -319,7 +319,7 @@ int main()
 
   shell_info_init(&shell_info, "sh1rx", 0);
   shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
-#if !STM32_H745N && !STM32_H745NM4 && STM32_H7XX || STM32_G474N
+#if !BOARD_H745NUCLEO && !BOARD_H745NM4 && STM32_H7XX || BOARD_G474N
   shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
 #endif
 
@@ -327,7 +327,7 @@ int main()
 
   io_set_output(shell_info.txq[0], 0);
 
-#if STM32_F411BP || STM32_F401BP
+#if BOARD_F411BP || BOARD_F401BP || BOARD_F401BP64
   tusb_cdc_init();
 #endif
 
@@ -343,7 +343,7 @@ int main()
   task_init(task_i2c_clock, NULL, "clk", 2, 0, 288);
 #endif
 
-#if STM32_H743WA
+#if BOARD_H743WA
   task_init(task_spi_clock, NULL, "spiclk", 2, 0, 256);
 #endif
 
@@ -355,8 +355,8 @@ int main()
   task_init(task_led, NULL, "lcd", 4, 0, 512);
 #endif
 
-#if STM32_G4XX || STM32_H735DK || STM32_H745N || STM32_U575N || \
-  STM32_F103BP || AT32_F403BP || CONFIG_CAN_TEST
+#if STM32_G4XX || BOARD_H735DK || BOARD_H745NUCLEO || BOARD_U575N || \
+  BOARD_F103BP || AT32_F403BP || CONFIG_CAN_TEST
   task_init(task_can, NULL, "can", 4, 0, 256);
 #endif
 

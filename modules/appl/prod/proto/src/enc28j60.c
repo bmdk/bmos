@@ -438,7 +438,7 @@ static err_t hal_eth_send(struct netif *netif, struct pbuf *p)
   return 0;
 }
 
-#if STM32_F411BP
+#if BOARD_F411BP
 #define ENC_IRQ 9
 #define ENC_EXTI 3
 #else
