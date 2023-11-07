@@ -50,10 +50,10 @@ PROG += h743n
 PROG += h745n
 PROG += h745nm4
 PROG += l073n
-PROG += l432
-PROG += l452
-PROG += l496
-PROG += l4r
+PROG += l432n
+PROG += l452n
+PROG += l496n
+PROG += l4rn
 PROG += g030deb
 PROG += g0b1n
 PROG += g474n
@@ -155,9 +155,9 @@ XCFLAGS.l073n += -mcpu=cortex-m0plus
 STACK_END.l073n = 0x20005000
 APPL_FLASH_BASE.l073n = 0x8004000
 
-XCFLAGS.l4r += -DSTM32_L4R
-XCFLAGS.l4r += -mcpu=cortex-m4
-STACK_END.l4r = 0x200A0000
+XCFLAGS.l4rn += -DSTM32_L4R
+XCFLAGS.l4rn += -mcpu=cortex-m4
+STACK_END.l4rn = 0x200A0000
 
 XCFLAGS.f030demo += -DSTM32_F030 -DSTM32_F0XX
 XCFLAGS.f030demo += -DCONFIG_FAST_LOG_ENABLE=0
@@ -315,20 +315,20 @@ XCFLAGS.f767n += -mcpu=cortex-m7
 STACK_END.f767n = 0x20080000
 LWIP.f767n = y
 
-XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
-XCFLAGS.l432 += -mcpu=cortex-m4
-STACK_END.l432 = 0x20010000
-XCFLAGS.l432 += -DWS2811
-XCFLAGS.l432 += -DCONFIG_ENABLE_ADC
+XCFLAGS.l432n += -DSTM32_L432 -DSTM32_L4XX
+XCFLAGS.l432n += -mcpu=cortex-m4
+STACK_END.l432n = 0x20010000
+XCFLAGS.l432n += -DWS2811
+XCFLAGS.l432n += -DCONFIG_ENABLE_ADC
 
-XCFLAGS.l452 += -DSTM32_L452 -DSTM32_L4XX
-XCFLAGS.l452 += -mcpu=cortex-m4
-STACK_END.l452 = 0x20028000
+XCFLAGS.l452n += -DSTM32_L452 -DSTM32_L4XX
+XCFLAGS.l452n += -mcpu=cortex-m4
+STACK_END.l452n = 0x20028000
 
-XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
-XCFLAGS.l496 += -mcpu=cortex-m4
-XCFLAGS.l496 += -DCONFIG_CAN_TEST
-STACK_END.l496 = 0x20040000
+XCFLAGS.l496n += -DSTM32_L496 -DSTM32_L4XX
+XCFLAGS.l496n += -mcpu=cortex-m4
+XCFLAGS.l496n += -DCONFIG_CAN_TEST
+STACK_END.l496n = 0x20040000
 
 XCFLAGS.g0b1n += -DSTM32_G0B1 -DSTM32_G0XX
 XCFLAGS.g0b1n += -DCONFIG_N_INTS=32
@@ -824,42 +824,42 @@ FILES.l4xx += stm32_wdog.o
 FILES.l4xx += stm32_pwr_lxxx.o
 FILES.l4xx += stm32_exti_lxxx.o
 
-FILES.l432 += stm32_hal_bdma.o
-FILES.l432 += stm32_hal_rtc.o
-FILES.l432 += stm32_hal_spi.o
-FILES.l432 += stm32_board_l432.o
-FILES.l432 += stm32_hal_adc.o
-FILES.l432 += adc.o
-FILES.l432 += ws2811.o
-FILES.l432 += ws2811_task.o
+FILES.l432n += stm32_hal_bdma.o
+FILES.l432n += stm32_hal_rtc.o
+FILES.l432n += stm32_hal_spi.o
+FILES.l432n += stm32_board_l432n.o
+FILES.l432n += stm32_hal_adc.o
+FILES.l432n += adc.o
+FILES.l432n += ws2811.o
+FILES.l432n += ws2811_task.o
 
-FILES.l452 += stm32_hal_bdma.o
-FILES.l452 += stm32_hal_rtc.o
-FILES.l452 += stm32_board_l452.o
+FILES.l452n += stm32_hal_bdma.o
+FILES.l452n += stm32_hal_rtc.o
+FILES.l452n += stm32_board_l452n.o
 
-FILES.l496 += stm32_hal_bdma.o
-FILES.l496 += stm32_hal_spi.o
-FILES.l496 += stm32_hal_adc.o
-FILES.l496 += stm32_board_l496.o
-FILES.l496 += stm32_can.o
-FILES.l496 += can_test.o
+FILES.l496n += stm32_hal_bdma.o
+FILES.l496n += stm32_hal_spi.o
+FILES.l496n += stm32_hal_adc.o
+FILES.l496n += stm32_board_l496n.o
+FILES.l496n += stm32_can.o
+FILES.l496n += can_test.o
 
-FILES.l432 += $(FILES.l4xx)
-FILES.l452 += $(FILES.l4xx)
-FILES.l496 += $(FILES.l4xx)
+FILES.l432n += $(FILES.l4xx)
+FILES.l452n += $(FILES.l4xx)
+FILES.l496n += $(FILES.l4xx)
 
-#FILES.l496 += ds1302.o
-#FILES.l496 += ds1302_test.o
-FILES.l496 += stm32_hal_rtc.o
+#FILES.l496n += ds1302.o
+#FILES.l496n += ds1302_test.o
+FILES.l496n += stm32_hal_rtc.o
 
-FILES.l4r += stm32_hal_bdma.o
-FILES.l4r += stm32_usart_b.o
-FILES.l4r += stm32_rcc_b.o
-FILES.l4r += stm32_board_l4r.o
-FILES.l4r += stm32_wdog.o
-FILES.l4r += stm32_pwr_lxxx.o
-FILES.l4r += stm32_exti_lxxx.o
-FILES.l4r += stm32_flash.o
+FILES.l4rn += stm32_hal_bdma.o
+FILES.l4rn += stm32_usart_b.o
+FILES.l4rn += stm32_rcc_b.o
+FILES.l4rn += stm32_board_l4rn.o
+FILES.l4rn += stm32_wdog.o
+FILES.l4rn += stm32_pwr_lxxx.o
+FILES.l4rn += stm32_exti_lxxx.o
+FILES.l4rn += stm32_flash.o
 
 FILES.g474n += $(FILES.g4xx)
 FILES.g474n += stm32_hal_rtc.o

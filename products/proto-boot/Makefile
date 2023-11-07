@@ -46,14 +46,14 @@ PROG += h743n
 PROG += h745n
 PROG += h735dk
 PROG += l073n
-PROG += l4r
+PROG += l4rn
 PROG += f767n
 PROG += f429d
 PROG += f469d
 PROG += f746d
-PROG += l432
-PROG += l452
-PROG += l496
+PROG += l432n
+PROG += l452n
+PROG += l496n
 PROG += g474n
 PROG += g431kbn
 PROG += u575n
@@ -115,8 +115,8 @@ XCFLAGS.l073n += -DCONFIG_TIMER_16BIT=1
 STACK_END.l073n = 0x20005000
 CPU.l073n = cortex-m0plus
 
-XCFLAGS.l4r += -DSTM32_L4R
-STACK_END.l4r = 0x200A0000
+XCFLAGS.l4rn += -DSTM32_L4R
+STACK_END.l4rn = 0x200A0000
 
 XCFLAGS.c031n += -DSTM32_C031 -DSTM32_C0XX
 XCFLAGS.c031n += -DCONFIG_FAST_LOG_ENABLE=0
@@ -238,14 +238,14 @@ STACK_END.f746d = 0x20050000
 XCFLAGS.f767n += -DSTM32_F767 -DSTM32_F7XX
 STACK_END.f767n = 0x20080000
 
-XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
-STACK_END.l432 = 0x20010000
+XCFLAGS.l432n += -DSTM32_L432 -DSTM32_L4XX
+STACK_END.l432n = 0x20010000
 
-XCFLAGS.l452 += -DSTM32_L452 -DSTM32_L4XX
-STACK_END.l452 = 0x20028000
+XCFLAGS.l452n += -DSTM32_L452 -DSTM32_L4XX
+STACK_END.l452n = 0x20028000
 
-XCFLAGS.l496 += -DSTM32_L496 -DSTM32_L4XX
-STACK_END.l496 = 0x20040000
+XCFLAGS.l496n += -DSTM32_L496 -DSTM32_L4XX
+STACK_END.l496n = 0x20040000
 
 XCFLAGS.g0b1n += -DSTM32_G0B1 -DSTM32_G0XX
 XCFLAGS.g0b1n += -DCONFIG_FAST_LOG_ENABLE=0
@@ -523,22 +523,22 @@ FILES.l4xx += stm32_pwr_lxxx.o
 FILES.l4xx += stm32_exti_lxxx.o
 FILES.l4xx += stm32_flash.o
 
-FILES.l432 += $(FILES.l4xx)
-FILES.l432 += stm32_board_l432.o
-FILES.l432 += stm32_hal_spi.o
+FILES.l432n += $(FILES.l4xx)
+FILES.l432n += stm32_board_l432n.o
+FILES.l432n += stm32_hal_spi.o
 
-FILES.l452 += $(FILES.l4xx)
-FILES.l452 += stm32_board_l452.o
+FILES.l452n += $(FILES.l4xx)
+FILES.l452n += stm32_board_l452n.o
 
-FILES.l496 += $(FILES.l4xx)
-FILES.l496 += stm32_board_l496.o
-FILES.l496 += stm32_hal_spi.o
+FILES.l496n += $(FILES.l4xx)
+FILES.l496n += stm32_board_l496n.o
+FILES.l496n += stm32_hal_spi.o
 
-FILES.l4r += stm32_usart_b.o
-FILES.l4r += stm32_rcc_b.o
-FILES.l4r += stm32_board_l4r.o
-FILES.l4r += stm32_pwr_lxxx.o
-FILES.l4r += stm32_flash.o
+FILES.l4rn += stm32_usart_b.o
+FILES.l4rn += stm32_rcc_b.o
+FILES.l4rn += stm32_board_l4rn.o
+FILES.l4rn += stm32_pwr_lxxx.o
+FILES.l4rn += stm32_flash.o
 
 FILES.h5xx += stm32_usart_b.o
 FILES.h5xx += stm32_rcc_h5.o
