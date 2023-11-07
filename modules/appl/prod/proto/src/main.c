@@ -50,7 +50,7 @@
 #include "kvlog.h"
 #include "onewire.h"
 
-#if BOARD_F429D || BOARD_F746 || BOARD_H735DK
+#if BOARD_F429D || BOARD_F746D || BOARD_H735DK
 #define LCD_DEMO 1
 #endif
 
@@ -105,7 +105,7 @@ void blink()
 #elif BOARD_F103DEB
 #define BUTTON_EXTI 0
 #define BUTTON_IRQ 6 /* EXTI0 */
-#elif BOARD_F429D || BOARD_F469D || BOARD_F746 || BOARD_L4R || BOARD_WB55N || \
+#elif BOARD_F429D || BOARD_F469D || BOARD_F746D || BOARD_L4R || BOARD_WB55N || \
   BOARD_WB55USB
 /* FIXME - check this */
 #define BUTTON_EXTI 11

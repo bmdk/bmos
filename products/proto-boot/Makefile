@@ -47,10 +47,10 @@ PROG += h745n
 PROG += h735dk
 PROG += l073n
 PROG += l4r
-PROG += f767
+PROG += f767n
 PROG += f429d
 PROG += f469d
-PROG += f746
+PROG += f746d
 PROG += l432
 PROG += l452
 PROG += l496
@@ -231,12 +231,12 @@ STACK_END.f429d = 0x20030000
 XCFLAGS.f469d += -DSTM32_F4XX
 STACK_END.f469d = 0x20030000
 
-XCFLAGS.f746 += -DSTM32_F746 -DSTM32_F7XX
-XCFLAGS.f746 += -DSTM32_LCD
-STACK_END.f746 = 0x20050000
+XCFLAGS.f746d += -DSTM32_F746 -DSTM32_F7XX
+XCFLAGS.f746d += -DSTM32_LCD
+STACK_END.f746d = 0x20050000
 
-XCFLAGS.f767 += -DSTM32_F767 -DSTM32_F7XX
-STACK_END.f767 = 0x20080000
+XCFLAGS.f767n += -DSTM32_F767 -DSTM32_F7XX
+STACK_END.f767n = 0x20080000
 
 XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
 STACK_END.l432 = 0x20010000
@@ -494,19 +494,19 @@ FILES.f469d += stm32_board_f469d.o
 FILES.f469d += $(FILES.f4xx)
 FILES.f469d += $(FILES.fxxx)
 
-FILES.f746 += stm32_usart_b.o
-FILES.f746 += stm32_rcc_a.o
-FILES.f746 += stm32_hal_rtc.o
-FILES.f746 += stm32_board_f746.o
-FILES.f746 += $(FILES.f7xx)
-FILES.f746 += $(FILES.fxxx)
+FILES.f746d += stm32_usart_b.o
+FILES.f746d += stm32_rcc_a.o
+FILES.f746d += stm32_hal_rtc.o
+FILES.f746d += stm32_board_f746d.o
+FILES.f746d += $(FILES.f7xx)
+FILES.f746d += $(FILES.fxxx)
 
-FILES.f767 += stm32_usart_b.o
-FILES.f767 += stm32_rcc_a.o
-FILES.f767 += stm32_hal_rtc.o
-FILES.f767 += stm32_board_f767.o
-FILES.f767 += $(FILES.f7xx)
-FILES.f767 += $(FILES.fxxx)
+FILES.f767n += stm32_usart_b.o
+FILES.f767n += stm32_rcc_a.o
+FILES.f767n += stm32_hal_rtc.o
+FILES.f767n += stm32_board_f767n.o
+FILES.f767n += $(FILES.f7xx)
+FILES.f767n += $(FILES.fxxx)
 
 FILES.l0xx += stm32_usart_b.o
 FILES.l0xx += stm32_rcc_l0.o

@@ -40,8 +40,8 @@ PROG += f407deb
 PROG += f407debm
 PROG += f429d
 PROG += f469d
-PROG += f746
-PROG += f767
+PROG += f746d
+PROG += f767n
 PROG += h563n
 PROG += h723n
 PROG += h735dk
@@ -305,15 +305,15 @@ XCFLAGS.f469d += -DSTM32_F469 -DSTM32_F4XX
 XCFLAGS.f469d += -mcpu=cortex-m4
 STACK_END.f469d = 0x20030000
 
-XCFLAGS.f746 += -DSTM32_F746 -DSTM32_F7XX -DSTM32_LCD
-XCFLAGS.f746 += -mcpu=cortex-m7
-STACK_END.f746 = 0x20050000
-LWIP.f746 = y
+XCFLAGS.f746d += -DSTM32_F746 -DSTM32_F7XX -DSTM32_LCD
+XCFLAGS.f746d += -mcpu=cortex-m7
+STACK_END.f746d = 0x20050000
+LWIP.f746d = y
 
-XCFLAGS.f767 += -DSTM32_F767 -DSTM32_F7XX
-XCFLAGS.f767 += -mcpu=cortex-m7
-STACK_END.f767 = 0x20080000
-LWIP.f767 = y
+XCFLAGS.f767n += -DSTM32_F767 -DSTM32_F7XX
+XCFLAGS.f767n += -mcpu=cortex-m7
+STACK_END.f767n = 0x20080000
+LWIP.f767n = y
 
 XCFLAGS.l432 += -DSTM32_L432 -DSTM32_L4XX
 XCFLAGS.l432 += -mcpu=cortex-m4
@@ -721,24 +721,24 @@ FILES.f469d += stm32_hal_dma.o
 FILES.f469d += $(FILES.f4xx)
 FILES.f469d += $(FILES.fxxx)
 
-FILES.f746 += stm32_hal_dma.o
-FILES.f746 += stm32_usart_b.o
-FILES.f746 += stm32_rcc_a.o
-FILES.f746 += stm32_hal_rtc.o
-FILES.f746 += stm32_board_f746.o
-FILES.f746 += stm32_eth.o
-FILES.f746 += stm32_lcd.o
-FILES.f746 += $(FILES.f7xx)
-FILES.f746 += $(FILES.fxxx)
+FILES.f746d += stm32_hal_dma.o
+FILES.f746d += stm32_usart_b.o
+FILES.f746d += stm32_rcc_a.o
+FILES.f746d += stm32_hal_rtc.o
+FILES.f746d += stm32_board_f746d.o
+FILES.f746d += stm32_eth.o
+FILES.f746d += stm32_lcd.o
+FILES.f746d += $(FILES.f7xx)
+FILES.f746d += $(FILES.fxxx)
 
-FILES.f767 += stm32_hal_dma.o
-FILES.f767 += stm32_usart_b.o
-FILES.f767 += stm32_rcc_a.o
-FILES.f767 += stm32_hal_rtc.o
-FILES.f767 += stm32_eth.o
-FILES.f767 += stm32_board_f767.o
-FILES.f767 += $(FILES.f7xx)
-FILES.f767 += $(FILES.fxxx)
+FILES.f767n += stm32_hal_dma.o
+FILES.f767n += stm32_usart_b.o
+FILES.f767n += stm32_rcc_a.o
+FILES.f767n += stm32_hal_rtc.o
+FILES.f767n += stm32_eth.o
+FILES.f767n += stm32_board_f767n.o
+FILES.f767n += $(FILES.f7xx)
+FILES.f767n += $(FILES.fxxx)
 
 FILES.h723n += $(FILES.h7xx)
 FILES.h735dk += $(FILES.h7xx)
