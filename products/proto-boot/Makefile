@@ -377,7 +377,6 @@ FILES.c0xx += stm32_flash.o
 FILES.c0xx += stm32_pwr_g0xx.o
 
 FILES.c031n += $(FILES.c0xx)
-FILES.c031n += stm32_board_c031n.o
 MAIN.c031n = main_small.o
 
 FILES.h7xx += stm32_usart_b.o
@@ -386,20 +385,15 @@ FILES.h7xx += stm32_hal_rtc.o
 FILES.h7xx += stm32_flash_h7xx.o
 FILES.h7xx += stm32_pwr_h7xx.o
 
-FILES.h723n += stm32_board_h723n.o
 FILES.h723n += $(FILES.h7xx)
 
-FILES.h743wa += stm32_board_h743wa.o
 FILES.h743wa += $(FILES.h7xx)
 
-FILES.h743n += stm32_board_h743n.o
 FILES.h743n += $(FILES.h7xx)
 
-FILES.h745n += stm32_board_h745n.o
 FILES.h745n += stm32_wwdg.o
 FILES.h745n += $(FILES.h7xx)
 
-FILES.h735dk += stm32_board_h735dk.o
 FILES.h735dk += $(FILES.h7xx)
 
 FILES.f7xx += stm32_pwr_f7xx.o
@@ -415,96 +409,80 @@ FILES.f0xx += stm32_rcc_f1.o
 FILES.f0xx += stm32_flash_f1.o
 
 FILES.f030demo += $(FILES.f0xx)
-FILES.f030demo += stm32_board_f030demo.o
 MAIN.f030demo = main_small.o
 
 FILES.f072n += $(FILES.f0xx)
-FILES.f072n += stm32_board_f072n.o
 
 FILES.f100d += stm32_usart_a.o
 FILES.f100d += stm32_rcc_f1.o
 FILES.f100d += stm32_flash_f1.o
-FILES.f100d += stm32_board_f100d.o
 
 FILES.f103deb += stm32_usart_a.o
 FILES.f103deb += stm32_rcc_f1.o
 FILES.f103deb += stm32_flash_f1.o
-FILES.f103deb += stm32_board_f103deb.o
 
 FILES.f103bp += stm32_usart_a.o
 FILES.f103bp += stm32_rcc_f1.o
 FILES.f103bp += stm32_flash_f1.o
-FILES.f103bp += stm32_board_f103bp.o
 
 FILES.f103n += stm32_usart_a.o
 FILES.f103n += stm32_rcc_f1.o
 FILES.f103n += stm32_flash_f1.o
-FILES.f103n += stm32_board_f103n.o
 
 FILES.at32f403bp += stm32_usart_a.o
 FILES.at32f403bp += stm32_rcc_f1.o
 FILES.at32f403bp += stm32_flash_f1.o
-FILES.at32f403bp += at32_board_f403bp.o
+BOARD.at32f403bp += at32_board_f403bp.o
 
 FILES.f303rt += stm32_usart_b.o
 FILES.f303rt += stm32_rcc_f1.o
 FILES.f303rt += stm32_flash_f1.o
-FILES.f303rt += stm32_board_f303rt.o
 
 FILES.f411bp += stm32_usart_a.o
 FILES.f411bp += stm32_rcc_a.o
-FILES.f411bp += stm32_board_f411bp.o
 FILES.f411bp += $(FILES.f4xx)
 FILES.f411bp += $(FILES.fxxx)
 
 FILES.f401bp += stm32_usart_a.o
 FILES.f401bp += stm32_rcc_a.o
-FILES.f401bp += stm32_board_f401bp.o
 FILES.f401bp += $(FILES.f4xx)
 FILES.f401bp += $(FILES.fxxx)
 
 FILES.f4d += stm32_usart_a.o
 FILES.f4d += stm32_rcc_a.o
-FILES.f4d += stm32_board_f4d.o
 FILES.f4d += $(FILES.f4xx)
 FILES.f4d += $(FILES.fxxx)
 
 FILES.f407deb += stm32_usart_a.o
 FILES.f407deb += stm32_rcc_a.o
-FILES.f407deb += stm32_board_f407deb.o
 FILES.f407deb += $(FILES.f4xx)
 FILES.f407deb += $(FILES.fxxx)
 
 FILES.f407debm += stm32_usart_a.o
 FILES.f407debm += stm32_rcc_a.o
-FILES.f407debm += stm32_board_f407debm.o
 FILES.f407debm += $(FILES.f4xx)
 FILES.f407debm += $(FILES.fxxx)
 
 FILES.f429d += stm32_usart_a.o
 FILES.f429d += stm32_rcc_a.o
-FILES.f429d += stm32_board_f429d.o
 FILES.f429d += stm32_hal_spi.o
 FILES.f429d += $(FILES.f4xx)
 FILES.f429d += $(FILES.fxxx)
 
 FILES.f469d += stm32_usart_a.o
 FILES.f469d += stm32_rcc_a.o
-FILES.f469d += stm32_board_f469d.o
 FILES.f469d += $(FILES.f4xx)
 FILES.f469d += $(FILES.fxxx)
 
 FILES.f746d += stm32_usart_b.o
 FILES.f746d += stm32_rcc_a.o
 FILES.f746d += stm32_hal_rtc.o
-FILES.f746d += stm32_board_f746d.o
 FILES.f746d += $(FILES.f7xx)
 FILES.f746d += $(FILES.fxxx)
 
 FILES.f767n += stm32_usart_b.o
 FILES.f767n += stm32_rcc_a.o
 FILES.f767n += stm32_hal_rtc.o
-FILES.f767n += stm32_board_f767n.o
 FILES.f767n += $(FILES.f7xx)
 FILES.f767n += $(FILES.fxxx)
 
@@ -514,7 +492,6 @@ FILES.l0xx += stm32_flash_l0.o
 FILES.l0xx += stm32_pwr_l0xx.o
 
 FILES.l073n += $(FILES.l0xx)
-FILES.l073n += stm32_board_l073n.o
 
 FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
@@ -524,19 +501,15 @@ FILES.l4xx += stm32_exti_lxxx.o
 FILES.l4xx += stm32_flash.o
 
 FILES.l432n += $(FILES.l4xx)
-FILES.l432n += stm32_board_l432n.o
 FILES.l432n += stm32_hal_spi.o
 
 FILES.l452n += $(FILES.l4xx)
-FILES.l452n += stm32_board_l452n.o
 
 FILES.l496n += $(FILES.l4xx)
-FILES.l496n += stm32_board_l496n.o
 FILES.l496n += stm32_hal_spi.o
 
 FILES.l4rn += stm32_usart_b.o
 FILES.l4rn += stm32_rcc_b.o
-FILES.l4rn += stm32_board_l4rn.o
 FILES.l4rn += stm32_pwr_lxxx.o
 FILES.l4rn += stm32_flash.o
 
@@ -547,7 +520,6 @@ FILES.h5xx += stm32_pwr_h5xx.o
 FILES.h5xx += stm32_flash.o
 
 FILES.h563n += $(FILES.h5xx)
-FILES.h563n += stm32_board_h563n.o
 
 FILES.uxxx += stm32_usart_b.o
 FILES.uxxx += stm32_rcc_u5.o
@@ -558,7 +530,6 @@ FILES.uxxx += stm32_flash.o
 #FILES.uxxx += stm32_pwr_lxxx.o
 
 FILES.u575n += $(FILES.uxxx)
-FILES.u575n += stm32_board_u575n.o
 
 FILES.wbxx += stm32_usart_b.o
 FILES.wbxx += stm32_rcc_b.o
@@ -568,10 +539,8 @@ FILES.wbxx += stm32_exti_lxxx.o
 FILES.wbxx += stm32_flash.o
 
 FILES.wb55n += $(FILES.wbxx)
-FILES.wb55n += stm32_board_wb55n.o
 
 FILES.wb55usb += $(FILES.wbxx)
-FILES.wb55usb += stm32_board_wb55usb.o
 
 FILES.g0xx += stm32_rcc_g0.o
 FILES.g0xx += stm32_usart_b.o
@@ -579,11 +548,9 @@ FILES.g0xx += stm32_flash.o
 FILES.g0xx += stm32_pwr_g0xx.o
 
 FILES.g0b1n += $(FILES.g0xx)
-FILES.g0b1n += stm32_board_g0b1n.o
 MAIN.g0b1n += main_small.o
 
 FILES.g030deb += $(FILES.g0xx)
-FILES.g030deb += stm32_board_g030deb.o
 MAIN.g030deb += main_small.o
 
 FILES.g4xx += stm32_usart_b.o
@@ -594,12 +561,16 @@ FILES.g4xx += stm32_exti_lxxx.o
 FILES.g4xx += stm32_flash.o
 
 FILES.g474n += $(FILES.g4xx)
-FILES.g474n += stm32_board_g474n.o
 
 FILES.g431kbn += $(FILES.g4xx)
-FILES.g431kbn += stm32_board_g431kbn.o
 
 FILES += $(FILES.$(PROG))
+ifndef BOARD.$(PROG)
+BOARD_FILE = stm32_board_$(PROG).o
+else
+BOARD_FILE = $(BOARD.$(PROG))
+endif
+FILES += $(BOARD_FILE)
 
 DEPFILES = $(addprefix $(OBJDIR)/,$(patsubst %.o,%.d,$(FILES)))
 
