@@ -42,8 +42,8 @@ PROG += g030deb
 PROG += h563n
 PROG += h723n
 PROG += h743wa
-PROG += h743nucleo
-PROG += h745nucleo
+PROG += h743n
+PROG += h745n
 PROG += h735dk
 PROG += l073n
 PROG += l4r
@@ -101,14 +101,14 @@ STACK_END.h735dk = 0x20020000
 XCFLAGS.h723n += -DSTM32_H7XX
 STACK_END.h723n = 0x20020000
 
-XCFLAGS.h743nucleo += -DSTM32_H7XX -DSTM32_VOS_HACK
-STACK_END.h743nucleo = 0x20020000
+XCFLAGS.h743n += -DSTM32_H7XX -DSTM32_VOS_HACK
+STACK_END.h743n = 0x20020000
 
 XCFLAGS.h743wa += -DSTM32_H7XX -DSTM32_VOS_HACK
 STACK_END.h743wa = 0x20020000
 
-XCFLAGS.h745nucleo += -DSTM32_H7XX -DSTM32_VOS_HACK
-STACK_END.h745nucleo = 0x20020000
+XCFLAGS.h745n += -DSTM32_H7XX -DSTM32_VOS_HACK
+STACK_END.h745n = 0x20020000
 
 XCFLAGS.l073n += -DSTM32_L0XX -DSTM32_L073N
 XCFLAGS.l073n += -DCONFIG_TIMER_16BIT=1
@@ -392,12 +392,12 @@ FILES.h723n += $(FILES.h7xx)
 FILES.h743wa += stm32_board_h743wa.o
 FILES.h743wa += $(FILES.h7xx)
 
-FILES.h743nucleo += stm32_board_h743nucleo.o
-FILES.h743nucleo += $(FILES.h7xx)
+FILES.h743n += stm32_board_h743n.o
+FILES.h743n += $(FILES.h7xx)
 
-FILES.h745nucleo += stm32_board_h745nucleo.o
-FILES.h745nucleo += stm32_wwdg.o
-FILES.h745nucleo += $(FILES.h7xx)
+FILES.h745n += stm32_board_h745n.o
+FILES.h745n += stm32_wwdg.o
+FILES.h745n += $(FILES.h7xx)
 
 FILES.h735dk += stm32_board_h735dk.o
 FILES.h735dk += $(FILES.h7xx)

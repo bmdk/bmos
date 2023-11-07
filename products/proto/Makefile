@@ -46,8 +46,8 @@ PROG += h563n
 PROG += h723n
 PROG += h735dk
 PROG += h743wa
-PROG += h743nucleo
-PROG += h745nucleo
+PROG += h743n
+PROG += h745n
 PROG += h745nm4
 PROG += l073n
 PROG += l432
@@ -96,8 +96,8 @@ clean:
 H7_BOARDS += h723n
 H7_BOARDS += h735dk
 H7_BOARDS += h743wa
-H7_BOARDS += h743nucleo
-H7_BOARDS += h745nucleo
+H7_BOARDS += h743n
+H7_BOARDS += h745n
 
 ifneq (,$(findstring $(PROG),$(H7_BOARDS)))
 CONFIG_STM32_H7 = 1
@@ -115,22 +115,22 @@ XCFLAGS.h743wa += -DSTM32_VOS_HACK
 STACK_END.h743wa = 0x20020000
 XCFLAGS.h743wa += -mcpu=cortex-m7
 
-XCFLAGS.h743nucleo += -DSTM32_H7XX
-XCFLAGS.h743nucleo += -DSTM32_VOS_HACK
-STACK_END.h743nucleo = 0x20020000
-XCFLAGS.h743nucleo += -mcpu=cortex-m7
-LWIP.h743nucleo = y
+XCFLAGS.h743n += -DSTM32_H7XX
+XCFLAGS.h743n += -DSTM32_VOS_HACK
+STACK_END.h743n = 0x20020000
+XCFLAGS.h743n += -mcpu=cortex-m7
+LWIP.h743n = y
 
 XCFLAGS.h723n += -DSTM32_H7XX
 STACK_END.h723n = 0x20020000
 XCFLAGS.h723n += -mcpu=cortex-m7
 LWIP.h723n = y
 
-XCFLAGS.h745nucleo += -DSTM32_H7XX
-XCFLAGS.h745nucleo += -DSTM32_VOS_HACK
-STACK_END.h745nucleo = 0x20020000
-XCFLAGS.h745nucleo += -mcpu=cortex-m7
-LWIP.h745nucleo = y
+XCFLAGS.h745n += -DSTM32_H7XX
+XCFLAGS.h745n += -DSTM32_VOS_HACK
+STACK_END.h745n = 0x20020000
+XCFLAGS.h745n += -mcpu=cortex-m7
+LWIP.h745n = y
 
 XCFLAGS.h745nm4 += -DSTM32_H7XX
 XCFLAGS.h745nm4 += -DCONFIG_BUTTON_INT=0
@@ -552,12 +552,12 @@ FILES.h743wa += stm32_hal_spi_b.o
 FILES.h743wa += spi_test.o
 FILES.h743wa += st7735.o
 
-FILES.h743nucleo += stm32_board_h743nucleo.o
+FILES.h743n += stm32_board_h743n.o
 
-FILES.h745nucleo += stm32_board_h745nucleo.o
-FILES.h745nucleo += stm32_wwdg.o
-FILES.h745nucleo += stm32_fdcan.o
-FILES.h745nucleo += can_test.o
+FILES.h745n += stm32_board_h745n.o
+FILES.h745n += stm32_wwdg.o
+FILES.h745n += stm32_fdcan.o
+FILES.h745n += can_test.o
 
 FILES.h745nm4 += stm32_board_h745nm4.o
 
@@ -743,8 +743,8 @@ FILES.f767 += $(FILES.fxxx)
 FILES.h723n += $(FILES.h7xx)
 FILES.h735dk += $(FILES.h7xx)
 FILES.h743wa += $(FILES.h7xx)
-FILES.h743nucleo += $(FILES.h7xx)
-FILES.h745nucleo += $(FILES.h7xx)
+FILES.h743n += $(FILES.h7xx)
+FILES.h745n += $(FILES.h7xx)
 FILES.h745nm4 += $(FILES.h7xx)
 
 FILES.g0xx += stm32_flash.o

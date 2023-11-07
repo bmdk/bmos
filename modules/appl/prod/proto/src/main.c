@@ -319,7 +319,7 @@ int main()
 
   shell_info_init(&shell_info, "sh1rx", 0);
   shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
-#if !BOARD_H745NUCLEO && !BOARD_H745NM4 && STM32_H7XX || BOARD_G474N
+#if !BOARD_H745N && !BOARD_H745NM4 && STM32_H7XX || BOARD_G474N
   shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
 #endif
 
@@ -355,7 +355,7 @@ int main()
   task_init(task_led, NULL, "lcd", 4, 0, 512);
 #endif
 
-#if STM32_G4XX || BOARD_H735DK || BOARD_H745NUCLEO || BOARD_U575N || \
+#if STM32_G4XX || BOARD_H735DK || BOARD_H745N || BOARD_U575N || \
   BOARD_F103BP || AT32_F403BP || CONFIG_CAN_TEST
   task_init(task_can, NULL, "can", 4, 0, 256);
 #endif

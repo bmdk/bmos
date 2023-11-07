@@ -156,7 +156,7 @@ static inline int _flash_erase(unsigned int start, unsigned int count);
 
 static int xmodem_flash_erase(unsigned int addr)
 {
-#if BOARD_H745NUCLEO
+#if BOARD_H745N
   if (addr == H745N_M4_FLASH_BASE)
     return _flash_erase(1024, 128);
 #endif
@@ -265,7 +265,7 @@ static int cmd_xmodem(int argc, char *argv[])
   int err;
   xtime_ms_t start = xtime_ms();
 
-#if BOARD_H745NUCLEO
+#if BOARD_H745N
   if (argc > 1 && argv[1][0] == 'm')
     bd.addr = H745N_M4_FLASH_BASE;
   else
