@@ -48,7 +48,7 @@ PROG += h735dk
 PROG += l073n
 PROG += l4r
 PROG += f767
-PROG += f429
+PROG += f429d
 PROG += f469d
 PROG += f746
 PROG += l432
@@ -224,9 +224,9 @@ STACK_END.f407deb = 0x20020000
 XCFLAGS.f407debm += -DSTM32_F407 -DSTM32_F4XX
 STACK_END.f407debm = 0x20020000
 
-XCFLAGS.f429 += -DSTM32_F429 -DSTM32_F4XX
-XCFLAGS.f429 += -DSTM32_LCD
-STACK_END.f429 = 0x20030000
+XCFLAGS.f429d += -DSTM32_F429 -DSTM32_F4XX
+XCFLAGS.f429d += -DSTM32_LCD
+STACK_END.f429d = 0x20030000
 
 XCFLAGS.f469d += -DSTM32_F4XX
 STACK_END.f469d = 0x20030000
@@ -481,12 +481,12 @@ FILES.f407debm += stm32_board_f407debm.o
 FILES.f407debm += $(FILES.f4xx)
 FILES.f407debm += $(FILES.fxxx)
 
-FILES.f429 += stm32_usart_a.o
-FILES.f429 += stm32_rcc_a.o
-FILES.f429 += stm32_board_f429.o
-FILES.f429 += stm32_hal_spi.o
-FILES.f429 += $(FILES.f4xx)
-FILES.f429 += $(FILES.fxxx)
+FILES.f429d += stm32_usart_a.o
+FILES.f429d += stm32_rcc_a.o
+FILES.f429d += stm32_board_f429d.o
+FILES.f429d += stm32_hal_spi.o
+FILES.f429d += $(FILES.f4xx)
+FILES.f429d += $(FILES.fxxx)
 
 FILES.f469d += stm32_usart_a.o
 FILES.f469d += stm32_rcc_a.o
