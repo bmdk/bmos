@@ -141,7 +141,6 @@ static void adc_irq(void *arg)
     a->isr |= ISR_EOS;
     if (adc_data.conv_done)
       adc_data.conv_done(adc_data.res, adc_data.count, 0);
-    adc_data.conv_done = 0;
     adc_data.count = 0;
   }
 }
