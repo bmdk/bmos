@@ -20,6 +20,7 @@
  */
 
 #include "common.h"
+#include "fast_log.h"
 #include "hal_common.h"
 #include "hal_int.h"
 #include "hal_time.h"
@@ -130,7 +131,7 @@ static void adc_irq(void *arg)
   isr = a->isr;
 
   if (isr & ISR_OVR)
-    debug_printf("adc overflow");
+    FAST_LOG('A', "adc overflow\n", 0, 0);
 
   if (isr & ISR_EOC) {
     dr = a->dr;
