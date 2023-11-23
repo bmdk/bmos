@@ -47,6 +47,10 @@
 
 #define KV_STORE_HDR_MAGIC 0x4B560001
 
+#if STM32_L4XX
+#define ONLY_REWRITE_ZERO 1
+#endif
+
 typedef struct {
   unsigned int magic;
   unsigned int seq;
@@ -54,6 +58,10 @@ typedef struct {
 
 typedef struct {
   unsigned char start;
+#if ONLY_REWRITE_ZERO
+  unsigned char pad1[7];
+  unsigned char pad2[5];
+#endif
   unsigned char type;
   unsigned short rlen;
 } kv_hdr_t;
@@ -241,9 +249,10 @@ static int _kv_write_header(kv_data_store_t *sp, unsigned int seq, int init_pos)
   return 0;
 }
 
-static void _kv_write_ofs(kv_data_store_t *sp, kv_hdr_t *rec, unsigned int ofs)
+static void _kv_write_ofs(kv_data_store_t *sp, void *data,
+                          unsigned int len, unsigned int ofs)
 {
-  flash_program((unsigned int)sp->data + ofs, rec, sizeof(kv_hdr_t));
+  flash_program((unsigned int)sp->data + ofs, data, len);
 }
 
 static int _kv_write(kv_data_store_t *sp, kv_hdr_t *rec)
@@ -519,12 +528,18 @@ static void kv_invalidate(kv_data_store_t *store, const char *dkey,
 #if TEST
         hdr->start = KV_HDR_DELETED;
 #else
+#if ONLY_REWRITE_ZERO
+        char buf[8];
+        memset(buf, 0, sizeof(buf));
+        _kv_write_ofs(store, buf, sizeof(buf), ofs);
+#else
         kv_hdr_t chdr;
 
         memcpy(&chdr, hdr, sizeof(kv_hdr_t));
         chdr.start = KV_HDR_DELETED;
         /* write to flash */
-        _kv_write_ofs(store, &chdr, ofs);
+        _kv_write_ofs(store, &chdr, sizeof(kv_hdr_t), ofs);
+#endif
 #endif
       }
     }
