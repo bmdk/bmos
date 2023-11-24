@@ -123,6 +123,9 @@ static kv_hdr_t *kv_iter_next(kv_iter_t *it)
 
   rlen = hdr->rlen;
 
+  if (rlen == 0)
+    return NULL;
+
   /* if the current record size brings us past the end of the flash
      block then something is wrong */
   if (it->ofs + rlen > kv_data.size) {
