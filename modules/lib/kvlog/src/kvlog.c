@@ -766,7 +766,7 @@ int cmd_kv(int argc, char *argv[])
     if (argc < 4)
       return -1;
     key = argv[2];
-    ival = strtoul(argv[3], NULL, 0);
+    ival = atoi(argv[3]);
     kv_set_int(key, ival);
     break;
   case 'd':
