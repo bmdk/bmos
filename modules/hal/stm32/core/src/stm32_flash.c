@@ -117,6 +117,8 @@ typedef struct {
 #define FLASH_ACR_PRFTEN BIT(8)
 #define FLASH_ACR_ICEN BIT(9)
 #define FLASH_ACR_DCEN BIT(10)
+#define FLASH_ACR_ICRST BIT(11)
+#define FLASH_ACR_DCRST BIT(12)
 
 #if FLASH_TYPE4
 #define FLASH_CR_BKSEL BIT(31)
@@ -177,6 +179,14 @@ void stm32_flash_cache_enable(unsigned int en)
     FLASH->acr |= FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN;
   else
     FLASH->acr &= ~(FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN);
+}
+
+void flash_data_cache_invalidate()
+{
+  FLASH->acr &= ~FLASH_ACR_DCEN;
+  FLASH->acr |= FLASH_ACR_DCRST;
+  FLASH->acr &= ~FLASH_ACR_DCRST;
+  FLASH->acr |= FLASH_ACR_DCEN;
 }
 
 static void flash_unlock()

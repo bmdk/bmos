@@ -24,6 +24,7 @@
 
 int flash_erase(unsigned int start, unsigned int count);
 int flash_program(unsigned int addr, const void *data, unsigned int len);
+void flash_data_cache_invalidate();
 void stm32_flash_latency(unsigned int val);
 void stm32_flash_cache_enable(unsigned int en);
 
