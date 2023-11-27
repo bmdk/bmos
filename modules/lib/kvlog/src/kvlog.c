@@ -42,6 +42,10 @@
 
 #define FLASH_SECT1 0x8008000
 #define FLASH_SECT2 0x800c000
+#define FLASH_SECT1_NO 2
+#define FLASH_SECT2_NO 3
+#define FLASH_BLOCK_SIZE 0x4000
+#define FLASH_SECT_BLOCKS 1
 
 #define KV_ALIGN(_num_) ALIGN(_num_, 3)
 
@@ -313,19 +317,28 @@ void kv_store_reinit(kv_data_store_t *store)
 
   switch ((unsigned long)store->data) {
   case FLASH_SECT1:
-    sect = 2;
+    sect = FLASH_SECT1_NO;
     break;
   case FLASH_SECT2:
-    sect = 3;
+    sect = FLASH_SECT2_NO;
     break;
   default:
     return;
   }
 
-  flash_erase(sect, 1);
+  flash_erase(sect, FLASH_SECT_BLOCKS);
 }
 
-#define FLASH_BLOCK_SIZE 0x4000
+void kv_erase()
+{
+  flash_erase(FLASH_SECT1_NO, FLASH_SECT_BLOCKS);
+  flash_erase(FLASH_SECT2_NO, FLASH_SECT_BLOCKS);
+
+  flash_data_cache_invalidate();
+
+  kv_init();
+}
+
 int kv_store_init(kv_data_store_t *store, void *base)
 {
   int ofs;
@@ -348,6 +361,8 @@ int kv_init()
   int valid[2];
   unsigned int seq[2];
   unsigned int i;
+
+  memset(&kv_data, 0, sizeof(kv_data));
 
   kv_data.size = FLASH_BLOCK_SIZE;
 
@@ -810,7 +825,11 @@ int cmd_kv(int argc, char *argv[])
     }
     break;
   case 'f':
-    flash_erase(2, 2);
+    if (argc < 3 || strcmp(argv[2], "really") != 0) {
+      xprintf("You need to really want to.\n");
+      break;
+    }
+    kv_erase();
     break;
   }
 
