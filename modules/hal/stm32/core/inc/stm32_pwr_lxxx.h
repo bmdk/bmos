@@ -26,45 +26,45 @@
 
 typedef struct {
   struct {
-    unsigned int imr;
-    unsigned int emr;
-    unsigned int rtsr;
-    unsigned int ftsr;
-    unsigned int swier;
-    unsigned int pr;
-    unsigned int pad0[2];
+    reg32_t imr;
+    reg32_t emr;
+    reg32_t rtsr;
+    reg32_t ftsr;
+    reg32_t swier;
+    reg32_t pr;
+    reg32_t pad0[2];
   } r[2];
 } stm32_exti_t;
 
 typedef struct {
-  unsigned int memrmp;
-  unsigned int cfgr1;
-  unsigned int exticr[4];
-  unsigned int scsr;
-  unsigned int cfgr2;
-  unsigned int swpr;
-  unsigned int skr;
+  reg32_t memrmp;
+  reg32_t cfgr1;
+  reg32_t exticr[4];
+  reg32_t scsr;
+  reg32_t cfgr2;
+  reg32_t swpr;
+  reg32_t skr;
 } stm32_syscfg_t;
 
 typedef struct {
-  unsigned int cr[4];
-  unsigned int sr[2];
-  unsigned int scr;
-  unsigned int cr5;
+  reg32_t cr[4];
+  reg32_t sr[2];
+  reg32_t scr;
+  reg32_t cr5;
   struct {
-    unsigned int d;
-    unsigned int u;
+    reg32_t d;
+    reg32_t u;
   } p[8];
 } stm32_pwr_t;
 
 #if STM32_WBXX
-#define PWR ((volatile stm32_pwr_t *)(0x58000400))
-#define EXTI ((volatile stm32_exti_t *)(0x58000800))
+#define PWR ((stm32_pwr_t *)(0x58000400))
+#define EXTI ((stm32_exti_t *)(0x58000800))
 #else
-#define PWR ((volatile stm32_pwr_t *)(0x40007000))
-#define EXTI ((volatile stm32_exti_t *)(0x40010400))
+#define PWR ((stm32_pwr_t *)(0x40007000))
+#define EXTI ((stm32_exti_t *)(0x40010400))
 #endif
-#define SYSCFG ((volatile stm32_syscfg_t *)(0x40010000))
+#define SYSCFG ((stm32_syscfg_t *)(0x40010000))
 
 #define PWR_CR1_DBP BIT(8)
 
