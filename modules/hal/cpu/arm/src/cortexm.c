@@ -310,12 +310,14 @@ int cmd_nvic(int argc, char *argv[])
 SHELL_CMD(nvic, cmd_nvic);
 #endif
 
+#define SCB_SCR_SLEEPDEEP BIT(2)
+
 void set_low_power(int en)
 {
   if (en)
-    SCB->scr |= BIT(2);
+    SCB->scr |= SCB_SCR_SLEEPDEEP;
   else
-    SCB->scr &= ~BIT(2);
+    SCB->scr &= ~SCB_SCR_SLEEPDEEP;
 }
 
 #define SCB_AIRCR_KEY (0x05faUL << 16)
