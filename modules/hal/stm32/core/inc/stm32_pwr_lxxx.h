@@ -23,6 +23,7 @@
 #define STM32_PWR_LXXX_H
 
 #include "common.h"
+#include "hal_common.h"
 
 typedef struct {
   struct {
@@ -73,4 +74,14 @@ typedef struct {
 /* validate vddio2 and enable PG2-15 */
 void vddio2_en(int on);
 
+#define PWR_LPMS_STOP0 0
+#define PWR_LPMS_STOP1 1
+#define PWR_LPMS_STOP2 2
+#define PWR_LPMS_STANDBY 3
+#define PWR_LPMS_SHUTDOWN 4
+
+static inline void stm32_pwr_lpms(unsigned int val)
+{
+  reg_set_field(&PWR->cr[1], 0, 3, val);
+}
 #endif
