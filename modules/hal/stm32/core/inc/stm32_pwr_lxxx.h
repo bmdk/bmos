@@ -82,6 +82,6 @@ void vddio2_en(int on);
 
 static inline void stm32_pwr_lpms(unsigned int val)
 {
-  reg_set_field(&PWR->cr[1], 0, 3, val);
+  reg_set_field(&PWR->cr[0], 3, 0, val);
 }
 #endif
