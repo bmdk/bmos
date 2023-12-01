@@ -83,5 +83,24 @@ void vddio2_en(int on);
 static inline void stm32_pwr_lpms(unsigned int val)
 {
   reg_set_field(&PWR->cr[0], 3, 0, val);
+
+  (void)PWR->cr[0];
+}
+
+#define PWR_CR3_EIWUL BIT(15)
+#define PWR_CR3_EIWUP(n) BIT(n)
+#define PWR_CR3_EIWUP1 PWR_CR3_EIWUP(0)
+#define PWR_CR3_EIWUP2 PWR_CR3_EIWUP(1)
+#define PWR_CR3_EIWUP3 PWR_CR3_EIWUP(2)
+#define PWR_CR3_EIWUP4 PWR_CR3_EIWUP(3)
+#define PWR_CR3_EIWUP5 PWR_CR3_EIWUP(4)
+static inline void stm32_pwr_wkup_init(unsigned int mask)
+{
+  /* disable all wakeup sources */
+  PWR->cr[2] = 0;
+  /* enable internal wakeup */
+  PWR->cr[2] |= mask;
+  /* clear wakeup flags */
+  PWR->scr = 0xffffffff;
 }
 #endif

@@ -24,23 +24,26 @@
 #include "common.h"
 #include "cortexm.h"
 #include "debug_ser.h"
-#include "hal_board.h"
 #include "hal_common.h"
 #include "hal_gpio.h"
-#include "hal_int.h"
-#include "hal_int_cpu.h"
-#include "hal_rtc.h"
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
 #include "stm32_exti.h"
 #include "stm32_hal.h"
+#include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_spi.h"
 #include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
 #include "stm32_pwr_lxxx.h"
 #include "stm32_rcc_b.h"
+
+#include "hal_int_cpu.h"
+#include "hal_int.h"
+#include "stm32_hal_adc.h"
+
+#include "hal_rtc.h"
 
 void pin_init()
 {
@@ -80,8 +83,6 @@ void pin_init()
   stm32_syscfg_set_exti(2, 13);
 }
 
-#define SPI1_BASE (void *)0x40013000
-
 #define APB2_CLOCK 80000000
 #define APB1_CLOCK 80000000
 
@@ -89,7 +90,7 @@ void pin_init()
 uart_t debug_uart = { "debug", LPUART1_BASE, APB1_CLOCK, 70, STM32_UART_LP };
 #endif
 
-static const gpio_handle_t leds[] = { GPIO(0, 5) };
+static const gpio_handle_t leds[] = { GPIO(1, 13) };
 
 static const struct pll_params_t pll_params = {
   .flags   = PLL_FLAG_PLLREN,
@@ -109,6 +110,7 @@ void hal_board_init()
 #if APPL
   backup_domain_protect(0);
   clock_init_ls(0);
+  rtc_init(1);
 #endif
   led_init(leds, ARRSIZ(leds));
 

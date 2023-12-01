@@ -36,6 +36,7 @@ struct pll_params_t {
 };
 
 void clock_init(const struct pll_params_t *pll_params);
+void clock_init_low();
 
 #define PLL_FLAG_PLLREN BIT(0)
 #define PLL_FLAG_PLLQEN BIT(1)

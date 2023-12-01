@@ -52,6 +52,7 @@ PROG += h745nm4
 PROG += l073n
 PROG += l432n
 PROG += l452n
+PROG += l452np
 PROG += l496n
 PROG += l4rn
 PROG += g030deb
@@ -324,6 +325,10 @@ XCFLAGS.l432n += -DCONFIG_ENABLE_ADC
 XCFLAGS.l452n += -DSTM32_L452 -DSTM32_L4XX
 XCFLAGS.l452n += -mcpu=cortex-m4
 STACK_END.l452n = 0x20028000
+
+XCFLAGS.l452np += -DSTM32_L452 -DSTM32_L4XX
+XCFLAGS.l452np += -mcpu=cortex-m4
+STACK_END.l452np = 0x20028000
 
 XCFLAGS.l496n += -DSTM32_L496 -DSTM32_L4XX
 XCFLAGS.l496n += -mcpu=cortex-m4
@@ -808,6 +813,11 @@ FILES.l432n += ws2811_task.o
 
 FILES.l452n += stm32_hal_bdma.o
 FILES.l452n += stm32_hal_rtc.o
+FILES.l452n += stm32_hal_sleep.o
+
+FILES.l452np += stm32_hal_bdma.o
+FILES.l452np += stm32_hal_rtc.o
+FILES.l452np += stm32_hal_sleep.o
 
 FILES.l496n += stm32_hal_bdma.o
 FILES.l496n += stm32_hal_spi.o
@@ -817,6 +827,7 @@ FILES.l496n += can_test.o
 
 FILES.l432n += $(FILES.l4xx)
 FILES.l452n += $(FILES.l4xx)
+FILES.l452np += $(FILES.l4xx)
 FILES.l496n += $(FILES.l4xx)
 
 #FILES.l496n += ds1302.o
