@@ -145,7 +145,7 @@ static void _exception_handler(sw_stack_frame_t *xsf, unsigned int exc_return)
       if (cfsr & CFSR_UNALIGNED)
         debug_printf(" Unaligned access.\n");
       if (cfsr & CFSR_MMAR_VALID)
-        debug_printf(" fault address(mm): %08x\n", SCB->mmfar);
+        debug_printf(" fault address(mm): %08x\n", SCB->mmar);
       if (cfsr & CFSR_BFAR_PRECISERR)
         debug_printf(" Bus error\n");
       if (cfsr & CFSR_BFAR_VALID)

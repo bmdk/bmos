@@ -69,11 +69,11 @@ typedef struct {
   reg32_t scr;
   reg32_t ccr;
   reg32_t shpr[3];
-  reg32_t shcsr;
+  reg32_t shcrs;
   reg32_t cfsr;
   reg32_t hfsr;
   reg32_t pad[1];
-  reg32_t mmfar;
+  reg32_t mmar;
   reg32_t bfar;
   reg32_t afsr;
 } scb_t;
