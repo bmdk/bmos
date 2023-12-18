@@ -165,9 +165,6 @@ void hal_board_init()
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);
   stm32_exti_ev_enable(13, 1);
-#if 0
-  stm32_pwr_wkup_en(1, 1);
-#endif
 #endif
 
   debug_uart_init(USART3_BASE, 115200, APB2_CLOCK, 0);
