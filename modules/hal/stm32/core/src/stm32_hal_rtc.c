@@ -24,11 +24,20 @@
 #include <string.h>
 
 #include "common.h"
-#include "shell.h"
-#include "io.h"
+#include "hal_common.h"
+#include "hal_int.h"
 #include "hal_rtc.h"
+#include "io.h"
+#include "shell.h"
+#include "stm32_exti.h"
 
-#if STM32_UXXX || STM32_G0XX
+#if STM32_UXXX || STM32_G0XX || STM32_G4XX || STM32_C0XX
+#define RTC_TYPE_2 1
+#else
+#define RTC_TYPE_1 1
+#endif
+
+#if RTC_TYPE_2
 typedef struct {
   reg32_t tr;
   reg32_t dr;
@@ -45,12 +54,13 @@ typedef struct {
   reg32_t tstr;
   reg32_t tsdr;
   reg32_t tsssr;
+  reg32_t pad1[1];
   reg32_t alrmar;
   reg32_t alrmassr;
   reg32_t alrmbr;
   reg32_t alrmbssr;
   reg32_t sr;
-  reg32_t msr;
+  reg32_t misr;
   reg32_t smsr;
   reg32_t scr;
   reg32_t alrabinr;
@@ -92,16 +102,46 @@ typedef struct {
 
 #define RTC ((stm32_rtc_t *)RTC_BASE)
 
-#define RTC_ISR_INIT BIT(7)
-
 #define RTC_TR_PM BIT(22)
 
 #define RTC_ISR_INIT BIT(7)
 #define RTC_ISR_INITF BIT(6)
+#define RTC_ISR_WUTF BIT(10)
+#define RTC_ISR_WUTWF BIT(2)
 
+static const char *osel_txt[] = {
+  "disabled",
+  "alarm a",
+  "alarm b",
+  "wake"
+};
+
+static const char *get_osel_txt(unsigned int osel)
+{
+  if (osel > ARRSIZ(osel_txt))
+    return "invalid";
+  return osel_txt[osel];
+}
+
+#define RTC_CR_OSEL_DIS 0
+#define RTC_CR_OSEL_ALA 1
+#define RTC_CR_OSEL_ALB 2
+#define RTC_CR_OSEL_WAK 3
+
+#define RTC_CR_POL BIT(20)
 #define RTC_CR_BKP BIT(18)
 #define RTC_CR_SUB1H BIT(17)
 #define RTC_CR_ADD1H BIT(16)
+#define RTC_CR_WUTIE BIT(14)
+#define RTC_CR_ALRBIE BIT(13)
+#define RTC_CR_ALRAIE BIT(12)
+#define RTC_CR_TSE BIT(11)
+#define RTC_CR_WUTE BIT(10)
+#define RTC_CR_ALRBE BIT(9)
+#define RTC_CR_ALRAE BIT(8)
+
+#define RTC_OR_ALARM_TYPE BIT(0)
+#define RTC_OR_OUT_RMP BIT(1)
 
 static inline unsigned int _get_field(
   unsigned int val, unsigned int width, unsigned int pos)
@@ -160,6 +200,39 @@ static void rtc_lock(int init)
 #define DIV_S_INT 250
 #endif
 
+static void rtc_wake_clear()
+{
+  RTC->isr &= ~RTC_ISR_WUTF;
+}
+
+static int rtc_wake_get()
+{
+  return (RTC->isr & RTC_ISR_WUTF) != 0;
+}
+
+#if STM32_L452
+#define RTC_IRQ 1
+#endif
+
+#if RTC_IRQ
+#define RTC_WAKE_IRQ 3
+#define RTC_EXTI_IRQ 20
+
+static void rtc_wake_int(void *data)
+{
+  stm32_exti_irq_ack(RTC_EXTI_IRQ);
+}
+
+static void rtc_wake_int_init()
+{
+  stm32_exti_irq_set_edge_rising(RTC_EXTI_IRQ, 1);
+  stm32_exti_irq_set_edge_falling(RTC_EXTI_IRQ, 0);
+  stm32_exti_irq_enable(RTC_EXTI_IRQ, 1);
+
+  irq_register("rtc", rtc_wake_int, 0, RTC_WAKE_IRQ);
+}
+#endif
+
 void rtc_init(int external)
 {
   rtc_unlock(1);
@@ -170,6 +243,10 @@ void rtc_init(int external)
     set_dividers(DIV_A_INT, DIV_S_INT);
 
   rtc_lock(1);
+
+#if RTC_IRQ
+  rtc_wake_int_init();
+#endif
 }
 
 void rtc_set_time(rtc_time_t *t)
@@ -282,6 +359,88 @@ static int sub_cmd_rtc_set_dst(int argc, char *argv[])
   return 0;
 }
 
+/* Configure the output pin to be controlled by alarm a/b or wakeup.
+   As soon as it is enabled the rtc will start controlling the pin
+   overriding the GPIO settings. On the newer devices (TYPE2) the output
+   control can be enabled and disabled by an enable bit in CR */
+static void _rtc_out_set(unsigned int cfg)
+{
+  reg_set_field(&RTC->cr, 2, 21, cfg);
+}
+
+static unsigned int rtc_out_get()
+{
+  return reg_get_field(&RTC->cr, 2, 21);
+}
+
+static void _rtc_wut_en(int en)
+{
+  if (en) {
+    while (!(RTC->isr & RTC_ISR_WUTWF))
+      ;
+    RTC->cr |= RTC_CR_WUTE;
+  } else {
+    RTC->cr &= ~RTC_CR_WUTE;
+    while (!(RTC->isr & RTC_ISR_WUTWF))
+      ;
+  }
+}
+
+#define WUT_CLK_RTC_16 0
+#define WUT_CLK_RTC_8 1
+#define WUT_CLK_RTC_4 2
+#define WUT_CLK_RTC_2 3
+#define WUT_CLK_SPRE 4
+/* adds 2^16 wake up timer value */
+#define WUT_CLK_SPRE_LONG 5
+
+static void _rtc_wut_clk(unsigned int clk)
+{
+  reg_set_field(&RTC->cr, 3, 0, clk);
+}
+
+static void _rtc_wut_time_set(unsigned int clocks)
+{
+  RTC->wutr = clocks & 0xffff;
+}
+
+static unsigned int rtc_wut_time_get()
+{
+  return RTC->wutr & 0xffff;
+}
+
+void rtc_wakeup_init(int interval)
+{
+  rtc_unlock(0);
+  if (interval < 0)
+    _rtc_out_set(RTC_CR_OSEL_DIS);
+  else {
+    _rtc_wut_en(0);
+#if 1
+    /* RTC_OUT is diabled */
+    _rtc_out_set(RTC_CR_OSEL_DIS);
+#else
+    /* RTC_OUT (PC13) is wake up interrupt */
+    _rtc_out_set(RTC_CR_OSEL_WAK);
+#endif
+    /* use 1Hz clock for wake up timer */
+    _rtc_wut_clk(4);
+    _rtc_wut_time_set(interval);
+    /* normal polarity */
+    RTC->cr &= ~RTC_CR_POL;
+#if 1
+    /* enable wake up timer interrupt */
+    RTC->cr |= RTC_CR_WUTIE;
+#endif
+#if RTC_TYPE_1
+    /* Configure output as push-pull */
+    RTC->or |= RTC_OR_ALARM_TYPE;
+#endif
+    _rtc_wut_en(1);
+  }
+  rtc_lock(0);
+}
+
 int cmd_rtc(int argc, char *argv[])
 {
   char cmd = 't';
@@ -290,12 +449,31 @@ int cmd_rtc(int argc, char *argv[])
     cmd = argv[1][0];
 
   switch (cmd) {
+  case 'i':
+    rtc_init(0);
+    return 0;
   case 's':
     return sub_cmd_rtc_set(argc - 2, argv + 2);
   case 't':
     return sub_cmd_rtc_get(argc - 2, argv + 2);
   case 'd':
     return sub_cmd_rtc_set_dst(argc - 2, argv + 2);
+  case 'w':
+    if (argc < 3)
+      return -1;
+    rtc_wakeup_init(atoi(argv[2]));
+    break;
+  case 'c':
+    rtc_wake_clear();
+    break;
+  case 'g':
+  {
+    unsigned int osel = rtc_out_get();
+    xprintf("rtc_out: %s(%d)\n", get_osel_txt(osel), osel);
+    xprintf("wake: %d\n", rtc_wake_get());
+    xprintf("wake time: %d\n", rtc_wut_time_get());
+  }
+  break;
   }
 
   return 0;
