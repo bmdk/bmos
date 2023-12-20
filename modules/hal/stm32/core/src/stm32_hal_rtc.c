@@ -31,7 +31,7 @@
 #include "shell.h"
 #include "stm32_exti.h"
 
-#if STM32_UXXX || STM32_G0XX || STM32_G4XX || STM32_C0XX
+#if STM32_UXXX || STM32_G0XX || STM32_G4XX || STM32_C0XX || STM32_H5XX
 #define RTC_TYPE_2 1
 #else
 #define RTC_TYPE_1 1
@@ -94,6 +94,8 @@ typedef struct {
 
 #if STM32_H7XX
 #define RTC_BASE 0x58004000
+#elif STM32_H5XX
+#define RTC_BASE 0x44007800
 #elif STM32_UXXX
 #define RTC_BASE 0x46007800
 #else
@@ -108,6 +110,8 @@ typedef struct {
 #define RTC_ISR_INITF BIT(6)
 #define RTC_ISR_WUTF BIT(10)
 #define RTC_ISR_WUTWF BIT(2)
+
+#define RTC_SR_WUTF BIT(2)
 
 static const char *osel_txt[] = {
   "disabled",
@@ -202,22 +206,35 @@ static void rtc_lock(int init)
 
 static void rtc_wake_clear()
 {
+#if RTC_TYPE_2
+  RTC->scr |= RTC_SR_WUTF;
+#else
   RTC->isr &= ~RTC_ISR_WUTF;
+#endif
 }
 
 static int rtc_wake_get()
 {
+#if RTC_TYPE_2
+  return (RTC->sr & RTC_SR_WUTF) != 0;
+#else
   return (RTC->isr & RTC_ISR_WUTF) != 0;
+#endif
 }
 
 #if STM32_L452
 #define RTC_IRQ 1
+#define RTC_WAKE_IRQ 3
+#define RTC_EXTI_IRQ 20
+#endif
+
+#if STM32_H5XX
+#define RTC_IRQ 1
+#define RTC_WAKE_IRQ 3
+#define RTC_EXTI_IRQ 17
 #endif
 
 #if RTC_IRQ
-#define RTC_WAKE_IRQ 3
-#define RTC_EXTI_IRQ 20
-
 static void rtc_wake_int(void *data)
 {
   stm32_exti_irq_ack(RTC_EXTI_IRQ);

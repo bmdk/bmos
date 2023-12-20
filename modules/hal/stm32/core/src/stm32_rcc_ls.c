@@ -36,10 +36,12 @@
 #define RCC_BDCR_LSESYSEN BIT(7)
 #define RCC_BDCR_LSESYSRDY BIT(11)
 
-#define RCC_BDCR_LSION BIT(26)
-#define RCC_BDCR_LSIRDY BIT(27)
 #define RCC_BDCR_LSIPREDIV BIT(28)
 #endif
+
+/* On U5 and H5 */
+#define RCC_BDCR_LSION BIT(26)
+#define RCC_BDCR_LSIRDY BIT(27)
 
 #define RCC_BDCR_RTCEN BIT(15)
 #define RCC_BDCR_BDRST BIT(16)
@@ -97,7 +99,7 @@ static int rcc_clock_init_ls_ext(rcc_ls_t *rcc_ls)
 
 static void rcc_clock_init_ls_int(rcc_ls_t *rcc_ls)
 {
-#if STM32_U5XX
+#if STM32_U5XX || STM32_H5XX
   rcc_ls->bdcr |= RCC_BDCR_LSION;
 
   while ((rcc_ls->bdcr & RCC_BDCR_LSIRDY) == 0)

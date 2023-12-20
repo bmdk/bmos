@@ -61,6 +61,8 @@ static void pin_init()
 
   enable_apb3(1);  /* SBS */
 
+  enable_apb3(21);  /* RTC APB CLK */
+
 #if 0
   enable_apb1(11); /* WWDG2 */
 
