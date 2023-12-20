@@ -251,6 +251,7 @@ static int rtc_wake_get()
 
 #if STM32_H5XX
 #define RTC_IRQ 1
+#define RTC_WAKE_IRQ 3
 #define RTC_EXTI_IRQ 17
 #endif
 
