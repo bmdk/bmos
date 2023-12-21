@@ -230,23 +230,26 @@ static int rtc_wake_get()
 
 #if STM32_H5XX
 #define RTC_IRQ 1
-#define RTC_WAKE_IRQ 3
 #define RTC_EXTI_IRQ 17
 #endif
 
 #if RTC_IRQ
+#if RTC_WAKE_IRQ
 static void rtc_wake_int(void *data)
 {
   stm32_exti_irq_ack(RTC_EXTI_IRQ);
 }
+#endif
 
 static void rtc_wake_int_init()
 {
+#if RTC_WAKE_IRQ
   stm32_exti_irq_set_edge_rising(RTC_EXTI_IRQ, 1);
   stm32_exti_irq_set_edge_falling(RTC_EXTI_IRQ, 0);
   stm32_exti_irq_enable(RTC_EXTI_IRQ, 1);
-
   irq_register("rtc", rtc_wake_int, 0, RTC_WAKE_IRQ);
+#endif
+  stm32_exti_ev_enable(RTC_EXTI_IRQ, 1);
 }
 #endif
 

@@ -23,15 +23,16 @@
 #include "cortexm.h"
 #include "debug_ser.h"
 #include "hal_board.h"
+#include "hal_board.h"
 #include "hal_common.h"
 #include "hal_gpio.h"
+#include "hal_rtc.h"
 #include "hal_uart.h"
 #include "io.h"
 #include "shell.h"
 #include "stm32_exti.h"
-#include "stm32_hal.h"
-#include "hal_board.h"
 #include "stm32_h5xx.h"
+#include "stm32_hal.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
@@ -162,6 +163,8 @@ void hal_board_init()
 #if APPL
   backup_domain_protect(0);
   clock_init_ls(0);
+
+  rtc_init(1);
 
   stm32_syscfg_eth_phy(SYSCFG_ETH_PHY_RMII);
 
