@@ -19,6 +19,8 @@
  * IN THE SOFTWARE.
  */
 
+/* EXTI suport for C0, G0, H5, U5 */
+
 #include "common.h"
 #include "hal_common.h"
 #include "stm32_exti.h"
@@ -36,13 +38,15 @@ typedef struct {
     reg32_t seccfgr;
     reg32_t privcfgr;
     reg32_t pad0;
-  } r[1];
-  unsigned int pad0[16];
-  reg32_t exticr[4];
+  } r[2];
+  unsigned int pad0[8];
+  reg32_t cr[4];
   reg32_t lockr;
   unsigned int pad1[3];
-  reg32_t imr1;
-  reg32_t emr1;
+  struct {
+    reg32_t imr;
+    reg32_t emr;
+  } cpu[2];
 } stm32_exti_uxxx_t;
 
 #if STM32_G0XX || STM32_C0XX
@@ -51,6 +55,8 @@ typedef struct {
 #define EXTI_BASE 0x44022000
 #elif STM32_UXXX
 #define EXTI_BASE 0x46022000
+#else
+#error No EXTI_BASE for this device.
 #endif
 #define EXTI ((volatile stm32_exti_uxxx_t*)EXTI_BASE)
 
@@ -60,7 +66,7 @@ void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
 
   n %= 32;
 
-  if (reg > 0)
+  if (reg > 1)
     return;
 
   bit_en(&EXTI->r[reg].rtsr, n, en);
@@ -72,7 +78,7 @@ void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
 
   n %= 32;
 
-  if (reg > 0)
+  if (reg > 1)
     return;
 
   bit_en(&EXTI->r[reg].ftsr, n, en);
@@ -80,7 +86,14 @@ void stm32_exti_irq_set_edge_falling(unsigned int n, int en)
 
 void stm32_exti_irq_enable(unsigned int n, int en)
 {
-  bit_en(&EXTI->imr1, n, en);
+  unsigned int reg = n / 32;
+
+  n %= 32;
+
+  if (reg > 1)
+    return;
+
+  bit_en(&EXTI->cpu[reg].imr, n, en);
 }
 
 void stm32_exti_irq_ack(unsigned int n)
@@ -89,7 +102,7 @@ void stm32_exti_irq_ack(unsigned int n)
 
   n %= 32;
 
-  if (reg > 0)
+  if (reg > 1)
     return;
 
   /* clear both falling and rising */
@@ -99,7 +112,14 @@ void stm32_exti_irq_ack(unsigned int n)
 
 void stm32_exti_ev_enable(unsigned int n, int en)
 {
-  bit_en(&EXTI->emr1, n, en);
+  unsigned int reg = n / 32;
+
+  n %= 32;
+
+  if (reg > 1)
+    return;
+
+  bit_en(&EXTI->cpu[reg].emr, n, en);
 }
 
 void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
@@ -112,7 +132,7 @@ void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
   reg = n / 4;
   ofs = n % 4;
 
-  reg_set_field(&EXTI->exticr[reg], 4, ofs << 3, v);
+  reg_set_field(&EXTI->cr[reg], 4, ofs << 3, v);
 }
 
 #if 0
