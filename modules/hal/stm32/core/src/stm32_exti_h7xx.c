@@ -24,26 +24,26 @@
 
 typedef struct {
   struct {
-    unsigned int rtsr;
-    unsigned int ftsr;
-    unsigned int swier;
-    unsigned int d3pmr;
-    unsigned int d3pcrl;
-    unsigned int d3pcrh;
-    unsigned int pad0[2];
+    reg32_t rtsr;
+    reg32_t ftsr;
+    reg32_t swier;
+    reg32_t d3pmr;
+    reg32_t d3pcrl;
+    reg32_t d3pcrh;
+    reg32_t pad0[2];
   } r[3];
-  unsigned int pad0[8];
+  reg32_t pad0[8];
   struct {
-    unsigned int imr;
-    unsigned int emr;
-    unsigned int pr;
-    unsigned int pad0;
+    reg32_t imr;
+    reg32_t emr;
+    reg32_t pr;
+    reg32_t pad0;
   } cpu[3];
 } stm32_exti_h7xx_t;
 
 #define EXTI_BASE 0x58000000
 
-#define EXTI ((volatile stm32_exti_h7xx_t*)EXTI_BASE)
+#define EXTI ((stm32_exti_h7xx_t*)EXTI_BASE)
 
 void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
 {
