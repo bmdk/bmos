@@ -46,6 +46,7 @@ typedef struct {
   struct {
     reg32_t imr;
     reg32_t emr;
+    unsigned int pad0[2];
   } cpu[2];
 } stm32_exti_uxxx_t;
 
