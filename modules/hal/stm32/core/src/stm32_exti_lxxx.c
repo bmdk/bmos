@@ -23,6 +23,26 @@
 #include "hal_common.h"
 #include "stm32_pwr.h"
 
+typedef struct {
+  struct {
+    reg32_t imr;
+    reg32_t emr;
+    reg32_t rtsr;
+    reg32_t ftsr;
+    reg32_t swier;
+    reg32_t pr;
+    reg32_t pad0[2];
+  } r[2];
+} stm32_exti_t;
+
+#if STM32_WBXX
+#define EXTI_BASE 0x58000800
+#else
+#define EXTI_BASE 0x40010400
+#endif
+
+#define EXTI ((stm32_exti_t *)EXTI_BASE)
+
 void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
 {
   unsigned int reg = n / 32;

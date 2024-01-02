@@ -19,8 +19,8 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef STM32_EXTI_H7XX_H
-#define STM32_EXTI_H7XX_H
+#ifndef STM32_EXTI_H
+#define STM32_EXTI_H
 
 void stm32_exti_irq_set_edge_rising(unsigned int n, int en);
 void stm32_exti_irq_set_edge_falling(unsigned int n, int en);

@@ -26,18 +26,6 @@
 #include "hal_common.h"
 
 typedef struct {
-  struct {
-    reg32_t imr;
-    reg32_t emr;
-    reg32_t rtsr;
-    reg32_t ftsr;
-    reg32_t swier;
-    reg32_t pr;
-    reg32_t pad0[2];
-  } r[2];
-} stm32_exti_t;
-
-typedef struct {
   reg32_t memrmp;
   reg32_t cfgr1;
   reg32_t exticr[4];
@@ -60,10 +48,8 @@ typedef struct {
 
 #if STM32_WBXX
 #define PWR ((stm32_pwr_t *)(0x58000400))
-#define EXTI ((stm32_exti_t *)(0x58000800))
 #else
 #define PWR ((stm32_pwr_t *)(0x40007000))
-#define EXTI ((stm32_exti_t *)(0x40010400))
 #endif
 #define SYSCFG ((stm32_syscfg_t *)(0x40010000))
 
