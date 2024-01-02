@@ -26,4 +26,26 @@ void backup_domain_protect(int on);
 void stm32_pwr_vos(unsigned int vos);
 int stm32_pwr_vos_rdy(void);
 
+#if STM32_C0XX
+#include "stm32_pwr_c0xx.h"
+#elif STM32_F0XX
+#include "stm32_pwr_f0xx.h"
+#elif STM32_F4XX
+#include "stm32_pwr_f4xx.h"
+#elif STM32_F7XX
+#include "stm32_pwr_f7xx.h"
+#elif STM32_H5XX
+#include "stm32_pwr_h5xx.h"
+#elif STM32_H7XX
+#include "stm32_pwr_h7xx.h"
+#elif STM32_L4XX || STM32_L4R || STM32_G4XX || STM32_WBXX
+#include "stm32_pwr_lxxx.h"
+#elif STM32_UXXX
+#include "stm32_pwr_uxxx.h"
+#elif STM32_F1XX || STM32_F3XX || AT32_F4XX || STM32_L0XX || STM32_G0XX
+/* no inline header for these targets */
+#else
+#error Add pwr header for target
+#endif
+
 #endif

@@ -28,7 +28,7 @@
 #include "hal_board.h"
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_uart.h"
-#include "stm32_pwr_lxxx.h"
+#include "stm32_pwr.h"
 #include "stm32_rcc_b.h"
 
 void pin_init()

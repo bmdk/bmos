@@ -21,7 +21,7 @@
 
 #include "common.h"
 #include "hal_common.h"
-#include "stm32_pwr_lxxx.h"
+#include "stm32_pwr.h"
 
 void stm32_exti_irq_set_edge_rising(unsigned int n, int en)
 {

@@ -26,7 +26,6 @@
 #include "io.h"
 #include "shell.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_lxxx.h"
 
 int cmd_sleep(int argc, char *argv[])
 {
