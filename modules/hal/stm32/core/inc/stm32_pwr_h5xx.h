@@ -70,4 +70,11 @@ static inline void stm32_pwr_lpms(unsigned int val)
 
   (void)PWR->pmcr;
 }
+
+/* VOS values from high to low power/supported frequency */
+#define PWR_VOS0 3
+#define PWR_VOS1 2
+#define PWR_VOS2 1
+#define PWR_VOS3 0
+
 #endif

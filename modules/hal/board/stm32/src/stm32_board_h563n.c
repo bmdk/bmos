@@ -154,7 +154,7 @@ void hal_board_init()
   led_init(leds, ARRSIZ(leds));
 
   /* should be done in pll control */
-  stm32_pwr_vos(3); /* VOS 0 */
+  stm32_pwr_vos(PWR_VOS0);
 
   clock_init(&clock_params);
 
