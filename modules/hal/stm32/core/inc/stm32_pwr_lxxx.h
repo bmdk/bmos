@@ -37,10 +37,12 @@ typedef struct {
 } stm32_pwr_t;
 
 #if STM32_WBXX
-#define PWR ((stm32_pwr_t *)(0x58000400))
+#define PWR_BASE 0x58000400
 #else
-#define PWR ((stm32_pwr_t *)(0x40007000))
+#define PWR_BASE 0x40007000
 #endif
+
+#define PWR ((stm32_pwr_t *)PWR_BASE)
 
 #define PWR_CR1_DBP BIT(8)
 
