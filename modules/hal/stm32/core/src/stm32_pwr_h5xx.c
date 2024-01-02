@@ -26,36 +26,6 @@
 #include "stm32_pwr.h"
 #include "stm32_pwr_h5xx.h"
 
-typedef struct {
-  reg32_t pmcr;
-  reg32_t pmsr;
-  reg32_t pad0[2];
-  reg32_t voscr;
-  reg32_t vossr;
-  reg32_t pad1[2];
-  reg32_t bdcr;
-  reg32_t dbpcr;
-  reg32_t bdsr;
-  reg32_t ucpdr;
-  reg32_t sccr;
-  reg32_t vmcr;
-  reg32_t usbscr;
-  reg32_t vmsr;
-  reg32_t wuscr;
-  reg32_t wusr;
-  reg32_t wucr;
-  reg32_t pad2;
-  reg32_t ioretr;
-  reg32_t pad3;
-  reg32_t seccfgr;
-  reg32_t privcfgr;
-} stm32_pwr_h5xx_t;
-
-#define PWR_BASE 0x44020800
-#define PWR ((stm32_pwr_h5xx_t *)PWR_BASE)
-
-#define PWR_DBPCR_DBP BIT(0)
-
 void backup_domain_protect(int on)
 {
   if (on)
@@ -63,8 +33,6 @@ void backup_domain_protect(int on)
   else
     PWR->dbpcr |= PWR_DBPCR_DBP;
 }
-
-#define PWR_VOSR_VOSRDY BIT(3)
 
 int stm32_pwr_vos_rdy()
 {

@@ -522,7 +522,7 @@ FILES.h5xx += stm32_exti_uxxx.o
 FILES.h5xx += stm32_hal_rtc.o
 FILES.h5xx += stm32_wdog.o
 FILES.h5xx += stm32_eth_h7xx.o
-#FILES.h5xx += stm32_hal_sleep.o
+FILES.h5xx += stm32_hal_sleep.o
 
 FILES.h563n += $(FILES.h5xx)
 

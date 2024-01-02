@@ -27,10 +27,21 @@
 #include "shell.h"
 #include "stm32_pwr.h"
 
+#if STM32_L4XX
+#define WKUP_INIT 1
+#define LPMS_MODE PWR_LPMS_SHUTDOWN
+#elif STM32_H5XX
+#define LPMS_MODE PWR_LPMS_STANDBY
+#else
+#error Define sleep parameters for cpu
+#endif
+
 int cmd_sleep(int argc, char *argv[])
 {
+#if WKUP_INIT
   stm32_pwr_wkup_init(PWR_CR3_EIWUL);
-  stm32_pwr_lpms(PWR_LPMS_SHUTDOWN);
+#endif
+  stm32_pwr_lpms(LPMS_MODE);
   set_low_power(1);
 
   for (;;) {
