@@ -26,16 +26,6 @@
 #include "hal_common.h"
 
 typedef struct {
-  reg32_t memrmp;
-  reg32_t cfgr1;
-  reg32_t exticr[4];
-  reg32_t scsr;
-  reg32_t cfgr2;
-  reg32_t swpr;
-  reg32_t skr;
-} stm32_syscfg_t;
-
-typedef struct {
   reg32_t cr[4];
   reg32_t sr[2];
   reg32_t scr;
@@ -51,7 +41,6 @@ typedef struct {
 #else
 #define PWR ((stm32_pwr_t *)(0x40007000))
 #endif
-#define SYSCFG ((stm32_syscfg_t *)(0x40010000))
 
 #define PWR_CR1_DBP BIT(8)
 
