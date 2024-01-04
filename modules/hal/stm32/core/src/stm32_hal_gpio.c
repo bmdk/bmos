@@ -104,7 +104,7 @@ void gpio_set(gpio_handle_t gpio, int val)
   unsigned int bank = GPIO_BANK(gpio);
   unsigned int pin = GPIO_PIN(gpio);
 
-  stm32_gpio_set(STM32_GPIO(bank), pin, val);
+  stm32_gpio_set(STM32_GPIO_BANK_BASE(bank), pin, val);
 }
 
 int gpio_get(gpio_handle_t gpio)
@@ -112,7 +112,7 @@ int gpio_get(gpio_handle_t gpio)
   unsigned int bank = GPIO_BANK(gpio);
   unsigned int pin = GPIO_PIN(gpio);
 
-  return stm32_gpio_get(STM32_GPIO(bank), pin);
+  return stm32_gpio_get(STM32_GPIO_BANK_BASE(bank), pin);
 }
 
 void gpio_init(gpio_handle_t gpio, unsigned int type)
@@ -121,11 +121,11 @@ void gpio_init(gpio_handle_t gpio, unsigned int type)
   unsigned int pin = GPIO_PIN(gpio);
 
 #if STM32_F1XX || AT32_F4XX
-  stm32_gpio_attr(STM32_GPIO(bank), pin, (type == GPIO_INPUT) ?
+  stm32_gpio_attr(STM32_GPIO_BANK_BASE(bank), pin, (type == GPIO_INPUT) ?
                   GPIO_ATTR_STM32F1(CNF_INP_FLO, MODE_INPUT) :
                   GPIO_ATTR_STM32F1(CNF_OUT_PP, MODE_OUTPUT_HIG));
 #else
-  stm32_gpio_mode(STM32_GPIO(bank), pin, type);
+  stm32_gpio_mode(STM32_GPIO_BANK_BASE(bank), pin, type);
 #endif
 }
 
@@ -133,7 +133,7 @@ void gpio_init_attr(gpio_handle_t gpio, unsigned int attr)
 {
   unsigned int bank = GPIO_BANK(gpio);
   unsigned int pin = GPIO_PIN(gpio);
-  stm32_gpio_t *gpio_reg = STM32_GPIO(bank);
+  stm32_gpio_t *gpio_reg = STM32_GPIO_BANK_BASE(bank);
 
 #if STM32_F1XX || AT32_F4XX
   stm32_gpio_attr(gpio_reg, pin, attr);

@@ -111,7 +111,8 @@ typedef struct {
 #error define GPIO_BASE for this board
 #endif
 
-#define STM32_GPIO(port) ((stm32_gpio_t *)(GPIO_BASE + (0x400 * (port))))
+#define STM32_GPIO_BANK_BASE(port) ((stm32_gpio_t *)(GPIO_BASE + \
+                                                     (0x400 * (port))))
 
 #if !STM32_F1XX && !AT32_F4XX
 static inline void stm32_gpio_mode(stm32_gpio_t *gpio, unsigned int pin,
@@ -124,7 +125,7 @@ static inline void stm32_gpio_set_alt(gpio_handle_t gpio, unsigned int alt)
 {
   unsigned int bank = GPIO_BANK(gpio);
   unsigned int pin = GPIO_PIN(gpio);
-  stm32_gpio_t *gpio_reg = STM32_GPIO(bank);
+  stm32_gpio_t *gpio_reg = STM32_GPIO_BANK_BASE(bank);
   reg32_t *reg = &gpio_reg->afr[0];
 
   stm32_gpio_mode(gpio_reg, pin, GPIO_ALT);

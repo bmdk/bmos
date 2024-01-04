@@ -51,9 +51,11 @@
 #define WCPCCLOCKS(period_ns) \
   (WSCLOCKS * (period_ns) + WSPERIOD_NS / 2) / WSPERIOD_NS
 
-#define STM32_GPIO_ADDR_SET(port) (unsigned char *)(&STM32_GPIO(port)->bsrr)
+#define STM32_GPIO_ADDR_SET(port) \
+  (unsigned char *)(&STM32_GPIO_BANK_BASE(port)->bsrr)
 #if STM32_F1XX
-#define STM32_GPIO_ADDR_CLEAR(port) (unsigned char *)(&STM32_GPIO(port)->brr)
+#define STM32_GPIO_ADDR_CLEAR(port) \
+  (unsigned char *)(&STM32_GPIO_BANK_BASE(port)->brr)
 #else
 #define STM32_GPIO_ADDR_CLEAR(port) (STM32_GPIO_ADDR_SET(port) + 2)
 #endif
