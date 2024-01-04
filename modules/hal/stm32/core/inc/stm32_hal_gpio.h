@@ -68,6 +68,18 @@
 #define GPIO_ATTR_STM32_SPEED(attr) (((attr) >> 2) & 0x3)
 #define GPIO_ATTR_STM32_TYPE(attr) ((attr) & 0x3)
 
+#define STM32_GPIO_BANK_A 0
+#define STM32_GPIO_BANK_B 1
+#define STM32_GPIO_BANK_C 2
+#define STM32_GPIO_BANK_D 3
+#define STM32_GPIO_BANK_E 4
+#define STM32_GPIO_BANK_F 5
+#define STM32_GPIO_BANK_G 6
+#define STM32_GPIO_BANK_H 7
+#define STM32_GPIO_BANK_I 8
+
+#define STM32_GPIO(bankname, num) GPIO(STM32_GPIO_BANK_ ## bankname, num)
+
 #if STM32_F1XX || AT32_F4XX
 typedef struct {
   reg32_t cr[2];
