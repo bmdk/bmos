@@ -31,8 +31,8 @@ typedef struct {
   reg32_t scr;
   reg32_t cr5;
   struct {
-    reg32_t d;
     reg32_t u;
+    reg32_t d;
   } p[8];
 } stm32_pwr_t;
 
@@ -64,8 +64,12 @@ static inline void stm32_pwr_lpms(unsigned int val)
   (void)PWR->cr[0];
 }
 
+/* internal wakeup - rtc */
 #define PWR_CR3_EIWUL BIT(15)
+/* enable pull in sleep modes */
+#define PWR_CR3_APC BIT(10)
 #define PWR_CR3_EIWUP(n) BIT(n)
+/* external wakeup pins */
 #define PWR_CR3_EIWUP1 PWR_CR3_EIWUP(0)
 #define PWR_CR3_EIWUP2 PWR_CR3_EIWUP(1)
 #define PWR_CR3_EIWUP3 PWR_CR3_EIWUP(2)
@@ -73,11 +77,27 @@ static inline void stm32_pwr_lpms(unsigned int val)
 #define PWR_CR3_EIWUP5 PWR_CR3_EIWUP(4)
 static inline void stm32_pwr_wkup_init(unsigned int mask)
 {
-  /* disable all wakeup sources */
-  PWR->cr[2] = 0;
-  /* enable internal wakeup */
-  PWR->cr[2] |= mask;
+  /* enable required wakeup sources */
+  PWR->cr[2] = mask;
   /* clear wakeup flags */
   PWR->scr = 0xffffffff;
+}
+
+static inline void stm32_pwr_sleep_pullup(unsigned int port, unsigned int pin,
+                                          int en)
+{
+  if (en)
+    PWR->p[port].u |= BIT(pin);
+  else
+    PWR->p[port].u &= ~BIT(pin);
+}
+
+static inline void stm32_pwr_sleep_pulldn(unsigned int port, unsigned int pin,
+                                          int en)
+{
+  if (en)
+    PWR->p[port].d |= BIT(pin);
+  else
+    PWR->p[port].d &= ~BIT(pin);
 }
 #endif

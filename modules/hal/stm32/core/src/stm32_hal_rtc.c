@@ -66,6 +66,12 @@ typedef struct {
   reg32_t alrabinr;
   reg32_t alrbbinr;
 } stm32_rtc_t;
+
+void *rtc_get_bkup(unsigned int *len)
+{
+  *len = 0;
+  return NULL;
+}
 #else
 typedef struct {
   reg32_t tr;
@@ -112,6 +118,14 @@ typedef struct {
 #define RTC_ISR_WUTWF BIT(2)
 
 #define RTC_SR_WUTF BIT(2)
+
+#if RTC_TYPE_1
+void *rtc_get_bkup(unsigned int *len)
+{
+  *len = sizeof(RTC->bkp);
+  return (void *)&RTC->bkp;
+}
+#endif
 
 static const char *osel_txt[] = {
   "disabled",
@@ -441,20 +455,20 @@ static unsigned int rtc_wut_time_get()
   return RTC->wutr & 0xffff;
 }
 
-void rtc_wakeup_init(int interval)
+void rtc_wakeup_init(int interval, int outen)
 {
   rtc_unlock(0);
   if (interval < 0)
     _rtc_out_set(RTC_CR_OSEL_DIS);
   else {
     _rtc_wut_en(0);
-#if 1
-    /* RTC_OUT is diabled */
-    _rtc_out_set(RTC_CR_OSEL_DIS);
-#else
+
     /* RTC_OUT (PC13) is wake up interrupt */
-    _rtc_out_set(RTC_CR_OSEL_WAK);
-#endif
+    if (outen)
+      _rtc_out_set(RTC_CR_OSEL_WAK);
+    else
+      _rtc_out_set(RTC_CR_OSEL_DIS);
+
     /* use 1Hz clock for wake up timer */
     _rtc_wut_clk(4);
     _rtc_wut_time_set(interval);
@@ -476,6 +490,7 @@ void rtc_wakeup_init(int interval)
 int cmd_rtc(int argc, char *argv[])
 {
   char cmd = 't';
+  int outen = 0;
 
   if (argc > 1)
     cmd = argv[1][0];
@@ -493,7 +508,9 @@ int cmd_rtc(int argc, char *argv[])
   case 'w':
     if (argc < 3)
       return -1;
-    rtc_wakeup_init(atoi(argv[2]));
+    if (argc > 3)
+      outen = atoi(argv[3]);
+    rtc_wakeup_init(atoi(argv[2]), outen);
     break;
   case 'c':
     rtc_wake_clear();

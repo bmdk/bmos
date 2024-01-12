@@ -21,6 +21,7 @@
 
 #include <stdlib.h>
 
+#include "common.h"
 #include "cortexm.h"
 #include "hal_int_cpu.h"
 #include "io.h"

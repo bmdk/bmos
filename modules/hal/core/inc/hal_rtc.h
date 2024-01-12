@@ -38,4 +38,11 @@ int rtc_set_time(rtc_time_t *t);
 
 void rtc_init(int external);
 
+void rtc_wakeup_init(int interval, int outen);
+
+/* return the base address and length of the backup registers or
+   NULL if this device has none
+ */
+void *rtc_get_bkup(unsigned int *len);
+
 #endif
