@@ -82,6 +82,10 @@ typedef struct {
 #define CAN_MCR_SLEEP BIT(1)
 #define CAN_MCR_TXFP BIT(2)
 #define CAN_MCR_RFLM BIT(3)
+#define CAN_MCR_NART BIT(4)
+#define CAN_MCR_AWUM BIT(5)
+#define CAN_MCR_ABOM BIT(6)
+#define CAN_MCR_TTCM BIT(7)
 #define CAN_MCR_DBF BIT(16)
 
 #define CAN_IER_TMEIE BIT(0)
@@ -171,7 +175,7 @@ static void can_init(candev_t *c, const unsigned int *id,
 
   can->fmr = 0;
 
-  can->mcr |= CAN_MCR_RFLM | CAN_MCR_TXFP;
+  can->mcr |= CAN_MCR_RFLM | CAN_MCR_TXFP | CAN_MCR_ABOM;
   can->mcr &= ~CAN_MCR_INRQ;
 
   can->ier = (CAN_IER_FMPIE0 | CAN_IER_FFIE0 | CAN_IER_FOVIE0 | CAN_IER_TMEIE);
