@@ -40,7 +40,7 @@ typedef struct {
   unsigned char irq;
   unsigned char tx_irq;
   unsigned char inst;
-  unsigned char pad0;
+  unsigned char err_irq;
   can_params_t params;
   const char *pool_name;
   const char *tx_queue_name;

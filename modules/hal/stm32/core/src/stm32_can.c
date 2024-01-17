@@ -88,10 +88,15 @@ typedef struct {
 #define CAN_MCR_TTCM BIT(7)
 #define CAN_MCR_DBF BIT(16)
 
+#define CAN_MSR_INAK BIT(0)
+#define CAN_MSR_SLAK BIT(1)
+#define CAN_MSR_ERRI BIT(2)
+
 #define CAN_IER_TMEIE BIT(0)
 #define CAN_IER_FMPIE0 BIT(1)
 #define CAN_IER_FFIE0 BIT(2)
 #define CAN_IER_FOVIE0 BIT(3)
+#define CAN_IER_ERRIE BIT(15)
 
 #define CAN_TSR_TME0 BIT(26)
 #define CAN_TSR_RQCP0 BIT(0)
@@ -179,6 +184,9 @@ static void can_init(candev_t *c, const unsigned int *id,
   can->mcr &= ~CAN_MCR_INRQ;
 
   can->ier = (CAN_IER_FMPIE0 | CAN_IER_FFIE0 | CAN_IER_FOVIE0 | CAN_IER_TMEIE);
+
+  if (c->err_irq > 0)
+    can->ier |= CAN_IER_ERRIE;
 #if 0
   can->tsr = 0xffffffff;
 #endif
@@ -246,8 +254,6 @@ void can_isr(void *arg)
 
     can->rfr[0] = CAN_RFR_RFOM;
   }
-
-  return;
 }
 
 void can_tx_isr(void *arg)
@@ -255,10 +261,19 @@ void can_tx_isr(void *arg)
   candev_t *c = arg;
 
   _tx(c);
-
-  return;
 }
 
+void can_err_isr(void *arg)
+{
+  candev_t *c = arg;
+  stm32_can_t *can = c->base;
+  unsigned int esr = can->esr;
+
+  FAST_LOG('c', "can error %x", esr, 0);
+
+  /* ack error interrupt */
+  can->msr = CAN_MSR_ERRI;
+}
 
 static void _put(void *p)
 {
@@ -299,6 +314,9 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
   c->op = (unsigned short)op;
 
   can_init(c, id, id_len);
+
+  if (c->err_irq > 0)
+    irq_register(c->name, can_err_isr, c, c->err_irq);
 
   irq_register(c->name, can_tx_isr, c, c->tx_irq);
   irq_register(c->name, can_isr, c, c->irq);
