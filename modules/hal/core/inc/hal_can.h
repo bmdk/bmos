@@ -44,6 +44,7 @@ typedef struct {
   can_params_t params;
   const char *pool_name;
   const char *tx_queue_name;
+  unsigned char rx_queue_len;
   struct {
     unsigned int overrun;
     unsigned int hw_overrun;

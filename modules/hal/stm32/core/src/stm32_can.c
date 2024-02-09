@@ -278,10 +278,14 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
                        unsigned int op)
 {
   const char *pool_name = "cpool", *tx_queue_name = "ctx";
+  unsigned int rx_queue_len = 4;
 
   if (c->pool_name)
     pool_name = c->pool_name;
-  c->pool = op_msg_pool_create(pool_name, QUEUE_TYPE_DRIVER, 4, sizeof(can_t));
+  if (c->rx_queue_len > 0)
+    rx_queue_len = c->rx_queue_len;
+  c->pool = op_msg_pool_create(pool_name, QUEUE_TYPE_DRIVER,
+                               rx_queue_len, sizeof(can_t));
   XASSERT(c->pool);
 
   if (c->tx_queue_name)
