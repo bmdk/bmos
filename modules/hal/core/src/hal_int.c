@@ -35,7 +35,7 @@ int cmd_irqe(int argc, char *argv[])
   if (argc > 1)
     n = atoi(argv[1]);
 
-  irq_enable(n, 1);
+  irq_enable(n);
 
   return 0;
 }
@@ -71,6 +71,14 @@ typedef struct irq_handler_data {
 #endif
 static irq_handler_data_t interrupts[N_INTS];
 
+void irq_disable_all()
+{
+  unsigned int i;
+
+  for (i = 0; i < N_INTS; i++)
+    irq_disable(i);
+}
+
 void irq_stats_reset(unsigned int num)
 {
   irq_handler_data_t *c;
@@ -96,7 +104,7 @@ void irq_register(const char *name, irq_handler_t *handler, void *data,
 
   /* clear any pending interrupts */
   irq_ack(num);
-  irq_enable(num, 1);
+  irq_enable(num);
 }
 
 void irq_call(unsigned int num)
