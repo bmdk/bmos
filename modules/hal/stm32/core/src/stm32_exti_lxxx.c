@@ -91,6 +91,18 @@ void stm32_exti_irq_ack(unsigned int n)
   EXTI->r[reg].pr = BIT(n);
 }
 
+unsigned int stm32_exti_irq_status(unsigned int n)
+{
+  unsigned int reg = n / 32;
+
+  n %= 32;
+
+  if (reg > 1)
+    return 0;
+
+  return (EXTI->r[reg].pr >> n) & 1;
+}
+
 void stm32_exti_ev_enable(unsigned int n, int en)
 {
   unsigned int reg = n / 32;
