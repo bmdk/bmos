@@ -244,17 +244,24 @@ void interrupt_handler()
   INTERRUPT_ON();
 }
 
-void irq_enable(unsigned int n, int en)
+void irq_enable(unsigned int n)
 {
   unsigned int bit, reg;
 
   reg = n / 32;
   bit = n % 32;
 
-  if (en)
-    NVIC->iser[reg] |= BIT(bit);
-  else
-    NVIC->iser[reg] &= ~BIT(bit);
+  NVIC->iser[reg] |= BIT(bit);
+}
+
+void irq_disable(unsigned int n)
+{
+  unsigned int bit, reg;
+
+  reg = n / 32;
+  bit = n % 32;
+
+  NVIC->icer[reg] |= BIT(bit);
 }
 
 void irq_set_pending(unsigned int n)
