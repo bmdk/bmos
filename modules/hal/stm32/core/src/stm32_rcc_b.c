@@ -279,3 +279,33 @@ void disable_apb2(unsigned int dev)
 {
   RCC->apb2enr &= ~BIT(dev);
 }
+
+void reset_ahb1(unsigned int dev)
+{
+  RCC->ahb1rstr |= BIT(dev);
+  RCC->ahb1rstr &= ~BIT(dev);
+}
+
+void reset_ahb2(unsigned int dev)
+{
+  RCC->ahb2rstr |= BIT(dev);
+  RCC->ahb2rstr &= ~BIT(dev);
+}
+
+void reset_apb1(unsigned int dev)
+{
+  if (dev >= 32) {
+    RCC->apb1rstr2 |= BIT(dev - 32);
+    RCC->apb1rstr2 &= ~BIT(dev - 32);
+  }
+  else {
+    RCC->apb1rstr1 |= BIT(dev);
+    RCC->apb1rstr1 &= ~BIT(dev);
+  }
+}
+
+void reset_apb2(unsigned int dev)
+{
+  RCC->apb2rstr |= BIT(dev);
+  RCC->apb2rstr &= ~BIT(dev);
+}
