@@ -64,9 +64,13 @@
 #define VTOR 0x8000000
 #endif
 
+unsigned int orig_vtor;
+
 void hal_cpu_init()
 {
   unsigned int i;
+
+  orig_vtor = SCB->vtor;
 
   /* set the correct exception vector */
   SCB->vtor = VTOR;
@@ -89,6 +93,12 @@ void hal_cpu_init()
 /* initialize interupt priorities to the lowest possible by default */
   for (i = 0; i < 32; i++)
     NVIC->ip[i] = 0xffffffff;
+}
+
+void hal_cpu_fini()
+{
+  SCB->vtor = 0;
+  SYSTICK->ctrl = 0;
 }
 
 #define SYSTICK_CTRL_ENABLE BIT(0)

@@ -23,6 +23,7 @@
 #define HAL_BOARD_H
 
 void hal_cpu_init(void);
+void hal_cpu_fini(void);
 void hal_board_init(void);
 
 extern unsigned int hal_cpu_clock;

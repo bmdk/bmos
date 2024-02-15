@@ -41,8 +41,39 @@
 #include "stm32_pwr.h"
 #include "stm32_rcc_b.h"
 
+static void dev_reset()
+{
+  reset_ahb2(0); /* GPIOA */
+  reset_ahb2(1); /* GPIOB */
+  reset_ahb2(2); /* GPIOC */
+
+  /* LPUART1 */
+  reset_apb1(32);
+
+  /* SYSCFG */
+  reset_apb2(0);
+
+  /* PWR */
+  reset_apb1(28);
+
+  /* TIM 1 */
+  reset_apb2(11);
+
+  /* TIM 2 */
+  reset_apb1(0);
+
+  /* DMA 1 */
+  reset_ahb1(0);
+
+  /* DMA 2 */
+  reset_ahb1(1);
+}
+
+
 void pin_init()
 {
+  dev_reset();
+
   enable_ahb2(0); /* GPIOA */
   enable_ahb2(1); /* GPIOB */
   enable_ahb2(2); /* GPIOC */

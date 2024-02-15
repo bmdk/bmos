@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 #include "fast_log.h"
+#include "hal_board.h"
 #include "hal_cpu.h"
 #include "hal_int.h"
 #include "hal_time.h"
@@ -103,3 +104,28 @@ int cmd_reset(int argc, char *argv[])
 }
 
 SHELL_CMD(reset, cmd_reset);
+
+
+#define BL_ADDR 0x8000000
+typedef void call(void);
+
+#define BL_ENTRY(base) (call *)(*(unsigned int *)((base) + 4))
+
+int cmd_reboot(int argc, char *argv[])
+{
+  call *bl = BL_ENTRY(BL_ADDR);
+
+  INTERRUPT_OFF();
+
+  hal_cpu_fini();
+  irq_disable_all();
+
+  bl();
+
+  for(;;)
+    ;
+
+  return 0;
+}
+
+SHELL_CMD(reboot, cmd_reboot);
