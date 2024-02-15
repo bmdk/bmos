@@ -71,6 +71,15 @@ void disable_apb3(unsigned int dev);
 void disable_apb4(unsigned int dev);
 #endif
 
+void reset_ahb1(unsigned int dev);
+void reset_ahb2(unsigned int dev);
+void reset_ahb3(unsigned int dev);
+void reset_ahb4(unsigned int dev);
+void reset_apb1(unsigned int dev);
+void reset_apb2(unsigned int dev);
+void reset_apb3(unsigned int dev);
+void reset_apb4(unsigned int dev);
+
 void clock_init_ls(int internal);
 const char *clock_ls_name(void);
 
