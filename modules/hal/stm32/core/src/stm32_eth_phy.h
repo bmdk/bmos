@@ -21,6 +21,9 @@ static inline void phy_delay(unsigned int ms)
 #endif
 }
 
+#define PHY_SPEED_100 BIT(0)
+#define PHY_FULL_DUPLEX BIT(1)
+
 static inline int phy_reset(void)
 {
   unsigned int count, reg;

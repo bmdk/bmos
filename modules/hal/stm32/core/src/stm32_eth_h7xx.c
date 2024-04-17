@@ -19,6 +19,7 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "common.h"
@@ -41,6 +42,12 @@
 #else
 #define ETH_IRQ 61
 #endif
+
+#define ETH_FLAGS_PHY_FIXED BIT(0)
+#define ETH_FLAGS_PHY_SPEED_100 BIT(1)
+#define ETH_FLAGS_PHY_FULL_DUPLEX BIT(2)
+
+#define ETH_FLAGS 0
 
 #define ETH_BASE 0x40028000
 
@@ -435,16 +442,21 @@ static void eth_irq(void *data)
 
 static eth_ctx_t eth_ctx;
 
-static int hal_eth_init()
+static int hal_eth_init(unsigned int flags)
 {
   unsigned int i;
   int speed;
   unsigned int maccr = 0;
+  hal_time_us_t start = hal_time_us();
 
   /* reset the dma */
   ETH->dmamr |= ETH_DMAMR_SWR;
-  while (ETH->dmamr & ETH_DMAMR_SWR)
-    ;
+  while (ETH->dmamr & ETH_DMAMR_SWR) {
+    if (hal_time_us() - start > 100000) {
+      debug_printf("hal_eth_init: timeout waiting for reset\n");
+      return -1;
+    }
+  }
 
   ETH->macmdioar = ETH_MACMDIOAR_CR(4);
 
@@ -502,14 +514,26 @@ static int hal_eth_init()
   ETH->macrxfcr = 0;
   ETH->macier = 1;
 
-  speed = phy_reset();
-  if (speed < 0)
-    return -1;
+  if (flags & ETH_FLAGS_PHY_FIXED) {
+    speed = 0;
 
-  if (speed & BIT(0))
+    if (flags & ETH_FLAGS_PHY_SPEED_100)
+      speed |= PHY_SPEED_100;
+    if (flags & ETH_FLAGS_PHY_FULL_DUPLEX)
+      speed |= PHY_FULL_DUPLEX;
+    xslog(LOG_INFO, "eth 10%s:%s-duplex",
+          (speed & PHY_SPEED_100) ? "0": "",
+          (speed & PHY_FULL_DUPLEX) ? "full" : "half");
+  } else {
+    speed = phy_reset();
+    if (speed < 0)
+      return -1;
+  }
+
+  if (speed & PHY_SPEED_100)
     maccr |= BIT(14);
 
-  if (speed & BIT(1))
+  if (speed & PHY_FULL_DUPLEX)
     maccr |= BIT(13);
 
   maccr |= BIT(1) | BIT(0);  /* enable tx and rx */
@@ -563,18 +587,21 @@ void phy_write(unsigned int phy, unsigned int reg, unsigned int val)
 
 int cmd_eth(int argc, char *argv[])
 {
-  int v, i;
+  int v, i, phyaddr = 0;
 
   if (argc < 2)
     return -1;
 
   switch (argv[1][0]) {
   case 'i':
-    hal_eth_init();
+    hal_eth_init(ETH_FLAGS);
     break;
   case 'r':
+    if (argc >= 3)
+      phyaddr = strtoul(argv[2], NULL, 0);
+    xprintf("PHYADDR %d\n", phyaddr);
     for (i = 0; i < 32; i++) {
-      v = phy_read(0, i);
+      v = phy_read(phyaddr, i);
       xprintf("%02x: %04x\n", i, v);
     }
     break;
@@ -664,7 +691,8 @@ err_t eth_init(struct netif *nif)
   nif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
   nif->flags |= NETIF_FLAG_LINK_UP;
 
-  hal_eth_init();
+  if (hal_eth_init(ETH_FLAGS) < 0)
+    return -1;
 
   return 0;
 }
