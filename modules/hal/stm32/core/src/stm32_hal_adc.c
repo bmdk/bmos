@@ -53,6 +53,8 @@ typedef struct {
   reg32_t pad6[2];
   reg32_t difsel;
   reg32_t calfact;
+  reg32_t pad7[4];
+  reg32_t or;
 } stm32_adc_t;
 
 typedef struct {
@@ -66,10 +68,19 @@ typedef struct {
 #define ADC_BASE 0x50040000
 #define ADC_COM_BASE (ADC_BASE + 0x300)
 #define ADC_CKMODE 1
+#define ADC1_IRQ 18
 #elif STM32_G4XX
 #define ADC_BASE 0x50000000
 #define ADC_COM_BASE (ADC_BASE + 0x300)
 #define ADC_CKMODE 3
+#define ADC1_IRQ 18
+#elif STM32_H5XX
+#include "stm32_h5xx.h"
+#define ADC_COM_BASE (ADC_BASE + 0x300)
+/* clock range 1.5 - 75MHz
+   250MHz / 4 = 62.5 MHz */
+#define ADC_CKMODE 3
+#define ADC1_IRQ 37
 #else
 #error Define ADC_BASE for this platform
 #endif
@@ -112,7 +123,22 @@ typedef struct {
 #define CCR_CH18SEL BIT(24) /* Vbat */
 #define CCR_CH17SEL BIT(23) /* Temp */
 #define CCR_VREFEN BIT(22)  /* Temp */
+#define CCR_PRESC(_m_) (((_m_) & 0xf) << 18)
+#define CCR_PRESC_1 0
+#define CCR_PRESC_2 1
+#define CCR_PRESC_4 2
+#define CCR_PRESC_6 3
+#define CCR_PRESC_8 4
+#define CCR_PRESC_10 5
+#define CCR_PRESC_12 6
+#define CCR_PRESC_16 7
+#define CCR_PRESC_32 8
+#define CCR_PRESC_64 9
+#define CCR_PRESC_128 10
+#define CCR_PRESC_256 11
 #define CCR_CKMODE(_m_) (((_m_) & 0x3) << 16)
+
+#define ADC_PRESC CCR_PRESC_1
 
 typedef struct {
   unsigned short res[16];
@@ -158,7 +184,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   cnt &= 0xf;
 
   /* CKMODE HCLK */
-  ac->ccr = CCR_CH18SEL | CCR_CH17SEL | CCR_VREFEN | CCR_CKMODE(ADC_CKMODE);
+  ac->ccr = CCR_CH18SEL | CCR_CH17SEL | CCR_VREFEN |
+            CCR_PRESC(ADC_PRESC) | CCR_CKMODE(ADC_CKMODE);
 
   a->cr &= ~CR_DEEPPWD;
   a->cr |= CR_ADVREGEN;
@@ -173,6 +200,12 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   for (i = 0; i < cnt; i++) {
     unsigned int n = (i + 1) % 5;
     unsigned int reg = (i + 1) / 5;
+
+#if STM32_H5XX
+    if (reg_seq[i] == 0) {
+      a->or |= BIT(0); /* enable IN0 (via OP0) */
+    }
+#endif
 
     reg_set_field(&a->sqr[reg], 5, n * 6, reg_seq[i]);
 
@@ -194,7 +227,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 
   a->isr = 0xffffffff;
 
-  irq_register("adc", adc_irq, 0, 18);
+  irq_register("adc1", adc_irq, 0, ADC1_IRQ);
 
   a->ier |= IER_OVRIE | IER_EOCIE | IER_EOSIE;
 }
