@@ -23,6 +23,7 @@
 #define STM32_HAL_SPI
 
 #include <hal_gpio.h>
+#include <common.h>
 
 /* Clock Polarity Initially High */
 #define STM32_SPI_FLAG_CPOL BIT(0)
