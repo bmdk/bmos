@@ -24,10 +24,16 @@
 
 #include <hal_gpio.h>
 
+/* Clock Polarity Initially High */
+#define STM32_SPI_FLAG_CPOL BIT(0)
+/* Clock Phase - Data ready on second clock transition */
+#define STM32_SPI_FLAG_CPHA BIT(1)
+
 typedef struct {
   void *base;
   unsigned char wordlen;
   unsigned char div;
+  unsigned char flags;
   gpio_handle_t cs;
 } stm32_hal_spi_t;
 

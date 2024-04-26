@@ -90,16 +90,45 @@ typedef struct {
 #define STM32_SPI_SR_TXP BIT(1)
 #define STM32_SPI_SR_RXP BIT(0)
 
+/* rounded up log2 */
+static int _xlog2(unsigned int div)
+{
+  int i;
+
+  if (div == 1)
+    return 0;
+
+  for (i = 31; i > 0; i--) {
+    if (div > BIT(i - 1))
+      return i;
+  }
+
+  return -1;
+}
+
 void stm32_hal_spi_init(stm32_hal_spi_t *s)
 {
   stm32_spi_b_t *spi = s->base;
+  int mbr = _xlog2(s->div) - 1;
+  unsigned int cfg2;
+
+  /* minimum divider is 2 = 2 ^ (0 + 1) */
+  if (mbr < 0)
+    mbr = 0;
 
   spi->cr1 &= ~STM32_SPI_CR1_SPE;
   spi->cr1 |= STM32_SPI_CR1_SSI;
-  spi->cfg1 = STM32_SPI_CFG1_MBR((unsigned int)s->div - 1) |
+  spi->cfg1 = STM32_SPI_CFG1_MBR(mbr) |
               STM32_SPI_CFG1_DSIZE((unsigned int)s->wordlen - 1);
-  spi->cfg2 = STM32_SPI_CFG2_AFCNTR |
-              STM32_SPI_CFG2_SSM | STM32_SPI_CFG2_MASTER;
+
+  cfg2 = STM32_SPI_CFG2_AFCNTR | STM32_SPI_CFG2_SSM | STM32_SPI_CFG2_MASTER;
+
+  if (s->flags & STM32_SPI_FLAG_CPOL)
+    cfg2 |= STM32_SPI_CFG2_CPOL;
+  if (s->flags & STM32_SPI_FLAG_CPHA)
+    cfg2 |= STM32_SPI_CFG2_CPHA;
+
+  spi->cfg2 = cfg2;
   spi->cr1 |= STM32_SPI_CR1_SPE;
 
   gpio_set(s->cs, 1);
@@ -118,6 +147,29 @@ static void _stm32_hal_spi_write(stm32_hal_spi_t *s, unsigned int data)
   spi->cr1 |= STM32_SPI_CR1_CSTART;
 }
 
+static unsigned int _stm32_hal_spi_wrd(stm32_hal_spi_t *s, unsigned int data)
+{
+  stm32_spi_b_t *spi = s->base;
+
+  /* discard old data */
+  while (spi->sr & STM32_SPI_SR_RXP)
+    (void)spi->rxdr;
+
+  spi->txdr.b = (unsigned char)data;
+
+  spi->cr1 |= STM32_SPI_CR1_CSTART;
+
+  while ((spi->sr & STM32_SPI_SR_RXP) == 0)
+    ;
+
+  return spi->rxdr;
+}
+
+static unsigned int _stm32_hal_spi_read(stm32_hal_spi_t *s)
+{
+  return _stm32_hal_spi_wrd(s, 0xffff);
+}
+
 static void _stm32_hal_spi_wait_done(stm32_hal_spi_t *s)
 {
   stm32_spi_b_t *spi = s->base;
@@ -125,7 +177,6 @@ static void _stm32_hal_spi_wait_done(stm32_hal_spi_t *s)
   while ((spi->sr & STM32_SPI_SR_TXC) == 0)
     ;
 }
-
 
 void stm32_hal_spi_write(stm32_hal_spi_t *s, unsigned int data)
 {
@@ -154,6 +205,26 @@ void stm32_hal_spi_write_buf(stm32_hal_spi_t *s, void *data, unsigned int len)
     _stm32_hal_spi_write(s, *cdata++);
     _stm32_hal_spi_wait_done(s);
   }
+
+  gpio_set(s->cs, 1);
+}
+
+void stm32_hal_spi_wrd_buf(stm32_hal_spi_t *s, void *wdata, unsigned int wlen,
+                           void *rdata, unsigned int rlen)
+{
+  unsigned char *cdata = (unsigned char *)wdata;
+  unsigned int i;
+
+  gpio_set(s->cs, 0);
+
+  for (i = 0; i < wlen; i++) {
+    _stm32_hal_spi_write(s, *cdata++);
+    _stm32_hal_spi_wait_done(s);
+  }
+
+  cdata = (unsigned char *)rdata;
+  for (i = 0; i < rlen; i++)
+    *cdata++ = _stm32_hal_spi_read(s) & 0xff;
 
   gpio_set(s->cs, 1);
 }
