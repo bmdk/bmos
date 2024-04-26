@@ -34,7 +34,7 @@ typedef struct {
 } rtc_time_t;
 
 void rtc_get_time(rtc_time_t *t);
-void rtc_set_time(rtc_time_t *t);
+int rtc_set_time(rtc_time_t *t);
 
 void rtc_init(int external);
 

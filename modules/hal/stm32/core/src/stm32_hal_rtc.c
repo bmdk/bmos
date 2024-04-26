@@ -170,16 +170,23 @@ static void set_dividers(unsigned int prediv_a, unsigned int prediv_s)
   RTC->prer = (((prediv_a - 1) & 0x7f) << 16) | ((prediv_s - 1) & 0x7fff);
 }
 
-static void rtc_unlock(int init)
+#define MAX_INIT_COUNT 1000000
+
+static int rtc_unlock(int init)
 {
   RTC->wpr = 0xca;
   RTC->wpr = 0x53;
 
   if (init) {
+    unsigned int count = 0;
+
     RTC->isr |= RTC_ISR_INIT;
     while ((RTC->isr & RTC_ISR_INITF) == 0)
-      ;
+      if (count++ > MAX_INIT_COUNT)
+        return -1;
   }
+
+  return 0;
 }
 
 static void rtc_lock(int init)
@@ -255,7 +262,8 @@ static void rtc_wake_int_init()
 
 void rtc_init(int external)
 {
-  rtc_unlock(1);
+  if (rtc_unlock(1) < 0)
+    return;
 
   if (external)
     set_dividers(DIV_A_32768, DIV_S_32768);
@@ -269,7 +277,7 @@ void rtc_init(int external)
 #endif
 }
 
-void rtc_set_time(rtc_time_t *t)
+int rtc_set_time(rtc_time_t *t)
 {
   unsigned int tr, dr;
 
@@ -282,12 +290,15 @@ void rtc_set_time(rtc_time_t *t)
        ((((t->month / 10) << 4) + (t->month % 10)) << 8) +
        (((t->day / 10) << 4) + (t->day % 10));
 
-  rtc_unlock(1);
+  if (rtc_unlock(1) < 0)
+    return -1;
 
   RTC->tr = tr;
   RTC->dr = dr;
 
   rtc_lock(1);
+
+  return 0;
 }
 
 void rtc_get_time(rtc_time_t *t)
@@ -343,7 +354,8 @@ static int sub_cmd_rtc_set(int argc, char *argv[])
     t.year = (unsigned char)year;
   }
 
-  rtc_set_time(&t);
+  if (rtc_set_time(&t) < 0)
+    xprintf("setting time failed\n");
 
   return 0;
 }
