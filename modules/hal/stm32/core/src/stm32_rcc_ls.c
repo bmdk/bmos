@@ -77,14 +77,20 @@ static void rcc_clock_set(rcc_ls_t *rcc_ls, unsigned int clock)
   }
 }
 
+#if STM32_UXXX
+/* set lse drive strength to max */
+#define LSE_DRIVE 3
+#elif STM32_H5XX
+#define LSE_DRIVE 1
+#else
+#define LSE_DRIVE 0
+#endif
+
 static int rcc_clock_init_ls_ext(rcc_ls_t *rcc_ls)
 {
   unsigned int cycles = MAX_CYCLES;
 
-#if STM32_UXXX
-  /* set lse drive strength to max */
-  reg_set_field(&rcc_ls->bdcr, 2, 3, 0x3);
-#endif
+  reg_set_field(&rcc_ls->bdcr, 2, 3, LSE_DRIVE);
 
   rcc_ls->bdcr |= RCC_BDCR_LSEON;
 
