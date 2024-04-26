@@ -70,19 +70,34 @@ struct _stm32_i2c_t {
 #define I2C_ISR_TXIS BIT(1)
 #define I2C_ISR_TXE BIT(0)
 
+typedef struct {
+  unsigned char presc;
+  unsigned char scldel;
+  unsigned char sdadel;
+  unsigned char sclh;
+  unsigned char scll;
+} i2c_timing_t;
+
+static i2c_timing_t i2c_timing[] = {
+#if STM32_C0XX
+  { 0x2, 0x3, 0x0, 0x3e, 0x5d }
+#elif STM32_H5XX
+  { 0x6, 0x8, 0x0, 0x8c, 0xd3 }
+#else
+  { 0x2, 0xc, 0x0, 0x08, 0x08 }
+#endif
+};
+
 void i2c_init(stm32_i2c_t *i2c)
 {
+  i2c_timing_t *t = &i2c_timing[0];
+
   i2c->cr1 &= ~I2C_CR1_PE;
 
-#if STM32_C0XX
-  i2c->timingr = I2C_TIMINGR_PRESC(0x2) | \
-                 I2C_TIMINGR_SCLDEL(0x3) | I2C_TIMINGR_SDADEL(0x0) | \
-                 I2C_TIMINGR_SCLH(0x3e) | I2C_TIMINGR_SCLL(0x5d);
-#else
-  i2c->timingr = I2C_TIMINGR_PRESC(0x2) | \
-                 I2C_TIMINGR_SCLDEL(0xc) | I2C_TIMINGR_SDADEL(0x0) | \
-                 I2C_TIMINGR_SCLH(0x08) | I2C_TIMINGR_SCLL(0x08);
-#endif
+  i2c->timingr = I2C_TIMINGR_PRESC(t->presc) | \
+                 I2C_TIMINGR_SCLDEL(t->scldel) | \
+                 I2C_TIMINGR_SDADEL(t->sdadel) | \
+                 I2C_TIMINGR_SCLH(t->sclh) | I2C_TIMINGR_SCLL(t->scll);
 
   i2c->cr1 |= I2C_CR1_PE;
 }
