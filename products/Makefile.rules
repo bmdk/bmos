@@ -1,0 +1,196 @@
+COMMON_DIR = ../common
+XCFLAGS += $(addsuffix /inc, $(addprefix -I$(BMOS_ROOT)/modules/, $(MODULES)))
+VPATH += $(addsuffix /src, $(addprefix $(BMOS_ROOT)/modules/, $(MODULES)))
+
+ifeq ($(CONFIG_NEWLIB), y)
+XCFLAGS += -DCONFIG_NEWLIB
+XCFLAGS += -DPRIVATE_SBRK
+endif
+
+ifeq ($(CONFIG_NEWLIB), y)
+XLDFLAGS += -lc -lnosys
+XLDFLAGS += -specs=nano.specs
+else
+XLDFLAGS += -nostdlib
+XLDFLAGS += -lgcc
+endif
+XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
+XLDFLAGS += -Wl,--gc-sections
+XLDFLAGS += $(XCFLAGS)
+
+# generate dependency information
+XCFLAGS += -MD
+
+ifneq ($(TOOLCHAIN_ROOT),)
+TOOLCHAIN_PFX = $(TOOLCHAIN_ROOT)/
+endif
+
+CONFIG_NEWLIB ?= n
+
+CPP = cpp
+XCC = $(TOOLCHAIN_PFX)arm-none-eabi-gcc
+XOBJCOPY = $(TOOLCHAIN_PFX)arm-none-eabi-objcopy
+
+BUILD_DIR ?= build
+
+OBJDIR = $(BUILD_DIR)/obj-$(PROG)
+
+all: $(BUILD_DIR)/$(PROG).bin
+
+clean:
+	rm -fr $(BUILD_DIR)
+
+ifdef CPU.$(PROG)
+CPU = $(CPU.$(PROG))
+else
+CPU = cortex-m4
+endif
+
+XCFLAGS += -mcpu=$(CPU)
+
+XCFLAGS += -mthumb
+XCFLAGS += -Wall -Werror
+XCFLAGS += -Wno-error=strict-overflow
+XCFLAGS += -mno-unaligned-access
+XCFLAGS += -ffreestanding
+XCFLAGS += -ffunction-sections
+XCFLAGS += -fdata-sections
+
+ifdef APPL_FLASH_BASE.$(PROG)
+APPL_FLASH_BASE_DEFAULT = $(APPL_FLASH_BASE.$(PROG))
+else
+ifeq ($(CONFIG_STM32_H7), 1)
+APPL_FLASH_BASE_DEFAULT = 0x8020000
+else
+APPL_FLASH_BASE_DEFAULT = 0x8008000
+endif
+endif
+
+APPL_FLASH_BASE ?= $(APPL_FLASH_BASE_DEFAULT)
+
+ifdef APPL_RAM_BASE.$(PROG)
+APPL_RAM_BASE = $(APPL_RAM_BASE.$(PROG))
+else
+APPL_RAM_BASE = 0x20000000
+endif
+
+APPL_RAM_SIZE=256K
+APPL_FLASH_SIZE=256K
+
+XCFLAGS += -DAPPL_FLASH_BASE=$(APPL_FLASH_BASE)
+
+ifdef OPTFLAGS.$(PROG)
+OPTFLAGS = $(OPTFLAGS.$(PROG))
+else
+ifdef OPTFLAGS_DEFAULT
+OPTFLAGS = $(OPTFLAGS_DEFAULT)
+else
+OPTFLAGS = -O2
+endif
+endif
+
+XCFLAGS += $(OPTFLAGS)
+
+ifdef CONFIG_COPY_ISR.$(PROG)
+CONFIG_COPY_ISR = $(CONFIG_COPY_ISR.$(PROG))
+else
+CONFIG_COPY_ISR = 0
+endif
+
+XCFLAGS += -D CONFIG_COPY_ISR=$(CONFIG_COPY_ISR)
+
+TR := /usr/bin/tr
+UCPROG := $(shell echo $(PROG) | $(TR) '[:lower:]' '[:upper:]')
+XCFLAGS += -DBOARD_$(UCPROG)
+
+XCFLAGS += $(XCFLAGS.$(PROG))
+STACK_END = $(STACK_END.$(PROG))
+
+FILES += $(FILES.$(PROG))
+ifndef BOARD.$(PROG)
+BOARD_FILE = stm32_board_$(PROG).o
+else
+BOARD_FILE = $(BOARD.$(PROG))
+endif
+FILES += $(BOARD_FILE)
+
+ifdef MAIN.$(PROG)
+FILES += $(MAIN.$(PROG))
+else
+FILES += main.o
+endif
+
+ifeq ($(CONFIG_XMODEM_SMALL.$(PROG)), y)
+FILES += xmodem_small.o
+XCFLAGS += -DCONFIG_XMODEM_SMALL=1
+else
+FILES += xmodem.o
+endif
+
+ifdef CONFIG_SHELL.$(PROG)
+CONFIG_SHELL = $(CONFIG_SHELL.$(PROG))
+else
+CONFIG_SHELL = 1
+FILES += shell.o
+endif
+
+XCFLAGS += -D CONFIG_SHELL=$(CONFIG_SHELL)
+
+ifdef CONFIG_RAMSIZE.$(PROG)
+CONFIG_RAMSIZE = $(CONFIG_RAMSIZE.$(PROG))
+else
+CONFIG_RAMSIZE = 16
+endif
+
+ifdef CONFIG_FLASHSIZE.$(PROG)
+CONFIG_FLASHSIZE = $(CONFIG_FLASHSIZE.$(PROG))
+else
+CONFIG_FLASHSIZE = 16
+endif
+
+DEPFILES = $(addprefix $(OBJDIR)/,$(patsubst %.o,%.d,$(FILES)))
+
+# include dependency information
+-include $(DEPFILES)
+
+$(BUILD_DIR) $(OBJDIR):
+	mkdir -p $@
+
+OFILES = $(addprefix $(OBJDIR)/,$(FILES))
+$(OFILES): | $(OBJDIR)
+
+$(OBJDIR)/boot.ld: $(COMMON_DIR)/prog.ld.tem | $(OBJDIR)
+	$(CPP) -P \
+	       -D CONFIG_RAM_BASE=0x20000000 \
+	       -D CONFIG_FLASH_BASE=0x08000000 \
+         -D CONFIG_SHELL=$(CONFIG_SHELL) \
+         -D CONFIG_FLASH_SIZE=$(CONFIG_FLASHSIZE)K \
+         -D CONFIG_RAM_SIZE=$(CONFIG_RAMSIZE)K \
+         $< -o $@
+
+$(OBJDIR)/appl.ld: $(COMMON_DIR)/prog.ld.tem | $(OBJDIR)
+	$(CPP) -P \
+         -D CONFIG_FLASH_SIZE=$(APPL_FLASH_SIZE) \
+	       -D CONFIG_RAM_BASE=$(APPL_RAM_BASE) \
+	       -D CONFIG_RAM_SIZE=$(APPL_RAM_SIZE) \
+	       -D CONFIG_COPY_ISR=$(CONFIG_COPY_ISR) \
+	       -D CONFIG_FLASH_BASE=$(APPL_FLASH_BASE) \
+	       -D CONFIG_STM32_H7=$(CONFIG_STM32_H7) \
+         -D CONFIG_SHELL=$(CONFIG_SHELL) \
+         -D CONFIG_FLASHSIZE=$(CONFIG_FLASHSIZE)K \
+         -D CONFIG_RAMSIZE=$(CONFIG_RAMSIZE)K \
+         $< -o $@
+
+$(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
+	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
+
+$(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
+	 $(XOBJCOPY) -O binary -R .eth -R .framebuf $^ $@
+
+$(OBJDIR)/%.o: %.S
+	 $(XCC) -c $(XCFLAGS) -o $@ $<
+
+$(OBJDIR)/%.o: %.c
+	$(XCC) -c $(XCFLAGS) -D__S_FILE__=\"$(notdir $<)\" -o $@ $<
+
+# vim: filetype=make

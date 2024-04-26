@@ -19,7 +19,6 @@
 # IN THE SOFTWARE.
 
 BUILD_DIR = build
-ROOT ?= $(shell pwd)/../..
 
 ifeq ($(PROG),)
 
@@ -28,25 +27,29 @@ PROG += c031n
 PROG += f030demo
 PROG += f072n
 PROG += f100d
-PROG += f103deb
 PROG += f103bp
+PROG += f103deb
 PROG += f103n
 PROG += f303rt
 PROG += f401bp
 PROG += f401bp64
-PROG += f411bp
-PROG += f4d
 PROG += f407deb
 PROG += f407debm
+PROG += f411bp
 PROG += f429d
 PROG += f469d
+PROG += f4d
 PROG += f746d
 PROG += f767n
+PROG += g030deb
+PROG += g0b1n
+PROG += g431kbn
+PROG += g474n
 PROG += h563n
 PROG += h723n
 PROG += h735dk
-PROG += h743wa
 PROG += h743n
+PROG += h743wa
 PROG += h745n
 PROG += h745nm4
 PROG += l073n
@@ -55,10 +58,6 @@ PROG += l452n
 PROG += l452np
 PROG += l496n
 PROG += l4rn
-PROG += g030deb
-PROG += g0b1n
-PROG += g474n
-PROG += g431kbn
 PROG += u575n
 PROG += wb55n
 PROG += wb55usb
@@ -75,25 +74,6 @@ clean:
 
 else
 
-ifneq ($(TOOLCHAIN_ROOT),)
-TOOLCHAIN_PFX = $(TOOLCHAIN_ROOT)/
-endif
-
-CONFIG_NEWLIB ?= n
-
-CPP = cpp
-XCC = $(TOOLCHAIN_PFX)arm-none-eabi-gcc
-XOBJCOPY = $(TOOLCHAIN_PFX)arm-none-eabi-objcopy
-
-BUILD_DIR ?= build
-
-OBJDIR = $(BUILD_DIR)/obj-$(PROG)
-
-all: $(BUILD_DIR)/$(PROG).bin
-
-clean:
-	rm -fr $(BUILD_DIR)
-
 H7_BOARDS += h723n
 H7_BOARDS += h735dk
 H7_BOARDS += h743wa
@@ -108,29 +88,29 @@ endif
 
 XCFLAGS.h735dk += -DSTM32_H7XX
 STACK_END.h735dk = 0x20020000
-XCFLAGS.h735dk += -mcpu=cortex-m7
+CPU.h735dk = cortex-m7
 LWIP.h735dk = y
 
 XCFLAGS.h743wa += -DSTM32_H7XX
 XCFLAGS.h743wa += -DSTM32_VOS_HACK
 STACK_END.h743wa = 0x20020000
-XCFLAGS.h743wa += -mcpu=cortex-m7
+CPU.h743wa = cortex-m7
 
 XCFLAGS.h743n += -DSTM32_H7XX
 XCFLAGS.h743n += -DSTM32_VOS_HACK
 STACK_END.h743n = 0x20020000
-XCFLAGS.h743n += -mcpu=cortex-m7
+CPU.h743n = cortex-m7
 LWIP.h743n = y
 
 XCFLAGS.h723n += -DSTM32_H7XX
 STACK_END.h723n = 0x20020000
-XCFLAGS.h723n += -mcpu=cortex-m7
+CPU.h723n = cortex-m7
 LWIP.h723n = y
 
 XCFLAGS.h745n += -DSTM32_H7XX
 XCFLAGS.h745n += -DSTM32_VOS_HACK
 STACK_END.h745n = 0x20020000
-XCFLAGS.h745n += -mcpu=cortex-m7
+CPU.h745n = cortex-m7
 LWIP.h745n = y
 
 XCFLAGS.h745nm4 += -DSTM32_H7XX
@@ -138,13 +118,13 @@ XCFLAGS.h745nm4 += -DCONFIG_BUTTON_INT=0
 APPL_RAM_BASE.h745nm4 = 0x30000000
 STACK_END.h745nm4 = 0x30020000
 APPL_FLASH_BASE.h745nm4 = 0x8100000
-XCFLAGS.h745nm4 += -mcpu=cortex-m4
+CPU.h745nm4 = cortex-m4
 
 XCFLAGS.h563n += -DSTM32_H5XX
 #XCFLAGS.h563n += -DCONFIG_BUTTON_INT=0
 XCFLAGS.h563n += -DCONFIG_CAN_TEST
 STACK_END.h563n = 0x200a0000
-XCFLAGS.h563n += -mcpu=cortex-m33
+CPU.h563n = cortex-m33
 LWIP.h563n = y
 APPL_FLASH_BASE.h563n = 0x8020000
 
@@ -152,12 +132,11 @@ XCFLAGS.l073n += -DSTM32_L0XX
 XCFLAGS.l073n += -DCONFIG_TIMER_16BIT=1
 XCFLAGS.l073n += -DCONFIG_BUTTON_INT=0
 XCFLAGS.l073n += -DCONFIG_N_INTS=32
-XCFLAGS.l073n += -mcpu=cortex-m0plus
+CPU.l073n = cortex-m0plus
 STACK_END.l073n = 0x20005000
 APPL_FLASH_BASE.l073n = 0x8004000
 
 XCFLAGS.l4rn += -DSTM32_L4R
-XCFLAGS.l4rn += -mcpu=cortex-m4
 STACK_END.l4rn = 0x200A0000
 
 XCFLAGS.f030demo += -DSTM32_F030 -DSTM32_F0XX
@@ -173,7 +152,7 @@ XCFLAGS.f030demo += -DCONFIG_STM32_HAL_COMMANDS=0
 XCFLAGS.f030demo += -DCONFIG_HAL_DMA_COMMANDS=0
 XCFLAGS.f030demo += -DCONFIG_SIMPLE_EXCEPTION_HANDLER=1
 XCFLAGS.f030demo += -DCONFIG_MALLOC_CHUNK_POW2=6
-XCFLAGS.f030demo += -mcpu=cortex-m0
+CPU.f030demo = cortex-m0
 CONFIG_COPY_ISR.f030demo = 1
 STACK_END.f030demo = 0x20001000
 APPL_FLASH_BASE.f030demo = 0x8000400
@@ -183,7 +162,7 @@ XCFLAGS.f072n += -DSTM32_F072 -DSTM32_F0XX
 XCFLAGS.f072n += -DCONFIG_FAST_LOG_SHIFT=4
 XCFLAGS.f072n += -DCONFIG_N_INTS=32
 XCFLAGS.f072n += -DCONFIG_BUTTON_INT=0
-XCFLAGS.f072n += -mcpu=cortex-m0
+CPU.f072n = cortex-m0
 CONFIG_COPY_ISR.f072n = 1
 STACK_END.f072n = 0x20004000
 APPL_FLASH_BASE.f072n = 0x8004000
@@ -195,7 +174,7 @@ XCFLAGS.f100d += -DCONFIG_FAST_LOG_SHIFT=4
 XCFLAGS.f100d += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.f100d += -DCONFIG_N_INTS=61
 XCFLAGS.f100d += -DCONFIG_TIMER_16BIT=1
-XCFLAGS.f100d += -mcpu=cortex-m3
+CPU.f100d = cortex-m3
 STACK_END.f100d = 0x20002000
 
 XCFLAGS.f103deb += -DSTM32_F1XX
@@ -204,7 +183,7 @@ XCFLAGS.f103deb += -DCONFIG_FAST_LOG_ENABLE=0
 XCFLAGS.f103deb += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.f103deb += -DCONFIG_N_INTS=68
 XCFLAGS.f103deb += -DCONFIG_TIMER_16BIT=1
-XCFLAGS.f103deb += -mcpu=cortex-m3
+CPU.f103deb = cortex-m3
 STACK_END.f103deb = 0x20002800
 APPL_FLASH_BASE.f103deb = 0x8002800
 
@@ -216,7 +195,7 @@ XCFLAGS.f103bp += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.f103bp += -DCONFIG_N_INTS=68
 XCFLAGS.f103bp += -DCONFIG_TIMER_16BIT=1
 XCFLAGS.f103bp += -DCONFIG_ENABLE_ADC=1
-XCFLAGS.f103bp += -mcpu=cortex-m3
+CPU.f103bp = cortex-m3
 STACK_END.f103bp = 0x20005000
 
 XCFLAGS.f103n += -DSTM32_F1XX
@@ -227,7 +206,7 @@ XCFLAGS.f103n += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.f103n += -DCONFIG_N_INTS=68
 XCFLAGS.f103n += -DCONFIG_TIMER_16BIT=1
 XCFLAGS.f103n += -DCONFIG_ENABLE_ADC=1
-XCFLAGS.f103n += -mcpu=cortex-m3
+CPU.f103n = cortex-m3
 STACK_END.f103n = 0x20005000
 
 XCFLAGS.at32f403bp += -DAT32_F4XX
@@ -235,7 +214,6 @@ XCFLAGS.at32f403bp += -DAT32_F403BP -DAT32_F403
 # no ethernet on at32f403
 XCFLAGS.at32f403bp += -DCONFIG_N_INTS=79
 XCFLAGS.at32f403bp += -DCONFIG_ENABLE_ADC=1
-XCFLAGS.at32f403bp += -mcpu=cortex-m4
 STACK_END.at32f403bp = 0x20018000
 
 XCFLAGS.f303rt += -DSTM32_F3XX
@@ -245,13 +223,11 @@ XCFLAGS.f303rt += -DCONFIG_FAST_LOG_SHIFT=4
 XCFLAGS.f303rt += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.f303rt += -DCONFIG_N_INTS=60
 XCFLAGS.f303rt += -DCONFIG_BUTTON_INT=0
-XCFLAGS.f303rt += -mcpu=cortex-m4
 XCFLAGS.f303rt += -DWDOG_KICK
 APPL_FLASH_BASE.f303rt = 0x8004000
 STACK_END.f303rt = 0x2000a000
 
 XCFLAGS.f411bp += -DSTM32_F411 -DSTM32_F4XX
-XCFLAGS.f411bp += -mcpu=cortex-m4
 STACK_END.f411bp = 0x20020000
 APPL_FLASH_BASE.f411bp = 0x8010000
 #XCFLAGS.f411bp += -DWS2811
@@ -264,7 +240,6 @@ XCFLAGS.f411bp += -DCONFIG_KVLOG_ENABLE=1
 STACK_END.f401bp = 0x20018000
 APPL_FLASH_BASE.f401bp = 0x8010000
 XCFLAGS.f401bp += -DSTM32_F401 -DSTM32_F4XX
-XCFLAGS.f401bp += -mcpu=cortex-m4
 XCFLAGS.f401bp += -DCONFIG_ENABLE_ADC
 XCFLAGS.f401bp += -DWS2811
 XCFLAGS.f401bp += -DWS2811_DISPLAY_32X8_CLOCK
@@ -280,58 +255,49 @@ XCFLAGS.f401bp64 = $(XCFLAGS.f401bp)
 
 XCFLAGS.f4d += -DSTM32_F407
 XCFLAGS.f4d += -DSTM32_F4XX
-XCFLAGS.f4d += -mcpu=cortex-m4
 XCFLAGS.f4d += -DCONFIG_ETH_PHY_ADDR=1
 STACK_END.f4d = 0x20020000
 LWIP.f4d = y
 
 XCFLAGS.f407deb += -DSTM32_F407
 XCFLAGS.f407deb += -DSTM32_F4XX
-XCFLAGS.f407deb += -mcpu=cortex-m4
 STACK_END.f407deb = 0x20020000
 LWIP.f407deb = y
 
 XCFLAGS.f407debm += -DSTM32_F407
 XCFLAGS.f407debm += -DSTM32_F4XX
-XCFLAGS.f407debm += -mcpu=cortex-m4
 STACK_END.f407debm = 0x20020000
 
 XCFLAGS.f429d += -DSTM32_F429
 XCFLAGS.f429d += -DSTM32_F4XX
 XCFLAGS.f429d += -DSTM32_LCD
-XCFLAGS.f429d += -mcpu=cortex-m4
 STACK_END.f429d = 0x20030000
 
 XCFLAGS.f469d += -DSTM32_F469 -DSTM32_F4XX
-XCFLAGS.f469d += -mcpu=cortex-m4
 STACK_END.f469d = 0x20030000
 
 XCFLAGS.f746d += -DSTM32_F746 -DSTM32_F7XX -DSTM32_LCD
-XCFLAGS.f746d += -mcpu=cortex-m7
+CPU.f746d = cortex-m7
 STACK_END.f746d = 0x20050000
 LWIP.f746d = y
 
 XCFLAGS.f767n += -DSTM32_F767 -DSTM32_F7XX
-XCFLAGS.f767n += -mcpu=cortex-m7
+CPU.f767n = cortex-m7
 STACK_END.f767n = 0x20080000
 LWIP.f767n = y
 
 XCFLAGS.l432n += -DSTM32_L432 -DSTM32_L4XX
-XCFLAGS.l432n += -mcpu=cortex-m4
 STACK_END.l432n = 0x20010000
 XCFLAGS.l432n += -DWS2811
 XCFLAGS.l432n += -DCONFIG_ENABLE_ADC
 
 XCFLAGS.l452n += -DSTM32_L452 -DSTM32_L4XX
-XCFLAGS.l452n += -mcpu=cortex-m4
 STACK_END.l452n = 0x20028000
 
 XCFLAGS.l452np += -DSTM32_L452 -DSTM32_L4XX
-XCFLAGS.l452np += -mcpu=cortex-m4
 STACK_END.l452np = 0x20028000
 
 XCFLAGS.l496n += -DSTM32_L496 -DSTM32_L4XX
-XCFLAGS.l496n += -mcpu=cortex-m4
 XCFLAGS.l496n += -DCONFIG_CAN_TEST
 STACK_END.l496n = 0x20040000
 
@@ -339,7 +305,7 @@ XCFLAGS.g0b1n += -DSTM32_G0B1 -DSTM32_G0XX
 XCFLAGS.g0b1n += -DCONFIG_N_INTS=32
 XCFLAGS.g0b1n += -DCONFIG_BUTTON_INT=0
 XCFLAGS.g0b1n += -DCONFIG_CAN_TEST
-XCFLAGS.g0b1n += -mcpu=cortex-m0plus
+CPU.g0b1n = cortex-m0plus
 APPL_FLASH_BASE.g0b1n = 0x8000800
 STACK_END.g0b1n = 0x20024000
 
@@ -351,7 +317,7 @@ XCFLAGS.g030deb += -DCONFIG_BUTTON_INT=1
 XCFLAGS.g030deb += -DCONFIG_SHELL_HIST=2
 XCFLAGS.g030deb += -DCONFIG_SHELL_MAX_LINE_LEN=32
 XCFLAGS.g030deb += -DCONFIG_MALLOC_CHUNK_POW2=6
-XCFLAGS.g030deb += -mcpu=cortex-m0plus
+CPU.g030deb = cortex-m0plus
 APPL_FLASH_BASE.g030deb = 0x8002800
 STACK_END.g030deb = 0x20002000
 OPTFLAGS.g030deb = -Os
@@ -370,7 +336,7 @@ XCFLAGS.c031n += -DCONFIG_SHELL_MAX_LINE_LEN=32
 #XCFLAGS.c031n += -DCONFIG_SIMPLE_EXCEPTION_HANDLER=1
 XCFLAGS.c031n += -DCONFIG_MALLOC_CHUNK_POW2=6
 XCFLAGS.c031n += -DCONFIG_SYSLOG_NUM_LINES=32
-XCFLAGS.c031n += -mcpu=cortex-m0plus
+CPU.c031n = cortex-m0plus
 XCFLAGS.c031n += -DCONFIG_ENABLE_ADC
 XCFLAGS.c031n += -DDISP
 XCFLAGS.c031n += -DI2C_DEMO
@@ -379,63 +345,29 @@ STACK_END.c031n = 0x20003000
 OPTFLAGS.c031n = -Os
 
 XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474
-XCFLAGS.g474n += -mcpu=cortex-m4
 XCFLAGS.g474n += -DCONFIG_ENABLE_ADC
 STACK_END.g474n = 0x20020000
 
 XCFLAGS.g431kbn += -DSTM32_G4XX -DSTM32_G432
-XCFLAGS.g431kbn += -mcpu=cortex-m4
 XCFLAGS.g431kbn += -DCONFIG_ENABLE_ADC
 STACK_END.g431kbn = 0x20008000
 
 XCFLAGS.u575n += -DSTM32_U575 -DSTM32_UXXX
-XCFLAGS.u575n += -mcpu=cortex-m33
+CPU.u575n = cortex-m33
 STACK_END.u575n = 0x200c0000
 
 XCFLAGS.wb55n += -DSTM32_WBXX -DSTM32_WB55
-XCFLAGS.wb55n += -mcpu=cortex-m4
 STACK_END.wb55n = 0x20030000
 
 XCFLAGS.wb55usb += -DSTM32_WBXX -DSTM32_WB55
-XCFLAGS.wb55usb += -mcpu=cortex-m4
 STACK_END.wb55usb = 0x20030000
 
-TR := /usr/bin/tr
-UCPROG := $(shell echo $(PROG) | $(TR) '[:lower:]' '[:upper:]')
-XCFLAGS += -DBOARD_$(UCPROG)
-XCFLAGS += $(XCFLAGS.$(PROG))
-STACK_END = $(STACK_END.$(PROG))
-
 XCFLAGS += -DARCH_STM32
-XCFLAGS += -mthumb
-XCFLAGS += -Wall -Werror
-XCFLAGS += -Wno-error=strict-overflow
-XCFLAGS += -mno-unaligned-access
-XCFLAGS += -ffreestanding
-XCFLAGS += -ffunction-sections
-XCFLAGS += -fdata-sections
-# generate dependency information
-XCFLAGS += -MD
 XCFLAGS += -DAPPL
 XCFLAGS += -DBMOS
 XCFLAGS += -DCONFIG_POISON_STACK=1
 
-ifeq ($(CONFIG_NEWLIB), y)
-XCFLAGS += -DCONFIG_NEWLIB
-XCFLAGS += -DPRIVATE_SBRK
-endif
-
-ifeq ($(CONFIG_NEWLIB), y)
-XLDFLAGS += -lc -lnosys
-XLDFLAGS += -specs=nano.specs
-else
-XLDFLAGS += -nostdlib
-XLDFLAGS += -lgcc
-endif
 LD_SCRIPT = $(OBJDIR)/appl.ld
-XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
-XLDFLAGS += -Wl,--gc-sections
-XLDFLAGS += $(XCFLAGS)
 
 MODULES += appl/prod/proto
 MODULES += appl/shell
@@ -464,12 +396,10 @@ FILES += lwip.o
 FILES += $(FILES.lwip)
 endif
 
-XCFLAGS += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
-
 # cmsis
-XCFLAGS.cmsis += -I$(ROOT)/external/cmsis_5/CMSIS/Core/Include
-XCFLAGS.cmsisf4 += -I$(ROOT)/external/st/cmsis_device_f4/Include
-XCFLAGS.cmsish7 += -I$(ROOT)/external/st/cmsis_device_h7/Include
+XCFLAGS.cmsis += -I$(BMOS_ROOT)/external/cmsis_5/CMSIS/Core/Include
+XCFLAGS.cmsisf4 += -I$(BMOS_ROOT)/external/st/cmsis_device_f4/Include
+XCFLAGS.cmsish7 += -I$(BMOS_ROOT)/external/st/cmsis_device_h7/Include
 
 XCFLAGS.f401bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
 XCFLAGS.f401bp64 += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
@@ -477,12 +407,8 @@ XCFLAGS.f411bp += $(XCFLAGS.cmsis) $(XCFLAGS.cmsisf4)
 
 XCFLAGS.h743wa += $(XCFLAGS.cmsis) $(XCFLAGS.cmsish7)
 
-VPATH += $(addsuffix /src, $(addprefix $(ROOT)/modules/, $(MODULES)))
-
-FILES += main.o
 FILES += start.o
 FILES += stm32_hal_gpio.o
-FILES += shell.o
 FILES += cortexm.o
 FILES += xtime.o
 FILES += hal_common.o
@@ -774,7 +700,6 @@ FILES.g4xx += stm32_pwr_lxxx.o
 FILES.g4xx += stm32_rcc_b.o
 FILES.g4xx += stm32_usart_b.o
 FILES.g4xx += stm32_wdog.o
-FILES.g4xx += xmodem.o
 FILES.g4xx += stm32_fdcan.o
 
 FILES.wbxx += crc_ccitt16.o
@@ -785,7 +710,6 @@ FILES.wbxx += stm32_pwr_lxxx.o
 FILES.wbxx += stm32_rcc_b.o
 FILES.wbxx += stm32_usart_b.o
 FILES.wbxx += stm32_wdog.o
-FILES.wbxx += xmodem.o
 
 FILES.l0xx += stm32_usart_b.o
 FILES.l0xx += stm32_rcc_l0.o
@@ -799,7 +723,6 @@ FILES.l4xx += stm32_usart_b.o
 FILES.l4xx += stm32_rcc_b.o
 FILES.l4xx += stm32_flash.o
 FILES.l4xx += crc_ccitt16.o
-FILES.l4xx += xmodem.o
 FILES.l4xx += stm32_wdog.o
 FILES.l4xx += stm32_pwr_lxxx.o
 FILES.l4xx += stm32_exti_lxxx.o
@@ -877,88 +800,12 @@ FILES.wb55usb += $(FILES.wbxx)
 FILES.wb55usb += stm32_hal_rtc.o
 CPU.f100d = cortex-m3
 
-ifdef APPL_FLASH_BASE.$(PROG)
-APPL_FLASH_BASE_DEFAULT = $(APPL_FLASH_BASE.$(PROG))
-else
-ifeq ($(CONFIG_STM32_H7), 1)
-APPL_FLASH_BASE_DEFAULT = 0x8020000
-else
-APPL_FLASH_BASE_DEFAULT = 0x8008000
-endif
-endif
-
-APPL_FLASH_BASE ?= $(APPL_FLASH_BASE_DEFAULT)
-
-ifdef APPL_RAM_BASE.$(PROG)
-APPL_RAM_BASE = $(APPL_RAM_BASE.$(PROG))
-else
-APPL_RAM_BASE = 0x20000000
-endif
-
-APPL_RAM_SIZE=256K
-APPL_FLASH_SIZE=256K
-
-XCFLAGS += -DAPPL_FLASH_BASE=$(APPL_FLASH_BASE)
-
 ifdef XSLOG.$(PROG)
 FILES += $(XSLOG.$(PROG))
 else
 FILES += xslog.o
 endif
 
-ifdef OPTFLAGS.$(PROG)
-OPTFLAGS = $(OPTFLAGS.$(PROG))
-else
-OPTFLAGS = -O2
-endif
-
-XCFLAGS += $(OPTFLAGS)
-
-ifdef CONFIG_COPY_ISR.$(PROG)
-CONFIG_COPY_ISR = $(CONFIG_COPY_ISR.$(PROG))
-else
-CONFIG_COPY_ISR = 0
-endif
-
-XCFLAGS += -D CONFIG_COPY_ISR=$(CONFIG_COPY_ISR)
-
-FILES += $(FILES.$(PROG))
-ifndef BOARD.$(PROG)
-BOARD_FILE = stm32_board_$(PROG).o
-else
-BOARD_FILE = $(BOARD.$(PROG))
-endif
-FILES += $(BOARD_FILE)
-
-DEPFILES = $(addprefix $(OBJDIR)/,$(patsubst %.o,%.d,$(FILES)))
-
-# include dependency information
--include $(DEPFILES)
-
-$(BUILD_DIR) $(OBJDIR):
-	mkdir -p $@
-
-OFILES = $(addprefix $(OBJDIR)/,$(FILES))
-$(OFILES): | $(OBJDIR)
-
-$(OBJDIR)/appl.ld: appl.ld.tem | $(OBJDIR)
-	 $(CPP) -P -D __APPL_FLASH_SIZE=$(APPL_FLASH_SIZE) \
-	        -D __APPL_RAM_BASE=$(APPL_RAM_BASE) \
-	        -D __APPL_RAM_SIZE=$(APPL_RAM_SIZE) \
-	        -D CONFIG_COPY_ISR=$(CONFIG_COPY_ISR) \
-	        -D __APPL_FLASH_BASE=$(APPL_FLASH_BASE) \
-	        -D CONFIG_STM32_H7=$(CONFIG_STM32_H7) $< -o $@
-
-$(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
-	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
-
-$(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
-	 $(XOBJCOPY) -O binary -R .eth -R .framebuf $^ $@
-
-$(OBJDIR)/%.o: %.S
-	 $(XCC) -c $(XCFLAGS) -o $@ $<
-
-$(OBJDIR)/%.o: %.c
-	 $(XCC) -c $(XCFLAGS) -D__S_FILE__=\"$(notdir $<)\" -o $@ $<
+include ../Makefile.rules
 
 endif # PROG

@@ -23,19 +23,45 @@ ENTRY(reset_handler)
 
 MEMORY
 {
-  RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = CONFIG_RAMSIZE
-  FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = CONFIG_FLASHSIZE
+  RAM (xrw)      : ORIGIN = CONFIG_RAM_BASE, LENGTH = CONFIG_RAM_SIZE
+  FLASH (rx)      : ORIGIN = CONFIG_FLASH_BASE, LENGTH = CONFIG_FLASH_SIZE
+#if CONFIG_STM32_H7
+  RAM2 (xrw)      : ORIGIN = 0x24000000, LENGTH = 512K
+#endif
 }
 
 SECTIONS
 {
+#if CONFIG_STM32_H7
+  .eth :
+  {
+    . = ALIGN(8);
+    KEEP(*(.eth))
+    . = ALIGN(8);
+  } >RAM2
+
+  .framebuf :
+  {
+    . = ALIGN(8);
+    KEEP(*(.framebuf))
+    . = ALIGN(8);
+  } >RAM2
+#endif
+
+  _flash_start = LOADADDR(.isr_vector);
+
   .isr_vector :
   {
-    _flash_start = .;
+    _isr_start = .;
     . = ALIGN(8);
     KEEP(*(.isr_vector))
     . = ALIGN(8);
+    _isr_end = .;
+#if CONFIG_COPY_ISR
+  } >RAM AT> FLASH
+#else
   } >FLASH
+#endif
 
 #if CONFIG_SHELL
   cmd_list_start = .;

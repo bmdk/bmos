@@ -19,7 +19,6 @@
 # IN THE SOFTWARE.
 
 BUILD_DIR = build
-ROOT ?= $(shell pwd)/../..
 
 ifeq ($(PROG),)
 
@@ -28,35 +27,35 @@ PROG += c031n
 PROG += f030demo
 PROG += f072n
 PROG += f100d
-PROG += f103deb
 PROG += f103bp
+PROG += f103deb
 PROG += f103n
 PROG += f303rt
-PROG += f411bp
 PROG += f401bp
-PROG += f4d
 PROG += f407deb
 PROG += f407debm
-PROG += g0b1n
-PROG += g030deb
-PROG += h563n
-PROG += h723n
-PROG += h743wa
-PROG += h743n
-PROG += h745n
-PROG += h735dk
-PROG += l073n
-PROG += l4rn
-PROG += f767n
+PROG += f411bp
 PROG += f429d
 PROG += f469d
+PROG += f4d
 PROG += f746d
+PROG += f767n
+PROG += g030deb
+PROG += g0b1n
+PROG += g431kbn
+PROG += g474n
+PROG += h563n
+PROG += h723n
+PROG += h735dk
+PROG += h743n
+PROG += h743wa
+PROG += h745n
+PROG += l073n
 PROG += l432n
 PROG += l452n
 PROG += l452np
 PROG += l496n
-PROG += g474n
-PROG += g431kbn
+PROG += l4rn
 PROG += u575n
 PROG += wb55n
 PROG += wb55usb
@@ -73,24 +72,7 @@ clean:
 
 else
 
-ifneq ($(TOOLCHAIN_ROOT),)
-TOOLCHAIN_PFX = $(TOOLCHAIN_ROOT)/
-endif
-
-CONFIG_NEWLIB ?= n
-
-CPP = cpp
-XCC = $(TOOLCHAIN_PFX)arm-none-eabi-gcc
-XOBJCOPY = $(TOOLCHAIN_PFX)arm-none-eabi-objcopy
-
-BUILD_DIR ?= build
-
-OBJDIR = $(BUILD_DIR)/obj-$(PROG)
-
-all: $(BUILD_DIR)/$(PROG).bin
-
-clean:
-	rm -fr $(BUILD_DIR)
+OPTFLAGS_DEFAULT = -Os
 
 XCFLAGS.h563n += -DSTM32_H5XX
 STACK_END.h563n = 0x200a0000
@@ -297,47 +279,10 @@ STACK_END.wb55n = 0x20030000
 XCFLAGS.wb55usb += -DSTM32_WBXX
 STACK_END.wb55usb = 0x20030000
 
-TR := /usr/bin/tr
-UCPROG := $(shell echo $(PROG) | $(TR) '[:lower:]' '[:upper:]')
-XCFLAGS += -DBOARD_$(UCPROG)
-
-XCFLAGS += $(XCFLAGS.$(PROG))
-STACK_END = $(STACK_END.$(PROG))
-
-ifdef CPU.$(PROG)
-CPU = $(CPU.$(PROG))
-else
-CPU = cortex-m4
-endif
-
 XCFLAGS += -DARCH_STM32
-XCFLAGS += -mcpu=$(CPU)
-XCFLAGS += -mthumb
-XCFLAGS += -Wall -Werror
-XCFLAGS += -Os
-#XCFLAGS += -O2
-XCFLAGS += -mno-unaligned-access
-XCFLAGS += -ffunction-sections
-XCFLAGS += -ffreestanding
-# generate dependency information
-XCFLAGS += -MD
 XCFLAGS += -DBOOT
 
-ifeq ($(CONFIG_NEWLIB), y)
-XCFLAGS += -DCONFIG_NEWLIB
-endif
-
-ifeq ($(CONFIG_NEWLIB), y)
-XLDFLAGS += -lc -lnosys
-XLDFLAGS += -specs=nano.specs
-else
-XLDFLAGS += -nostdlib
-XLDFLAGS += -lgcc
-endif
 LD_SCRIPT = $(OBJDIR)/boot.ld
-XLDFLAGS += -Wl,--defsym,_stack_end=$(STACK_END)
-XLDFLAGS += -Wl,--gc-sections
-XLDFLAGS += $(XCFLAGS)
 
 MODULES += appl/prod/proto-boot
 MODULES += appl/shell
@@ -349,10 +294,6 @@ MODULES += hal/cpu/arm
 MODULES += hal/stm32/core
 MODULES += std
 MODULES += lib/libc_min
-
-XCFLAGS += $(addsuffix /inc, $(addprefix -I$(ROOT)/modules/, $(MODULES)))
-
-VPATH += $(addsuffix /src, $(addprefix $(ROOT)/modules/, $(MODULES)))
 
 FILES += start.o
 FILES += stm32_hal_gpio.o
@@ -569,74 +510,6 @@ FILES.g474n += $(FILES.g4xx)
 
 FILES.g431kbn += $(FILES.g4xx)
 
-FILES += $(FILES.$(PROG))
-ifndef BOARD.$(PROG)
-BOARD_FILE = stm32_board_$(PROG).o
-else
-BOARD_FILE = $(BOARD.$(PROG))
-endif
-FILES += $(BOARD_FILE)
-
-DEPFILES = $(addprefix $(OBJDIR)/,$(patsubst %.o,%.d,$(FILES)))
-
-# include dependency information
--include $(DEPFILES)
-
-$(BUILD_DIR) $(OBJDIR):
-	mkdir -p $@
-
-OFILES = $(addprefix $(OBJDIR)/,$(FILES))
-$(OFILES): | $(OBJDIR)
-
-ifdef MAIN.$(PROG)
-FILES += $(MAIN.$(PROG))
-else
-FILES += main.o
-endif
-
-ifeq ($(CONFIG_XMODEM_SMALL.$(PROG)), y)
-FILES += xmodem_small.o
-XCFLAGS += -DCONFIG_XMODEM_SMALL=1
-else
-FILES += xmodem.o
-endif
-
-ifdef CONFIG_SHELL.$(PROG)
-CONFIG_SHELL = $(CONFIG_SHELL.$(PROG))
-else
-CONFIG_SHELL = 1
-FILES += shell.o
-endif
-
-XCFLAGS += -D CONFIG_SHELL=$(CONFIG_SHELL)
-
-ifdef CONFIG_RAMSIZE.$(PROG)
-CONFIG_RAMSIZE = $(CONFIG_RAMSIZE.$(PROG))
-else
-CONFIG_RAMSIZE = 16
-endif
-
-ifdef CONFIG_FLASHSIZE.$(PROG)
-CONFIG_FLASHSIZE = $(CONFIG_FLASHSIZE.$(PROG))
-else
-CONFIG_FLASHSIZE = 16
-endif
-
-$(OBJDIR)/boot.ld: boot.ld.tem | $(OBJDIR)
-	$(CPP) -P -D CONFIG_SHELL=$(CONFIG_SHELL) \
-          -D CONFIG_FLASHSIZE=$(CONFIG_FLASHSIZE)K \
-          -D CONFIG_RAMSIZE=$(CONFIG_RAMSIZE)K $< -o $@
-
-$(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
-	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
-
-$(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
-	 $(XOBJCOPY) -O binary $^ $@
-
-$(OBJDIR)/%.o: %.S
-	 $(XCC) -c $(XCFLAGS) -o $@ $<
-
-$(OBJDIR)/%.o: %.c
-	 $(XCC) -c $(XCFLAGS) -o $@ $<
+include ../Makefile.rules
 
 endif # PROG

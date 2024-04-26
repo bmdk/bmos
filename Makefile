@@ -1,6 +1,8 @@
 ROOT = $(PWD)
+BMOS_ROOT = $(ROOT)
 
 export ROOT
+export BMOS_ROOT
 
 PRODUCTS += proto
 PRODUCTS += proto-boot
