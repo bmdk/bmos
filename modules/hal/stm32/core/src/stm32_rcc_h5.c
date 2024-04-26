@@ -341,7 +341,75 @@ void set_hsi_div(unsigned int div)
   reg_set_field(&RCC->cr, 2, 3, div);
 }
 
+void set_ccipr1(int item, unsigned int sel)
+{
+  if (item > RCC_CCIPR1_SEL_TIMICSEL)
+    return;
+
+  if (item == RCC_CCIPR1_SEL_TIMICSEL)
+    reg_set_field(&RCC->ccipr[0], 1, 31, sel);
+  else
+    reg_set_field(&RCC->ccipr[0], 3, item * 3, sel);
+}
+
+void set_ccipr2(int item, unsigned int sel)
+{
+  if (item > RCC_CCIPR2_SEL_LPTIM6)
+    return;
+
+  reg_set_field(&RCC->ccipr[1], 3, item * 4, sel);
+}
+
+void set_ccipr3(int item, unsigned int sel)
+{
+  if (item > 9)
+    return;
+
+  reg_set_field(&RCC->ccipr[2], 3, item * 3, sel);
+}
+
+void set_ccipr4(int item, unsigned int sel)
+{
+  if (item > RCC_CCIPR4_SEL_SDMMC2)
+    return;
+
+  if (item >= RCC_CCIPR4_SEL_SDMMC1)
+    /* handle 1 bit fields */
+    reg_set_field(&RCC->ccipr[3], 1, item - RCC_CCIPR4_SEL_SDMMC1 + 6, sel);
+  else
+    reg_set_field(&RCC->ccipr[3], 2, item * 2, sel);
+}
+
+void set_ccipr5(int item, unsigned int sel)
+{
+  switch (item) {
+  case RCC_CCIPR5_SEL_ADCDAC:
+    reg_set_field(&RCC->ccipr[4], 3, 0, sel);
+    break;
+  case RCC_CCIPR5_SEL_DAC:
+    reg_set_field(&RCC->ccipr[4], 1, 3, sel);
+    break;
+  case RCC_CCIPR5_SEL_RNG:
+    reg_set_field(&RCC->ccipr[4], 2, 4, sel);
+    break;
+  case RCC_CCIPR5_SEL_CEC:
+    reg_set_field(&RCC->ccipr[4], 2, 6, sel);
+    break;
+  case RCC_CCIPR5_SEL_FDCAN:
+    reg_set_field(&RCC->ccipr[4], 2, 8, sel);
+    break;
+  case RCC_CCIPR5_SEL_SAI1:
+    reg_set_field(&RCC->ccipr[4], 2, 16, sel);
+    break;
+  case RCC_CCIPR5_SEL_SAI2:
+    reg_set_field(&RCC->ccipr[4], 2, 18, sel);
+    break;
+  default:
+    break;
+  }
+}
+
 void set_fdcansel(unsigned int sel)
 {
-  reg_set_field(&RCC->ccipr[4], 2, 8, sel);
+  set_ccipr5(RCC_CCIPR5_SEL_FDCAN, sel);
 }

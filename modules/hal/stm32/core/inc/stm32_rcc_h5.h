@@ -103,4 +103,58 @@ void set_fdcansel(unsigned int sel);
 
 void set_hsi_div(unsigned int div);
 
+#define RCC_CCIPR1_SEL_UART1 0
+#define RCC_CCIPR1_SEL_UART2 1
+#define RCC_CCIPR1_SEL_UART3 2
+#define RCC_CCIPR1_SEL_UART4 3
+#define RCC_CCIPR1_SEL_UART5 4
+#define RCC_CCIPR1_SEL_UART6 5
+#define RCC_CCIPR1_SEL_UART7 6
+#define RCC_CCIPR1_SEL_UART8 7
+#define RCC_CCIPR1_SEL_UART9 8
+#define RCC_CCIPR1_SEL_UART10 9
+#define RCC_CCIPR1_SEL_TIMICSEL 10
+
+#define RCC_CCIPR2_SEL_UART11 0
+#define RCC_CCIPR2_SEL_UART12 1
+#define RCC_CCIPR2_SEL_LPTIM1 2
+#define RCC_CCIPR2_SEL_LPTIM2 3
+#define RCC_CCIPR2_SEL_LPTIM3 4
+#define RCC_CCIPR2_SEL_LPTIM4 5
+#define RCC_CCIPR2_SEL_LPTIM5 6
+#define RCC_CCIPR2_SEL_LPTIM6 7
+
+#define RCC_CCIPR3_SEL_SPI1 0
+#define RCC_CCIPR3_SEL_SPI2 1
+#define RCC_CCIPR3_SEL_SPI3 2
+#define RCC_CCIPR3_SEL_SPI4 3
+#define RCC_CCIPR3_SEL_SPI5 4
+#define RCC_CCIPR3_SEL_SPI6 5
+#define RCC_CCIPR3_SEL_LPUART1 8
+
+#define RCC_CCIPR4_SEL_OCTOSPI1 0
+#define RCC_CCIPR4_SEL_SYSTICK 1
+#define RCC_CCIPR4_SEL_USB 2
+#define RCC_CCIPR4_SEL_I2C1 8
+#define RCC_CCIPR4_SEL_I2C2 9
+#define RCC_CCIPR4_SEL_I2C3 10
+#define RCC_CCIPR4_SEL_I3C1 12
+#define RCC_CCIPR4_SEL_SDMMC1 15
+#define RCC_CCIPR4_SEL_SDMMC2 16
+
+#define RCC_CCIPR5_SEL_ADCDAC 0
+#define RCC_CCIPR5_SEL_DAC 1
+#define RCC_CCIPR5_SEL_RNG 2
+#define RCC_CCIPR5_SEL_CEC 3
+#define RCC_CCIPR5_SEL_FDCAN 4
+#define RCC_CCIPR5_SEL_SAI1 5
+#define RCC_CCIPR5_SEL_SAI2 6
+
+/* peripheral clock selection */
+void set_ccipr1(int item, unsigned int sel);
+void set_ccipr2(int item, unsigned int sel);
+void set_ccipr3(int item, unsigned int sel);
+void set_ccipr4(int item, unsigned int sel);
+void set_ccipr5(int item, unsigned int sel);
+
 #endif
