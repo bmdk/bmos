@@ -110,8 +110,6 @@ void pin_init()
   stm32_syscfg_set_exti(2, 13);
 }
 
-#define SPI1_BASE (void *)0x40013000
-
 #define APB2_CLOCK 80000000
 #define APB1_CLOCK 80000000
 

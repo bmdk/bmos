@@ -79,8 +79,6 @@ void pin_init()
   gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
 }
 
-#define SPI1_BASE (void *)0x40013000
-
 #define APB2_CLOCK 170000000
 #define APB1_CLOCK 170000000
 

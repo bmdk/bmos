@@ -35,14 +35,6 @@
 #include "ssd1306_fonts.h"
 #include "st7735.h"
 
-/* H7XX */
-#define SPI1_BASE 0x40013000
-#define SPI2_BASE 0x40003800
-#define SPI3_BASE 0x40003C00
-#define SPI4_BASE 0x40013400
-#define SPI5_BASE 0x40015000
-#define SPI6_BASE 0x58001400
-
 #define SPI (void *)SPI1_BASE
 
 static stm32_hal_spi_t spi = {

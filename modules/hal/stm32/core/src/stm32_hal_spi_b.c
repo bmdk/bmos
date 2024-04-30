@@ -19,18 +19,12 @@
  * IN THE SOFTWARE.
  */
 
+/* compat: H7XX, H5XX, U5XX */
+
 #include "stm32_hal_spi.h"
 #include "common.h"
 
 #include "io.h"
-
-/* H7XX */
-#define SPI1_BASE 0x40013000
-#define SPI2_BASE 0x40003800
-#define SPI3_BASE 0x40003C00
-#define SPI4_BASE 0x40013400
-#define SPI5_BASE 0x40015000
-#define SPI6_BASE 0x58001400
 
 typedef struct {
   reg32_t cr1;

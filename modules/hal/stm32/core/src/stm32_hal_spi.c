@@ -19,6 +19,8 @@
  * IN THE SOFTWARE.
  */
 
+/* compat: F4XX, G4XX, G0XX, L4XX, C0XX */
+
 #include "common.h"
 #include "stm32_hal_spi.h"
 

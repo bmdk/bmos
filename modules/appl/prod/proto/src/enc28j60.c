@@ -40,17 +40,6 @@
 
 #include "enc28j60.h"
 
-/* H7XX  + F4XX */
-#if STM32_H7XX || STM32_F4XX
-#define SPI1_BASE 0x40013000
-#define SPI2_BASE 0x40003800
-#define SPI3_BASE 0x40003C00
-#define SPI4_BASE 0x40013400
-#define SPI5_BASE 0x40015000
-#else
-#error Define addresses for spi
-#endif
-
 #if STM32_H7XX
 #define SPI6_BASE 0x58001400
 #endif
