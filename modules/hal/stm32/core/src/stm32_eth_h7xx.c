@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "xassert.h"
 #include "common.h"
 #include "hal_int.h"
 #include "hal_time.h"

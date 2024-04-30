@@ -3,6 +3,7 @@ MODULES += prot/net/lwip/core_ipv4
 MODULES += prot/net/lwip/netif
 MODULES += prot/net/lwip/httpd
 
+MODULES += prot/net/lwip/apps/tftp
 MODULES += prot/net/lwip/apps/test
 
 #core
@@ -28,6 +29,7 @@ FILES.lwip += timeouts.o
 FILES.lwip += udp.o
 
 #core ipv4
+FILES.lwip += acd.o
 FILES.lwip += autoip.o
 FILES.lwip += dhcp.o
 FILES.lwip += etharp.o
@@ -39,8 +41,10 @@ FILES.lwip += ip4_frag.o
 
 FILES.lwip += ethernet.o
 
+FILES.lwip += tftp.o
+
 FILES.lwip += integ.o
 
-FILES.lwip += fs.o httpd.o
+#FILES.lwip += fs.o httpd.o
 
 FILES.lwip += lwip_test.o
