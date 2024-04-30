@@ -89,16 +89,26 @@ def compare(a, b, quiet=True):
 
 
 class stm32_ser:
-    def __init__(self, port):
+    def __init__(self, port, invert):
         self.ser = serial.Serial(port, 115200,
                                  timeout=2,
                                  parity=serial.PARITY_EVEN)
+        self.inv_bootmode = False
+        self.inv_reset = False
+        if 'b' in invert:
+           self.inv_bootmode = True
+        if 'r' in invert:
+           self.inv_reset = True
 
     def bootmode(self, on):
+        if self.inv_bootmode:
+          on = not on
         self.ser.setRTS(not on)
 
     def reset(self, on):
-        self.ser.setDTR(not on)
+        if self.inv_reset:
+          on = not on
+        self.ser.setDTR(on)
 
     def read(self, count):
         return self.ser.read(count)
@@ -306,9 +316,10 @@ def main():
 
     addr = 0x8000000
     n_erase = 0
+    invert = ''
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:e:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:e:i:")
     except getopt.GetoptError as err:
         print(str(err))
         usage(progname)
@@ -320,6 +331,8 @@ def main():
                 n_erase = -1
             else:
                 n_erase = int(a)
+        elif o == '-i':
+            invert = a
 
     if len(args) < 2:
         usage(progname)
@@ -327,7 +340,7 @@ def main():
     dev = args[0]
     imfile = args[1]
 
-    s = stm32_ser(dev)
+    s = stm32_ser(dev, invert)
 
     s.bootmode(True)
 
