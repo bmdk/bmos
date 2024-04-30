@@ -22,6 +22,18 @@
 #ifndef STM32_ETH_H
 #define STM32_ETH_H
 
+#define ETH_FLAGS_PHY_FIXED BIT(0)
+#define ETH_FLAGS_PHY_SPEED_100 BIT(1)
+#define ETH_FLAGS_PHY_FULL_DUPLEX BIT(2)
+
+typedef struct {
+  unsigned char hwaddr[6];
+  unsigned char flags;
+} hal_eth_config_t;
+
+void hal_eth_config_get(hal_eth_config_t *config);
+
+#if CONFIG_LWIP
 #include "lwip/netif.h"
 #include "bmos_sem.h"
 
@@ -29,5 +41,6 @@ extern void eth_input(struct netif *nif);
 extern err_t eth_init(struct netif *nif);
 
 extern bmos_sem_t *eth_wakeup;
+#endif
 
 #endif

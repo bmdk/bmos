@@ -30,11 +30,11 @@
 #include "fast_log.h"
 #include "xslog.h"
 #include "stm32_eth_phy.h"
+#include "stm32_eth.h"
 
 #if CONFIG_LWIP
 #include "lwip/netif.h"
 #include "lwip/etharp.h"
-#include "stm32_eth.h"
 #endif
 
 #if STM32_H5XX
@@ -42,12 +42,6 @@
 #else
 #define ETH_IRQ 61
 #endif
-
-#define ETH_FLAGS_PHY_FIXED BIT(0)
-#define ETH_FLAGS_PHY_SPEED_100 BIT(1)
-#define ETH_FLAGS_PHY_FULL_DUPLEX BIT(2)
-
-#define ETH_FLAGS 0
 
 #define ETH_BASE 0x40028000
 
@@ -594,7 +588,7 @@ int cmd_eth(int argc, char *argv[])
 
   switch (argv[1][0]) {
   case 'i':
-    hal_eth_init(ETH_FLAGS);
+    hal_eth_init(0);
     break;
   case 'r':
     if (argc >= 3)
@@ -674,24 +668,33 @@ static err_t hal_eth_send(struct netif *netif, struct pbuf *p)
   return 0;
 }
 
+static hal_eth_config_t hal_eth_config_default = {
+  .hwaddr = { 0x02, 0x00, 0x00, 0x00, 0x00, 0x01 },
+  .flags  = 0
+};
+
+WEAK void hal_eth_config_get(hal_eth_config_t *config)
+{
+  *config = hal_eth_config_default;
+}
+
 err_t eth_init(struct netif *nif)
 {
+  hal_eth_config_t config;
+
   nif->output = etharp_output;
   nif->linkoutput = hal_eth_send;
 
+  hal_eth_config_get(&config);
+
   nif->hwaddr_len = ETH_HWADDR_LEN;
-  nif->hwaddr[0] = 0x02;
-  nif->hwaddr[1] = 0x00;
-  nif->hwaddr[2] = 0x00;
-  nif->hwaddr[3] = 0x00;
-  nif->hwaddr[4] = 0x00;
-  nif->hwaddr[5] = 0x01;
+  memcpy(nif->hwaddr, config.hwaddr, ETH_HWADDR_LEN);
 
   nif->mtu = 1500;
   nif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP;
   nif->flags |= NETIF_FLAG_LINK_UP;
 
-  if (hal_eth_init(ETH_FLAGS) < 0)
+  if (hal_eth_init(config.flags) < 0)
     return -1;
 
   return 0;
