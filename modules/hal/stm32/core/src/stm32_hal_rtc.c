@@ -229,7 +229,7 @@ static int rtc_wake_get()
 #endif
 }
 
-#if STM32_L452
+#if STM32_L4XX
 #define RTC_IRQ 1
 #define RTC_WAKE_IRQ 3
 #define RTC_EXTI_IRQ 20
