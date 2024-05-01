@@ -35,7 +35,9 @@ BUILD_DIR ?= build
 
 OBJDIR = $(BUILD_DIR)/obj-$(PROG)
 
-all: $(BUILD_DIR)/$(PROG).bin
+PROG_TARGET ?= $(PROG)
+
+all: $(BUILD_DIR)/$(PROG_TARGET).bin
 
 clean:
 	rm -fr $(BUILD_DIR)
@@ -72,6 +74,18 @@ ifdef APPL_RAM_BASE.$(PROG)
 APPL_RAM_BASE = $(APPL_RAM_BASE.$(PROG))
 else
 APPL_RAM_BASE = 0x20000000
+endif
+
+ifdef BOOT_RAM_BASE.$(PROG)
+BOOT_RAM_BASE = $(BOOT_RAM_BASE.$(PROG))
+else
+BOOT_RAM_BASE = 0x20000000
+endif
+
+ifdef BOOT_FLASH_BASE.$(PROG)
+BOOT_FLASH_BASE = $(BOOT_FLASH_BASE.$(PROG))
+else
+BOOT_FLASH_BASE = 0x08000000
 endif
 
 APPL_RAM_SIZE=256K
@@ -148,6 +162,8 @@ else
 CONFIG_FLASHSIZE = 16
 endif
 
+CONFIG_RAM_IMAGE ?= 0
+
 DEPFILES = $(addprefix $(OBJDIR)/,$(patsubst %.o,%.d,$(FILES)))
 
 # include dependency information
@@ -161,8 +177,8 @@ $(OFILES): | $(OBJDIR)
 
 $(OBJDIR)/boot.ld: $(COMMON_DIR)/prog.ld.tem | $(OBJDIR)
 	$(CPP) -P \
-	       -D CONFIG_RAM_BASE=0x20000000 \
-	       -D CONFIG_FLASH_BASE=0x08000000 \
+	       -D CONFIG_RAM_BASE=$(BOOT_RAM_BASE) \
+	       -D CONFIG_FLASH_BASE=$(BOOT_FLASH_BASE) \
          -D CONFIG_SHELL=$(CONFIG_SHELL) \
          -D CONFIG_FLASH_SIZE=$(CONFIG_FLASHSIZE)K \
          -D CONFIG_RAM_SIZE=$(CONFIG_RAMSIZE)K \
@@ -179,18 +195,19 @@ $(OBJDIR)/appl.ld: $(COMMON_DIR)/prog.ld.tem | $(OBJDIR)
          -D CONFIG_SHELL=$(CONFIG_SHELL) \
          -D CONFIG_FLASHSIZE=$(CONFIG_FLASHSIZE)K \
          -D CONFIG_RAMSIZE=$(CONFIG_RAMSIZE)K \
+         -D CONFIG_RAM_IMAGE=$(CONFIG_RAM_IMAGE) \
          $< -o $@
 
-$(BUILD_DIR)/$(PROG).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
+$(BUILD_DIR)/$(PROG_TARGET).elf: $(OFILES) $(LD_SCRIPT) |$(BUILD_DIR)
 	 $(XCC) -o $@ $(OFILES) $(XLDFLAGS) -T $(LD_SCRIPT)
 
-$(BUILD_DIR)/$(PROG).bin: $(BUILD_DIR)/$(PROG).elf |$(BUILD_DIR)
+$(BUILD_DIR)/$(PROG_TARGET).bin: $(BUILD_DIR)/$(PROG_TARGET).elf |$(BUILD_DIR)
 	 $(XOBJCOPY) -O binary -R .eth -R .framebuf $^ $@
 
 $(OBJDIR)/%.o: %.S
-	 $(XCC) -c $(XCFLAGS) -o $@ $<
+	 $(XCC) -c $(XCFLAGS) $(XCFLAGS.$*) -o $@ $<
 
 $(OBJDIR)/%.o: %.c
-	$(XCC) -c $(XCFLAGS) -D__S_FILE__=\"$(notdir $<)\" -o $@ $<
+	$(XCC) -c $(XCFLAGS) $(XCFLAGS.$*) -D__S_FILE__=\"$(notdir $<)\" -o $@ $<
 
 # vim: filetype=make

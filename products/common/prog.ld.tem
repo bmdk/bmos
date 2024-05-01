@@ -19,6 +19,12 @@
  * IN THE SOFTWARE.
  */
 
+#if CONFIG_RAM_IMAGE
+#define _STORAGE RAM
+#else
+#define _STORAGE FLASH
+#endif
+
 ENTRY(reset_handler)
 
 MEMORY
@@ -60,7 +66,7 @@ SECTIONS
 #if CONFIG_COPY_ISR
   } >RAM AT> FLASH
 #else
-  } >FLASH
+  } >_STORAGE
 #endif
 
 #if CONFIG_SHELL
@@ -71,7 +77,7 @@ SECTIONS
     KEEP(*(SORT(.shell_reg.*)))
     . = ALIGN(4);
     PROVIDE(cmd_list_end = .);
-  } >FLASH
+  } >_STORAGE
 #endif
 
   .text :
@@ -88,7 +94,7 @@ SECTIONS
 
     . = ALIGN(8);
     _etext = .;
-  } >FLASH
+  } >_STORAGE
 
   .rodata :
   {
@@ -96,14 +102,14 @@ SECTIONS
     *(.rodata)
     *(.rodata*)
     . = ALIGN(8);
-  } >FLASH
+  } >_STORAGE
 
   .ARM.extab :
   {
     . = ALIGN(8);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(8);
-  } >FLASH
+  } >_STORAGE
 
   .ARM : {
     . = ALIGN(8);
@@ -111,7 +117,7 @@ SECTIONS
     *(.ARM.exidx*)
     __exidx_end = .;
     . = ALIGN(8);
-  } >FLASH
+  } >_STORAGE
 
   .init_array :
   {
@@ -121,7 +127,7 @@ SECTIONS
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
     . = ALIGN(8);
-  } >FLASH
+  } >_STORAGE
 
   .fini_array :
   {
@@ -131,7 +137,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
     . = ALIGN(8);
-  } >FLASH
+  } >_STORAGE
 
   _fsdata = LOADADDR(.data);
 
@@ -147,7 +153,12 @@ SECTIONS
 
     . = ALIGN(8);
     _redata = .;
-  } >RAM AT> FLASH
+  }
+#if CONFIG_RAM_IMAGE
+ >RAM
+#else
+ >RAM AT> FLASH
+#endif
 
   _flash_end = LOADADDR(.data) + SIZEOF(.data);
 
