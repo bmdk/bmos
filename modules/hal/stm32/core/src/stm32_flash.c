@@ -137,12 +137,15 @@ typedef struct {
 #if FLASH_TYPE1
 #define FLASH_CR_PSIZE(page) (((page) & 0x3) << 8)
 #define FLASH_CR_PNB(page) (((page) & 0x1f) << 3)
+#define MIN_WRITE_POW2 2
 #elif FLASH_TYPE2 || FLASH_TYPE3
 #define FLASH_CR_OPTLOCK BIT(30)
 #define FLASH_CR_PNB(page) (((page) & 0xff) << 3)
 #define FLASH_CR_MER1 BIT(2)
+#define MIN_WRITE_POW2 3
 #elif FLASH_TYPE4
-#define FLASH_CR_PNB(page) (((page) & 0x3f) << 6)
+#define FLASH_CR_PNB(page) (((page) & 0x7f) << 6)
+#define MIN_WRITE_POW2 4
 #endif
 
 #if FLASH_TYPE4
@@ -243,6 +246,11 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
   const unsigned int *d = (const unsigned int *)data;
   unsigned int *a;
 
+  if (addr & (BIT(MIN_WRITE_POW2) - 1))
+    return -1;
+  if (len & (BIT(MIN_WRITE_POW2) - 1))
+    return -1;
+
   clear_status();
 
 #if !CONFIG_FLASH_NO_LOCK
@@ -262,14 +270,13 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
     return -1;
 #endif
 
+  len >>= MIN_WRITE_POW2;
+
 #if FLASH_TYPE1
-  len >>= 2;
   FLASH->cr = FLASH_CR_PSIZE(2);
 #elif FLASH_TYPE4
-  len >>= 4;
   FLASH->cr &= ~0x3f;
 #else
-  len >>= 3;
   FLASH->cr &= ~0x7;
 #endif
   FLASH->cr |= FLASH_CR_PG;
