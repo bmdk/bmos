@@ -41,7 +41,7 @@ FILES.lwip += ip4_frag.o
 
 FILES.lwip += ethernet.o
 
-FILES.lwip += tftp.o
+#FILES.lwip += tftp.o
 
 FILES.lwip += integ.o
 

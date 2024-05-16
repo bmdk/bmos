@@ -58,7 +58,6 @@ void task_net()
   IP4_ADDR(&gateway, _gateway[0], _gateway[1], _gateway[2], _gateway[3]);
 
   lwip_init();
-  httpd_init();
   lwip_test_init();
 
   eth_wakeup = sem_create("eth_wakeup", 0);
