@@ -8,4 +8,6 @@
                                      __LINE__, __S_FILE__);} while(0)
 #include <xassert.h>
 
+#define LWIP_NO_CTYPE_H 1
+
 #endif

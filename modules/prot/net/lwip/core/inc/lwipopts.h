@@ -32,6 +32,7 @@
 #ifndef LWIP_HDR_LWIPOPTS_H
 #define LWIP_HDR_LWIPOPTS_H
 
+#define LWIP_RAW                        1
 #define LWIP_TESTMODE                   0
 
 #define LWIP_IPV6                       0
