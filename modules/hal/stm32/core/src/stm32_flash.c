@@ -249,25 +249,15 @@ int flash_program(unsigned int addr, const void *data, unsigned int len)
   if (addr & (BIT(MIN_WRITE_POW2) - 1))
     return -1;
   if (len & (BIT(MIN_WRITE_POW2) - 1))
-    return -1;
+    return -2;
+  if (((unsigned int)data) & 0x3)
+    return -3;
 
   clear_status();
 
 #if !CONFIG_FLASH_NO_LOCK
   flash_lock();
   flash_unlock();
-#endif
-
-  /* TODO find out why this causes a crash */
-#if 0
-  if ((((unsigned int)data) & 0x7) != 0)
-    return -1;
-#endif
-#if 0
-  if ((len & 0x7) != 0)
-    return -1;
-  if ((addr & 0x7) != 0)
-    return -1;
 #endif
 
   len >>= MIN_WRITE_POW2;
