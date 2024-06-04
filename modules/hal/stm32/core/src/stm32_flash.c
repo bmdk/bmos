@@ -174,6 +174,24 @@ typedef struct {
 void stm32_flash_latency(unsigned int val)
 {
   reg_set_field(&FLASH->acr, 4, 0, val);
+#if STM32_H5XX
+  unsigned int wrhighfreq = 2;
+
+  switch (val) {
+  case 0:
+  case 1:
+    wrhighfreq = 0;
+    break;
+  case 2:
+  case 3:
+    wrhighfreq = 1;
+    break;
+  }
+
+  reg_set_field(&FLASH->acr, 2, 4, wrhighfreq);
+#endif
+
+  (void)FLASH->acr;
 }
 
 void stm32_flash_cache_enable(unsigned int en)
@@ -182,6 +200,7 @@ void stm32_flash_cache_enable(unsigned int en)
     FLASH->acr |= FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN;
   else
     FLASH->acr &= ~(FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN);
+  (void)FLASH->acr;
 }
 
 void flash_data_cache_invalidate()
