@@ -46,4 +46,7 @@ typedef volatile unsigned char reg8_t;
 #define RAMFUNC __attribute__((section(".ramfunc"), __long_call__, \
                                __noinline__))
 
+#define _STRIFY(x) # x
+#define STRIFY(_x_) _STRIFY(_x_)
+
 #endif
