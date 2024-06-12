@@ -11,7 +11,7 @@
 
 #include "mshell.h"
 
-#define SHELL_SRC_COUNT 2
+#define SHELL_SRC_COUNT 3
 
 typedef struct {
   unsigned short dest;

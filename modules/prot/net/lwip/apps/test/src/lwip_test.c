@@ -4,14 +4,15 @@
 
 #include "bmos_op_msg.h"
 #include "bmos_queue.h"
+#include "bmos_syspool.h"
 #include "bmos_task.h"
 #include "fast_log.h"
 #include "io.h"
+#include "mshell.h"
 #include "shell.h"
 
 static struct tcp_pcb *telnet_listening_pcb = 0;
 static struct tcp_pcb *telnet_pcb = 0;
-static shell_t sh;
 static bmos_queue_t *shell_tx;
 
 typedef struct {
@@ -24,7 +25,6 @@ static telnet_esc_t telnet_esc;
 
 static void telnet_shell_put(void *arg)
 {
-  struct tcp_pcb *pcb = (struct tcp_pcb *)arg;
   bmos_op_msg_t *m;
   unsigned int len;
   unsigned char *data;
@@ -39,9 +39,11 @@ static void telnet_shell_put(void *arg)
 
     data = BMOS_OP_MSG_GET_DATA(m);
 
-    rerr = tcp_write(pcb, data, len, TCP_WRITE_FLAG_COPY);
-    if (rerr != ERR_OK)
-      FAST_LOG('t', "tcp write error %d, len %d\n", rerr, len);
+    if (telnet_pcb) {
+      rerr = tcp_write(telnet_pcb, data, len, TCP_WRITE_FLAG_COPY);
+      if (rerr != ERR_OK)
+        FAST_LOG('t', "tcp write error %d, len %d\n", rerr, len);
+    }
 
     op_msg_return(m);
   }
@@ -59,6 +61,9 @@ static void telnet_shell_put(void *arg)
 static err_t telnet_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
   struct pbuf *q;
+  bmos_op_msg_t *m = 0;
+  char *d;
+  unsigned int count;
 
   if (!p) {
     telnet_pcb = 0;
@@ -85,9 +90,25 @@ static err_t telnet_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t e
         telnet_esc.active = 1;
         telnet_esc.data_len = 0;
       } else {
-        shell_input(&sh, (char)ch);
+        if (!m) {
+          m = op_msg_wait(syspool);
+          d = BMOS_OP_MSG_GET_DATA(m);
+          count = 0;
+        }
+
+        d[count++] = (char)ch;
+
+        if (count >= SYSPOOL_SIZE) {
+          op_msg_put(mshell_queue(), m, 2, count);
+          m = 0;
+        }
       }
     }
+  }
+
+  if (m) {
+    op_msg_put(mshell_queue(), m, 2, count);
+    m = 0;
   }
 
   tcp_recved(pcb, p->tot_len);
@@ -131,8 +152,6 @@ static err_t telnet_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 
   (void)queue_set_put_f(shell_tx, telnet_shell_put, 0, pcb);
 
-  shell_init(&sh, "> ");
-
   pcb->keep_intvl = 1000;
 
   tcp_recv(pcb, telnet_recv);
@@ -163,7 +182,7 @@ int lwip_test_init()
 
   shell_tx = queue_create("ethshtx", QUEUE_TYPE_DRIVER);
 
-  task_set_tls(TLS_IND_STDOUT, shell_tx);
+  mshell_add_queue(shell_tx, 2, 0);
 
   return 0;
 
