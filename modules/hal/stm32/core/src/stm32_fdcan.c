@@ -119,7 +119,7 @@ typedef struct {
   reg32_t flags;
   union {
     unsigned char c[64];
-    reg32_t i[8];
+    reg32_t i[16];
   } data;
 } fdcan_buf_t;
 
