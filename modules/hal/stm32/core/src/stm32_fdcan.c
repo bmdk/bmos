@@ -146,14 +146,21 @@ typedef struct {
 #define FDCAN_CCCR_INIT BIT(0)
 #define FDCAN_CCCR_CCE BIT(1)
 #define FDCAN_CCCR_MON BIT(5)
+#define FDCAN_CCCR_DAR BIT(6)
 #define FDCAN_CCCR_TEST BIT(7)
 #define FDCAN_CCCR_FDOE BIT(8)
 #define FDCAN_CCCR_BRSE BIT(9)
+#define FDCAN_CCCR_PXHD BIT(12)
+#define FDCAN_CCCR_TXP BIT(14)
 
 #define FDCAN_TCBC_TFQM BIT(24)
 
 #define FDCAN_IR_RF0N BIT(0)
 #define FDCAN_IR_TC BIT(7)
+#define FDCAN_IR_TFEE BIT(9)
+#define FDCAN_IR_BO BIT(19)
+#define FDCAN_IR_PEA BIT(21)
+#define FDCAN_IR_PED BIT(22)
 
 #define FDCAN_GFC(lse, lss, anfs, anfe) ((((lse) & 0xff) << 24) | \
                                          (((lss) & 0xff) << 16) | \
@@ -182,6 +189,10 @@ typedef struct {
 #define FDCAN_TXFQS_TFQF BIT(21)
 #define FDCAN_TXFQS_MASK 0x3
 
+#define FDCAN_TDCR_INIT BIT(0)
+
+#define FDCAN_PSR_BO BIT(7)
+
 void fdcan_rx();
 
 #define FDCAN_FILT_SFT_RANGE 0
@@ -207,8 +218,10 @@ static int fdcan_send(stm32_fdcan_t *fdcan, unsigned int inst, can_t *pkt)
   unsigned int txfqs, idx, val;
 
   txfqs = fdcan->txfqs;
-  if (txfqs & FDCAN_TXFQS_TFQF)
+  if (txfqs & FDCAN_TXFQS_TFQF) {
+    fdcan->ie |= FDCAN_IR_TFEE;
     return -1;
+  }
 
   idx = (txfqs >> 16) & FDCAN_TXFQS_MASK;
 
@@ -233,12 +246,14 @@ static void _tx(candev_t *c)
   unsigned int len, txfqs;
 
   txfqs = fdcan->txfqs;
-  if (txfqs & FDCAN_TXFQS_TFQF)
+  if (txfqs & FDCAN_TXFQS_TFQF) {
+    fdcan->ie |= FDCAN_IR_TFEE;
     return;
+  }
 
   m = op_msg_get(c->txq);
   if (!m) {
-    fdcan->ie &= ~FDCAN_IR_TC;
+    fdcan->ie &= ~FDCAN_IR_TFEE;
     return;
   }
 
@@ -260,7 +275,7 @@ void irq_fdcan(void *arg)
   can_t *cdata;
   unsigned int ir = fdcan->ir;
 
-  if (ir & FDCAN_IR_TC)
+  if (ir & FDCAN_IR_TFEE)
     _tx(c);
 
   if (ir & FDCAN_IR_RF0N) {
@@ -317,6 +332,23 @@ static void fdcan_filter(unsigned int inst,
   for (i = 0; i < id_len; i++)
     filt[i] = FDCAN_FILTER(FDCAN_FILT_SFT_CLASSIC,
                            FDCAN_FILT_SFEC_FIFO0, id[i], 0x7ff);
+}
+
+void fdcan_resume(candev_t *c)
+{
+  stm32_fdcan_t *fdcan = c->base;
+
+  fdcan->cccr &= ~FDCAN_CCCR_INIT;
+}
+
+int fdcan_bus_off(candev_t *c)
+{
+  stm32_fdcan_t *fdcan = c->base;
+
+  if (fdcan->psr & FDCAN_PSR_BO)
+    return 1;
+
+  return 0;
 }
 
 static void fdcan_init(candev_t *c, const unsigned int *id, unsigned int id_len)
@@ -398,4 +430,35 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
 
   return c->txq;
 }
+
+void fdcan_status(candev_t *c)
+{
+  stm32_fdcan_t *fdcan = c->base;
+  unsigned int val;
+
+  xprintf("rx status\n");
+  val = fdcan->rxf0s;
+  xprintf("RXF0S lost: %d full: %d put: %d get: %d cnt: %d\n",
+          (val >> 25) & 1, (val >> 24) & 1, (val >> 16) & 0x3,
+          (val >> 8) & 0x3, (val >> 0) & 0x3);
+  val = fdcan->txfqs;
+  xprintf("TXFQS full: %d put: %d get: %d cnt: %d\n",
+          (val >> 21) & 1, (val >> 16) & 0x3,
+          (val >> 8) & 0x3, (val >> 0) & 0x3);
+  xprintf("TXBRP pending: %x\n", fdcan->txbrp);
+  xprintf("IR: %08x\n", fdcan->ir);
+  val = fdcan->ecr;
+  xprintf("ERROR COUNTER: cel:%d rp:%d rec:%d tec:%d\n",
+          (val >> 16) & 0xff, (val >> 15) & 1,
+          (val >> 8) & 0x7f, (val >> 0) & 0xff
+         );
+  val = fdcan->psr;
+  xprintf("PSR: pxe:%d redl:%d rbrs:%d resi:%d dlec:%d\n",
+      (val >> 14) & 1, (val >> 13) & 1, (val >> 12) & 1, (val >> 11) & 1,
+      (val >> 8) & 0x7);
+  xprintf("PSR:  bo:%d   ew:%d   ep:%d  act:%d  lec:%d\n",
+      (val >> 7) & 1, (val >> 6) & 1, (val >> 5) & 1,
+      (val >> 3) & 0x3, (val >> 0) & 0x3);
+}
+
 #endif
