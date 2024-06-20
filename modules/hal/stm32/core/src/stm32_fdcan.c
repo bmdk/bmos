@@ -436,29 +436,18 @@ void fdcan_status(candev_t *c)
   stm32_fdcan_t *fdcan = c->base;
   unsigned int val;
 
-  xprintf("rx status\n");
-  val = fdcan->rxf0s;
-  xprintf("RXF0S lost: %d full: %d put: %d get: %d cnt: %d\n",
-          (val >> 25) & 1, (val >> 24) & 1, (val >> 16) & 0x3,
-          (val >> 8) & 0x3, (val >> 0) & 0x3);
-  val = fdcan->txfqs;
-  xprintf("TXFQS full: %d put: %d get: %d cnt: %d\n",
-          (val >> 21) & 1, (val >> 16) & 0x3,
-          (val >> 8) & 0x3, (val >> 0) & 0x3);
-  xprintf("TXBRP pending: %x\n", fdcan->txbrp);
-  xprintf("IR: %08x\n", fdcan->ir);
   val = fdcan->ecr;
   xprintf("ERROR COUNTER: cel:%d rp:%d rec:%d tec:%d\n",
           (val >> 16) & 0xff, (val >> 15) & 1,
           (val >> 8) & 0x7f, (val >> 0) & 0xff
-         );
+          );
   val = fdcan->psr;
   xprintf("PSR: pxe:%d redl:%d rbrs:%d resi:%d dlec:%d\n",
-      (val >> 14) & 1, (val >> 13) & 1, (val >> 12) & 1, (val >> 11) & 1,
-      (val >> 8) & 0x7);
+          (val >> 14) & 1, (val >> 13) & 1, (val >> 12) & 1, (val >> 11) & 1,
+          (val >> 8) & 0x7);
   xprintf("PSR:  bo:%d   ew:%d   ep:%d  act:%d  lec:%d\n",
-      (val >> 7) & 1, (val >> 6) & 1, (val >> 5) & 1,
-      (val >> 3) & 0x3, (val >> 0) & 0x3);
+          (val >> 7) & 1, (val >> 6) & 1, (val >> 5) & 1,
+          (val >> 3) & 0x3, (val >> 0) & 0x3);
 }
 
 #endif
