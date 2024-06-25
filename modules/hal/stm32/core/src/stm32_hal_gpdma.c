@@ -31,6 +31,7 @@
 #define DMA_CHANNELS 16
 
 #if STM32_U5XX
+#define CHAN_MAX 7 /* bits */
 #define GPDMA_CHAN_ADC1 0
 #define GPDMA_CHAN_ADC4 1
 #define GPDMA_CHAN_DAC1_CH1 2
@@ -146,6 +147,7 @@
 #define GPDMA_CHAN_LPTIM3_IC2 112
 #define GPDMA_CHAN_LPTIM3_UE 113
 #elif STM32_H5XX
+#define CHAN_MAX 8 /* bits */
 #define GPDMA_CHAN_ADC1 0
 #define GPDMA_CHAN_ADC2 1
 #define GPDMA_CHAN_DAC1_CH1 2
@@ -356,7 +358,7 @@ static void stm32_gpdma_set_chan(void *addr, unsigned int chan,
   stm32_gpdma_t *d = addr;
   stm32_gpdma_chan_t *c = &d->chan[chan];
 
-  reg_set_field(&c->tr2, 7, 0, devid);
+  reg_set_field(&c->tr2, CHAN_MAX, 0, devid);
 }
 
 static unsigned int stm32_gpdma_irq_ack(void *addr, unsigned int chan)
