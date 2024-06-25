@@ -138,7 +138,7 @@ void tusb_cdc_init()
   task_init(cdc_task, 0, "usb_cdc", 1, 0, 1024);
   usb_wakeup = sem_create("usb_wakeup", 0);
   cdc_tx = queue_create("cdc_tx", QUEUE_TYPE_DRIVER);
-  (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0);
+  (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0, 0);
 }
 
 static int cmd_cdc_stats(int argc, char *argv[])

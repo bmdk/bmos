@@ -22,6 +22,8 @@
 #ifndef BMOS_QUEUE_H
 #define BMOS_QUEUE_H
 
+#include <stdarg.h>
+
 typedef struct _bmos_queue_t bmos_queue_t;
 
 #define QUEUE_TYPE_DRIVER 0
@@ -30,15 +32,29 @@ typedef struct _bmos_queue_t bmos_queue_t;
 bmos_queue_t *queue_create(const char *name, unsigned int type);
 
 typedef void bmos_queue_put_f_t (void *data);
+typedef int bmos_queue_control_f_t (void *data, int control, va_list ap);
 
-int queue_set_put_f(bmos_queue_t *queue, bmos_queue_put_f_t *f, void *f_data);
+int queue_set_put_f(bmos_queue_t *queue, bmos_queue_put_f_t *f,
+                    bmos_queue_control_f_t *cf, void *f_data);
 
 void queue_destroy(bmos_queue_t *queue);
 
 bmos_queue_t *queue_lookup(const char *name);
 
+int queue_control(bmos_queue_t *queue, int control, ...);
+
 const char *queue_get_name(bmos_queue_t *queue);
 
 unsigned int queue_get_count(bmos_queue_t *queue);
+
+/* control numbers */
+
+typedef enum {
+  /* standard controls */
+  QUEUE_CTRL_STATUS,         /* text status of device using xprintf */
+  /* canbus controls */
+  QUEUE_CTRL_CAN_IS_BUS_OFF, /* tests for bus off */
+  QUEUE_CTRL_CAN_RESUME      /* resume after bus off */
+} queue_control_number_t;
 
 #endif

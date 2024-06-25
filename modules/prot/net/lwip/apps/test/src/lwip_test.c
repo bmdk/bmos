@@ -129,7 +129,7 @@ static err_t telnet_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   send_telnet_opt(TELNET_WONT, TELNET_OPT_LINEMODE);
   send_telnet_opt(TELNET_WILL, TELNET_OPT_ECHO);
 
-  (void)queue_set_put_f(shell_tx, telnet_shell_put, pcb);
+  (void)queue_set_put_f(shell_tx, telnet_shell_put, 0, pcb);
 
   shell_init(&sh, "> ");
 

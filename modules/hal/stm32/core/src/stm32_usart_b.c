@@ -403,8 +403,8 @@ bmos_queue_t *uart_open(uart_t *u, unsigned int baud, bmos_queue_t *rxq,
   u->txq = queue_create(tx_queue_name, QUEUE_TYPE_DRIVER);
   XASSERT(u->txq);
 
-  (void)queue_set_put_f(u->txq, _put, (void *)u);
-  (void)queue_set_put_f(u->pool, _put_pool, (void *)u);
+  (void)queue_set_put_f(u->txq, _put, NULL, (void *)u);
+  (void)queue_set_put_f(u->pool, _put_pool, NULL, (void *)u);
 
   u->rxq = rxq;
   u->op = (unsigned short)op;

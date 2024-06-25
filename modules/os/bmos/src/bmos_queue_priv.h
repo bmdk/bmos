@@ -29,6 +29,7 @@
 typedef struct {
   unsigned int count;
   bmos_queue_put_f_t *put_f;
+  bmos_queue_control_f_t *control_f;
   void *put_f_data;
 } queue_driver_data_t;
 

@@ -303,7 +303,7 @@ int main()
 
 #if CONFIG_PICO_USB_ENABLE
   cdc_tx = queue_create("cdc_tx", QUEUE_TYPE_DRIVER);
-  (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0);
+  (void)queue_set_put_f(cdc_tx, cdc_shell_put, 0, 0);
   task_init(usb_task, NULL, "usbshell", 2, 0, 4096);
 #endif
 

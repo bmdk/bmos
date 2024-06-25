@@ -19,6 +19,7 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -63,6 +64,29 @@ bmos_queue_t *queue_create(const char *name, unsigned int type)
 void queue_destroy(bmos_queue_t *queue)
 {
   xpanic("queue_destroy %p", queue);
+}
+
+int queue_control(bmos_queue_t *queue, int control, ...)
+{
+  bmos_queue_control_f_t *control_f;
+  va_list ap;
+  int r;
+
+  if (queue->type != QUEUE_TYPE_DRIVER)
+    return -1;
+
+  control_f = queue->type_data.driver.control_f;
+
+  if (!control_f)
+    return -1;
+
+  va_start(ap, control);
+
+  r = control_f(queue->type_data.driver.put_f_data, control, ap);
+
+  va_end(ap);
+
+  return r;
 }
 
 bmos_queue_t *queue_lookup(const char *name)
@@ -246,7 +270,8 @@ void msg_init(bmos_msg_t *msg, bmos_queue_t *queue, unsigned int len)
   msg->len = len;
 }
 
-int queue_set_put_f(bmos_queue_t *queue, bmos_queue_put_f_t *f, void *f_data)
+int queue_set_put_f(bmos_queue_t *queue, bmos_queue_put_f_t *f,
+                    bmos_queue_control_f_t *cf, void *f_data)
 {
   unsigned int saved;
 
@@ -256,6 +281,7 @@ int queue_set_put_f(bmos_queue_t *queue, bmos_queue_put_f_t *f, void *f_data)
   saved = interrupt_disable();
 
   queue->type_data.driver.put_f = f;
+  queue->type_data.driver.control_f = cf;
   queue->type_data.driver.put_f_data = f_data;
 
   interrupt_enable(saved);
