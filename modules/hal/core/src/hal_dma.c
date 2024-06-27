@@ -108,7 +108,6 @@ int cmd_dma(int argc, char *argv[])
 {
   unsigned int chan, devid;
   unsigned int src, dst, n;
-  dma_attr_t attr;
 
   if (argc < 2)
     return -1;
@@ -131,20 +130,6 @@ int cmd_dma(int argc, char *argv[])
 
     xprintf("copy src: %08x dst: %08x cnt: %d\n", src, dst, n);
     dma_memcpy(DMANUM, (void *)src, (void *)dst, n);
-    break;
-  case 'p':
-    if (argc < 5)
-      return -1;
-    src = strtoul(argv[2], 0, 16);
-    dst = strtoul(argv[3], 0, 16);
-    n = strtoul(argv[4], 0, 0);
-
-    attr.ssiz = DMA_SIZ_1;
-    attr.dsiz = DMA_SIZ_1;
-    attr.dir = DMA_DIR_TO;
-    attr.prio = 0;
-
-    dma_trans(DMANUM, 0, (void *)src, (void *)dst, n, attr);
     break;
   case 't':
     if (argc < 3)
@@ -171,5 +156,15 @@ int cmd_dma(int argc, char *argv[])
   return 0;
 }
 
-SHELL_CMD(dma, cmd_dma);
+#if CONFIG_SHELL_HELP
+static const char dma_help[] =
+  "dma test\n\n"
+  "dma c <chan> <devid>: configure dma <chan> for device <devid>\n"
+  "dma e <chan>: enable channel <chan>\n"
+  "dma m <src> <dest> <count>: copy <count> bytes from <src> to <dest>\n"
+  "dma s <chan>: stop channel <chan>\n"
+  "dma t <chan>: trigger channel <chan>";
+#endif
+
+SHELL_CMD_H(dma, cmd_dma, dma_help);
 #endif
