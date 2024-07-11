@@ -11,13 +11,18 @@
 
 #include "mshell.h"
 
-#define SHELL_SRC_COUNT 3
+#ifndef CONFIG_SHELL_SRC_COUNT
+#define CONFIG_SHELL_SRC_COUNT 3
+#endif
+#ifndef CONFIG_SHELL_SRC_DEFAULT
+#define CONFIG_SHELL_SRC_DEFAULT 0
+#endif
 
 typedef struct {
   unsigned short dest;
   bmos_queue_t *rxq;
-  bmos_queue_t *txq[SHELL_SRC_COUNT];
-  unsigned short txop[SHELL_SRC_COUNT];
+  bmos_queue_t *txq[CONFIG_SHELL_SRC_COUNT];
+  unsigned short txop[CONFIG_SHELL_SRC_COUNT];
 } shell_info_t;
 
 static shell_t shell;
@@ -41,33 +46,40 @@ static void shell_info_init(shell_info_t *info, const char *name,
   info->dest = dest;
 }
 
+static void set_default_output(unsigned int num)
+{
+  if (num == CONFIG_SHELL_SRC_DEFAULT ||
+      !shell_info.txq[CONFIG_SHELL_SRC_DEFAULT]) {
+    io_set_output(shell_info.txq[num], shell_info.txop[num]);
+    shell_info.dest = num;
+  }
+}
+
 static void shell_info_add_uart(shell_info_t *info, uart_t *u,
                                 unsigned int baud, unsigned int num,
                                 unsigned int txop)
 {
-  XASSERT(num < SHELL_SRC_COUNT);
+  XASSERT(num < CONFIG_SHELL_SRC_COUNT);
   XASSERT(info);
   XASSERT(info->rxq);
 
   shell_info.txq[num] = uart_open(u, baud, info->rxq, num);
   shell_info.txop[num] = txop;
 
-  io_set_output(shell_info.txq[num], shell_info.txop[num]);
-  shell_info.dest = num;
+  set_default_output(num);
 }
 
 static void shell_info_add_queue(shell_info_t *info, bmos_queue_t *q,
                                  unsigned int num, unsigned int txop)
 {
-  XASSERT(num < SHELL_SRC_COUNT);
+  XASSERT(num < CONFIG_SHELL_SRC_COUNT);
   XASSERT(info);
   XASSERT(info->rxq);
 
   shell_info.txq[num] = q;
   shell_info.txop[num] = txop;
 
-  io_set_output(shell_info.txq[num], shell_info.txop[num]);
-  shell_info.dest = num;
+  set_default_output(num);
 }
 
 void mshell_add_uart(uart_t *u, unsigned int baud,
@@ -95,7 +107,7 @@ int _xgetc(int timeout)
     if (!m)
       return -1;
 
-    if (m->op >= SHELL_SRC_COUNT || m->len == 0) {
+    if (m->op >= CONFIG_SHELL_SRC_COUNT || m->len == 0) {
       op_msg_return(m);
       m = NULL;
       return -1;
