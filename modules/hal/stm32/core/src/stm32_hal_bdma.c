@@ -26,7 +26,7 @@
 
 #include "hal_dma_if.h"
 
-#if STM32_G0XX || STM32_G4XX || STM32_C0XX
+#if STM32_G0XX || STM32_G4XX || STM32_C0XX || STM32_U0XX
 #define STM32_HAS_DMAMUX 1
 #endif
 

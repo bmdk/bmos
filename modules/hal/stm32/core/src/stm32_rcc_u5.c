@@ -28,7 +28,7 @@
 #include "stm32_rcc_ls.h"
 #include "stm32_rcc_u5.h"
 
-#if STM32_UXXX
+#if STM32_U5XX
 #define RCC_BASE 0x46020C00
 #else
 #error define RCC_BASE

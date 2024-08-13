@@ -50,11 +50,11 @@ typedef struct {
   } cpu[2];
 } stm32_exti_uxxx_t;
 
-#if STM32_G0XX || STM32_C0XX
+#if STM32_G0XX || STM32_C0XX || STM32_U0XX
 #define EXTI_BASE 0x40021800
 #elif STM32_H5XX
 #define EXTI_BASE 0x44022000
-#elif STM32_UXXX
+#elif STM32_U5XX
 #define EXTI_BASE 0x46022000
 #else
 #error No EXTI_BASE for this device.

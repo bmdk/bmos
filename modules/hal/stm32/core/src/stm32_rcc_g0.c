@@ -28,6 +28,44 @@
 #include "stm32_flash.h"
 #include "stm32_rcc_ls.h"
 
+#if STM32_U0XX
+typedef struct {
+  reg32_t cr;
+  reg32_t icscr;
+  reg32_t cfgr;
+  reg32_t pllcfgr;
+  reg32_t pad0[2];
+  reg32_t cier;
+  reg32_t cifr;
+  reg32_t cicr;
+  reg32_t pad1;
+  reg32_t ahbrstr;
+  reg32_t ioprstr;
+  reg32_t pad2[2];
+  reg32_t apb1rstr1;
+  reg32_t pad3;
+  reg32_t apb1rstr2;
+  reg32_t pad4;
+  reg32_t ahbenr;
+  reg32_t iopenr;
+  reg32_t dbgcfgr;
+  reg32_t pad5;
+  reg32_t apb1enr1; /* apbenr1 */
+  reg32_t pad6;
+  reg32_t apb1enr2; /* apbenr2 */
+  reg32_t pad7;
+  reg32_t ahbsmenr;
+  reg32_t iopsmenr;
+  reg32_t pad8[2];
+  reg32_t apb1smenr1;
+  reg32_t pad9;
+  reg32_t apb1smenr2;
+  reg32_t pad10;
+  reg32_t ccipr;
+  reg32_t pad11;
+  rcc_ls_t rcc_ls;
+} stm32_rcc_t;
+#else
 typedef struct {
   reg32_t cr;
   reg32_t icscr;
@@ -44,7 +82,8 @@ typedef struct {
   reg32_t apb1rstr2;
   reg32_t iopenr;
   reg32_t ahbenr;
-  reg32_t apb1enr[2];
+  reg32_t apb1enr1;
+  reg32_t apb1enr2;
   reg32_t iopsmenr;
   reg32_t ahbsmenr;
   reg32_t apb1smenr1;
@@ -52,6 +91,7 @@ typedef struct {
   reg32_t ccipr[2];
   rcc_ls_t rcc_ls;
 } stm32_rcc_t;
+#endif
 
 #define RCC_BASE 0x40021000
 #define RCC ((stm32_rcc_t *)RCC_BASE)
@@ -63,6 +103,9 @@ typedef struct {
 #define RCC_CR_HSEON BIT(16)
 #define RCC_CR_HSIRDY BIT(10)
 #define RCC_CR_HSION BIT(8)
+
+#define RCC_CR_MSIRDY BIT(1)
+#define RCC_CR_MSION BIT(0)
 
 #define RCC_PLLCFGR_PLLREN BIT(28)
 #define RCC_PLLCFGR_PLLQEN BIT(24)
@@ -115,9 +158,22 @@ static void _clock_init(const struct pll_params_t *p)
     RCC->cr |= flags;
     while ((RCC->cr & RCC_CR_HSERDY) == 0)
       ;
+  } else if (p->pllsrc == RCC_PLLCFGR_PLLSRC_HSI16) {
+    RCC->cr |= RCC_CR_HSION;
+    while ((RCC->cr & RCC_CR_HSIRDY) == 0)
+      ;
+  } else if (p->pllsrc == RCC_PLLCFGR_PLLSRC_MSI) {
+    RCC->cr |= RCC_CR_MSION;
+    while ((RCC->cr & RCC_CR_MSIRDY) == 0)
+      ;
   }
 
+#if STM32_U0XX
+  /* default on U0 */
+  _clock_select(RCC_CFGR_SW_MSI);
+#else
   _clock_select(RCC_CFGR_SW_HSISYS);
+#endif
 
   RCC->cr &= ~RCC_CR_PLLON;
   while (RCC->cr & RCC_CR_PLLRDY)
@@ -163,6 +219,18 @@ void disable_io(unsigned int dev)
   RCC->iopenr &= ~BIT(dev);
 }
 
+#if STM32_U0XX
+void enable_dbg(unsigned int dev)
+{
+  RCC->dbgcfgr |= BIT(dev);
+}
+
+void disable_dbg(unsigned int dev)
+{
+  RCC->dbgcfgr &= ~BIT(dev);
+}
+#endif
+
 void enable_ahb1(unsigned int dev)
 {
   RCC->ahbenr |= BIT(dev);
@@ -175,29 +243,31 @@ void disable_ahb1(unsigned int dev)
 
 void enable_apb1(unsigned int dev)
 {
-  unsigned int n = 0;
+  reg32_t *reg = &RCC->apb1enr1;
 
   if (dev >= 32) {
     dev -= 32;
-    n = 1;
+    reg = &RCC->apb1enr2;
   }
 
-  RCC->apb1enr[n] |= BIT(dev);
+  *reg |= BIT(dev);
 }
 
 void disable_apb1(unsigned int dev)
 {
-  unsigned int n = 0;
+  reg32_t *reg = &RCC->apb1enr1;
 
   if (dev >= 32) {
     dev -= 32;
-    n = 1;
+    reg = &RCC->apb1enr2;
   }
 
-  RCC->apb1enr[n] &= ~BIT(dev);
+  *reg &= ~BIT(dev);
 }
 
+#if !STM32_U0XX
 void set_fdcansel(unsigned int sel)
 {
   reg_set_field(&RCC->ccipr[1], 2, 8, sel);
 }
+#endif

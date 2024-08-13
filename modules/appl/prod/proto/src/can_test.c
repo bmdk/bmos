@@ -43,7 +43,7 @@
 #define CAN1_BASE 0x40006400
 #define CAN2_BASE 0x40006800
 #define CAN3_BASE 0x40006C00
-#elif STM32_UXXX
+#elif STM32_U5XX
 #define CAN1_BASE 0x4000A400
 #elif STM32_H7XX
 #define CAN1_BASE 0x4000A000
@@ -126,7 +126,7 @@ static candev_t can0 = {
     .sjw    = 3
   }
 };
-#elif STM32_UXXX
+#elif STM32_U5XX
 /* PLL1Q at 160 MHz clock */
 static candev_t can0 = {
   .name     = "can0",

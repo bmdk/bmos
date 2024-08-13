@@ -78,7 +78,7 @@ typedef struct {
 #define FLASH_BLKSIZE 2
 #elif STM32_L4R || STM32_WBXX
 #define FLASH_BLKSIZE 4
-#elif STM32_UXXX
+#elif STM32_U5XX
 #define FLASH_BLKSIZE 8
 #elif STM32_F4XX
 #define FLASH_BLOCKS { 4, 16 }, { 1, 64 }, { 7, 128 }, \

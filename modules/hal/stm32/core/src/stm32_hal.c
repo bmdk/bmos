@@ -78,7 +78,7 @@ void led_init(const gpio_handle_t *led_list, unsigned int _nleds)
 #define UDID_ADDR 0x1FFF7590
 #elif STM32_F4XX
 #define UDID_ADDR 0x1FFF7A10
-#elif STM32_UXXX
+#elif STM32_U5XX
 #define UDID_ADDR 0x0BFA0700
 #elif STM32_F0XX
 #define UDID_ADDR 0x1FFFF7AC
@@ -104,7 +104,7 @@ void stm32_get_udid(void *buf, unsigned int len)
 #define FLASH_SIZE 0x08FFF80C
 #elif STM32_H7XX
 #define FLASH_SIZE 0x1FF1E880
-#elif STM32_UXXX
+#elif STM32_U5XX
 #define FLASH_SIZE 0x0BFA07A0
 #elif STM32_F1XX || AT32_F4XX
 #define FLASH_SIZE 0x1FFFF7E0
@@ -112,6 +112,8 @@ void stm32_get_udid(void *buf, unsigned int len)
 #define FLASH_SIZE 0x1FFFF7CC
 #elif STM32_G0XX || STM32_G4XX || STM32_L4XX || STM32_WBXX || STM32_L4R
 #define FLASH_SIZE 0x1FFF75E0
+#elif STM32_U0XX
+#define FLASH_SIZE 0x1FFF6EA0
 #elif STM32_C0XX
 #define FLASH_SIZE 0x1FFF75A0
 #elif STM32_L0XX
@@ -134,12 +136,15 @@ unsigned int hal_flash_size(void)
 #define DBGMCU_IDCODE 0x44024000
 #elif STM32_H7XX
 #define DBGMCU_IDCODE 0x5C001000
-#elif STM32_UXXX
+#elif STM32_U5XX
 #define DBGMCU_IDCODE 0xE0044000
-#elif STM32_F0XX || STM32_G0XX || STM32_L0XX || STM32_C0XX
+#elif STM32_F0XX || STM32_G0XX || STM32_L0XX || STM32_C0XX || STM32_U0XX
 #define DBGMCU_IDCODE 0x40015800
-#else
+#elif AT32_F4XX || STM32_F4XX || STM32_F7XX || STM32_F1XX || STM32_F3XX || \
+      STM32_G4XX || STM32_L4XX || STM32_L4R || STM32_WBXX
 #define DBGMCU_IDCODE 0xE0042000
+#else
+#error Find DBGMCU_IDCODE address for this cpu
 #endif
 #define DBGMCU_IDCODE_ID(val) ((val) & 0xfff)
 #define DBGMCU_IDCODE_REV(val) ((val) >> 16 & 0xffff)
@@ -345,6 +350,15 @@ int cmd_devid(int argc, char *argv[])
 #elif STM32_U5XX
   case 0x482:
     idstr = "U575/585";
+    break;
+#elif STM32_U0XX
+  case 0x459:
+    idstr = "U031";
+    break;
+  case 0x489:
+  case 0: /* errata - when the debugger is not connected
+             the register is read as 0 */
+    idstr = "U073/083";
     break;
 #elif STM32_WBXX
   case 0x495:

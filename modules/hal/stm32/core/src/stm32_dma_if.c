@@ -40,7 +40,7 @@ dma_cont_data_t dma_cont_data[] = {
 };
 #elif STM32_L4XX || STM32_L4R || STM32_G0XX || STM32_C0XX || \
       STM32_G4XX || STM32_WBXX || STM32_F1XX || STM32_F3XX || \
-      AT32_F4XX
+      AT32_F4XX || STM32_U0XX
 dma_cont_data_t dma_cont_data[] = {
   { &stm32_bdma_controller, (void *)0x40020000 },
   { &stm32_bdma_controller, (void *)0x40020400 }
@@ -50,7 +50,7 @@ dma_cont_data_t dma_cont_data[] = {
   { &stm32_gpdma_controller, (void *)0x40020000 },
   { &stm32_gpdma_controller, (void *)0x40021000 }
 };
-#elif STM32_UXXX
+#elif STM32_U5XX
 dma_cont_data_t dma_cont_data[] = {
   { &stm32_gpdma_controller, (void *)0x40020000 },
 };

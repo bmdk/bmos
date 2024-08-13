@@ -46,17 +46,31 @@ void clock_init(const struct pll_params_t *pll_params);
 #define PLL_FLAG_BYPASS BIT(3)
 
 #define RCC_PLLCFGR_PLLSRC_NONE 0
+#define RCC_PLLCFGR_PLLSRC_MSI 1
 #define RCC_PLLCFGR_PLLSRC_HSI16 2
 #define RCC_PLLCFGR_PLLSRC_HSE 3
 
+#if STM32_U0XX
+#define RCC_CFGR_SW_MSI 0
+#define RCC_CFGR_SW_HSI16 1
+#define RCC_CFGR_SW_HSISYS RCC_CFGR_SW_HSI16
+#define RCC_CFGR_SW_HSE 2
+#define RCC_CFGR_SW_PLLRCLK 3
+#define RCC_CFGR_SW_LSI 4
+#define RCC_CFGR_SW_LSE 5
+#else
 #define RCC_CFGR_SW_HSISYS 0
 #define RCC_CFGR_SW_HSE 1
 #define RCC_CFGR_SW_PLLRCLK 2
 #define RCC_CFGR_SW_LSI 3
 #define RCC_CFGR_SW_LSE 4
+#endif
 
 void enable_io(unsigned int dev);
 void disable_io(unsigned int dev);
+
+void enable_dbg(unsigned int dev);
+void disable_dbg(unsigned int dev);
 
 #define FDCANSEL_PCLK 0
 #define FDCANSEL_PLLQ 1

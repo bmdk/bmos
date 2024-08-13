@@ -31,7 +31,7 @@
 #include "shell.h"
 #include "stm32_exti.h"
 
-#if STM32_UXXX || STM32_G0XX || STM32_G4XX || STM32_C0XX || STM32_H5XX
+#if STM32_U5XX || STM32_G0XX || STM32_G4XX || STM32_C0XX || STM32_H5XX
 #define RTC_TYPE_2 1
 #else
 #define RTC_TYPE_1 1
@@ -96,7 +96,7 @@ typedef struct {
 #define RTC_BASE 0x58004000
 #elif STM32_H5XX
 #define RTC_BASE 0x44007800
-#elif STM32_UXXX
+#elif STM32_U5XX
 #define RTC_BASE 0x46007800
 #else
 #define RTC_BASE 0x40002800

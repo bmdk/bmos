@@ -40,9 +40,9 @@ int stm32_pwr_vos_rdy(void);
 #include "stm32_pwr_h7xx.h"
 #elif STM32_L4XX || STM32_L4R || STM32_G4XX || STM32_WBXX
 #include "stm32_pwr_lxxx.h"
-#elif STM32_UXXX
+#elif STM32_U5XX
 #include "stm32_pwr_uxxx.h"
-#elif STM32_F1XX || STM32_F3XX || AT32_F4XX || STM32_L0XX || STM32_G0XX
+#elif STM32_F1XX || STM32_F3XX || AT32_F4XX || STM32_L0XX || STM32_G0XX || STM32_U0XX
 /* no inline header for these targets */
 #else
 #error Add pwr header for target

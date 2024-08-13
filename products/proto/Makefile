@@ -58,6 +58,7 @@ PROG += l452n
 PROG += l452np
 PROG += l496n
 PROG += l4rn
+PROG += u083n
 PROG += u575n
 PROG += wb55n
 PROG += wb55usb
@@ -352,7 +353,11 @@ XCFLAGS.g431kbn += -DSTM32_G4XX -DSTM32_G432
 XCFLAGS.g431kbn += -DCONFIG_ENABLE_ADC
 STACK_END.g431kbn = 0x20008000
 
-XCFLAGS.u575n += -DSTM32_U575 -DSTM32_UXXX
+XCFLAGS.u083n += -DSTM32_U083N -DSTM32_U0XX
+CPU.u083n = cortex-m0plus
+STACK_END.u083n = 0x2000a000
+
+XCFLAGS.u575n += -DSTM32_U575 -DSTM32_U5XX
 CPU.u575n = cortex-m33
 STACK_END.u575n = 0x200c0000
 
@@ -782,6 +787,15 @@ FILES.g431kbn += stm32_hal_rtc.o
 FILES.g431kbn += can_test.o
 FILES.g431kbn += stm32_hal_adc.o
 FILES.g431kbn += adc.o
+
+FILES.u083n += stm32_hal_rtc.o
+FILES.u083n += stm32_exti_uxxx.o
+FILES.u083n += stm32_pwr_g0xx.o
+FILES.u083n += stm32_rcc_g0.o
+FILES.u083n += stm32_usart_b.o
+FILES.u083n += stm32_hal_bdma.o
+FILES.u083n += stm32_hal_dmamux.o
+FILES.u083n += stm32_flash.o
 
 FILES.u575n += stm32_hal_rtc.o
 FILES.u575n += stm32_exti_uxxx.o

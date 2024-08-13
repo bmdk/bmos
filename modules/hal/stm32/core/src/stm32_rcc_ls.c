@@ -32,7 +32,7 @@
 #define RCC_BDCR_LSEBYP BIT(2)
 
 /* U5 */
-#if STM32_UXXX
+#if STM32_U5XX
 #define RCC_BDCR_LSESYSEN BIT(7)
 #define RCC_BDCR_LSESYSRDY BIT(11)
 
@@ -77,7 +77,7 @@ static void rcc_clock_set(rcc_ls_t *rcc_ls, unsigned int clock)
   }
 }
 
-#if STM32_UXXX
+#if STM32_U5XX
 /* set lse drive strength to max */
 #define LSE_DRIVE 3
 #elif STM32_H5XX

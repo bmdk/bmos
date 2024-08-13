@@ -83,7 +83,7 @@ void blink()
 #endif
 
 #if BUTTON_INT
-#if BOARD_C031N
+#if BOARD_C031N || BOARD_U083N
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 7 /* EXTI4_15 */
 #elif BOARD_F103N
@@ -92,7 +92,7 @@ void blink()
 #elif STM32_H7XX || STM32_F767 || STM32_L4XX || STM32_G4XX
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 40
-#elif STM32_UXXX || STM32_H5XX
+#elif STM32_U5XX || STM32_H5XX
 #define BUTTON_EXTI 13
 #define BUTTON_IRQ 24 /* EXTI13 */
 #elif BOARD_F411BP || BOARD_F401BP || BOARD_F401BP64 || BOARD_F407DEB || \

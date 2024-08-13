@@ -56,6 +56,7 @@ PROG += l452n
 PROG += l452np
 PROG += l496n
 PROG += l4rn
+PROG += u083n
 PROG += u575n
 PROG += wb55n
 PROG += wb55usb
@@ -269,7 +270,11 @@ STACK_END.g474n = 0x20020000
 XCFLAGS.g431kbn += -DSTM32_G4XX
 STACK_END.g431kbn = 0x20008000
 
-XCFLAGS.u575n += -DSTM32_UXXX
+XCFLAGS.u083n += -DSTM32_U0XX
+STACK_END.u083n = 0x2000a000
+CPU.u083n = cortex-m0plus
+
+XCFLAGS.u575n += -DSTM32_U5XX
 STACK_END.u575n = 0x200c0000
 CPU.u575n = cortex-m33
 
@@ -467,15 +472,24 @@ FILES.h5xx += stm32_flash.o
 
 FILES.h563n += $(FILES.h5xx)
 
-FILES.uxxx += stm32_usart_b.o
-FILES.uxxx += stm32_rcc_u5.o
-FILES.uxxx += stm32_exti_uxxx.o
-FILES.uxxx += stm32_pwr_uxxx.o
-FILES.uxxx += stm32_hal_rtc.o
-FILES.uxxx += stm32_flash.o
-#FILES.uxxx += stm32_pwr_lxxx.o
+FILES.u0xx += stm32_usart_b.o
+FILES.u0xx += stm32_rcc_g0.o
+#FILES.u0xx += stm32_exti_uxxx.o
+#FILES.u0xx += stm32_pwr_uxxx.o
+#FILES.u0xx += stm32_hal_rtc.o
+FILES.u0xx += stm32_flash.o
 
-FILES.u575n += $(FILES.uxxx)
+FILES.u083n += $(FILES.u0xx)
+
+FILES.u5xx += stm32_usart_b.o
+FILES.u5xx += stm32_rcc_u5.o
+FILES.u5xx += stm32_exti_uxxx.o
+FILES.u5xx += stm32_pwr_uxxx.o
+FILES.u5xx += stm32_hal_rtc.o
+FILES.u5xx += stm32_flash.o
+#FILES.u5xx += stm32_pwr_lxxx.o
+
+FILES.u575n += $(FILES.u5xx)
 
 FILES.wbxx += stm32_usart_b.o
 FILES.wbxx += stm32_rcc_b.o

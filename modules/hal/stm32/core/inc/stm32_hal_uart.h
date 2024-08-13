@@ -34,7 +34,7 @@
 #define USART6_BASE 0x40011400
 
 /* LPUART */
-#if STM32_UXXX
+#if STM32_U5XX
 #define LPUART1_BASE (void *)0x46002400
 #else
 #define LPUART1_BASE 0x40008000
