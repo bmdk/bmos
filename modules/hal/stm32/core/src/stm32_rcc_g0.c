@@ -19,7 +19,7 @@
  * IN THE SOFTWARE.
  */
 
-/* this supports the RCC on G0XX */
+/* this supports the RCC on G0, C0, U0 */
 
 #include "common.h"
 #include "hal_common.h"

@@ -97,7 +97,7 @@ void pin_init()
 #define APB1_CLOCK CLOCK
 
 #if BMOS
-uart_t debug_uart = { "debugser", USART2_BASE, APB1_CLOCK, 28 };
+uart_t debug_uart = { "debugser", USART2_BASE, APB1_CLOCK, 28, STM32_UART_FIFO };
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(0, 5) };
@@ -131,5 +131,5 @@ void hal_board_init()
   backup_domain_protect(0);
   clock_init_ls(0);
 #endif
-  debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, 0);
+  debug_uart_init(USART2_BASE, 115200, APB1_CLOCK, STM32_UART_FIFO);
 }
