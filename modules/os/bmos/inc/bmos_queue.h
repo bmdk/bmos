@@ -54,7 +54,8 @@ typedef enum {
   QUEUE_CTRL_STATUS,         /* text status of device using xprintf */
   /* canbus controls */
   QUEUE_CTRL_CAN_IS_BUS_OFF, /* tests for bus off */
-  QUEUE_CTRL_CAN_RESUME      /* resume after bus off */
+  QUEUE_CTRL_CAN_RESUME,     /* resume after bus off */
+  QUEUE_CTRL_CAN_SET_PARAMS  /* change speed parameters */
 } queue_control_number_t;
 
 #endif

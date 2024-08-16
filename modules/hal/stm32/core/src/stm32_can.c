@@ -150,22 +150,45 @@ static inline unsigned int val_param(unsigned int param, unsigned int mask)
   return (param - 1) & mask;
 }
 
+static void _initmode(stm32_can_t *can, int en)
+{
+  if (en) {
+    can->mcr |= CAN_MCR_INRQ;
+
+    while ((can->msr & CAN_MCR_INRQ) == 0)
+      ;
+  } else
+    can->mcr &= ~CAN_MCR_INRQ;
+}
+
+static void _set_params(stm32_can_t *can, can_params_t *p)
+{
+  can->btr = (val_param(p->sjw, 0x3) << 24) | (val_param(p->ts2, 0x7) << 20) |
+             (val_param(p->ts1, 0xf) << 16) | val_param(p->prediv, 0x3ff);
+}
+
+static int can_set_params(candev_t *c, can_params_t *p)
+{
+  stm32_can_t *can = c->base;
+
+  _initmode(can, 1);
+  _set_params(can, p);
+  _initmode(can, 0);
+
+  return 0;
+}
+
 static void can_init(candev_t *c, const unsigned int *id,
                      unsigned int id_len)
 {
   stm32_can_t *can = c->base;
-  can_params_t *p = &c->params;
   unsigned int i;
 
   can->mcr &= ~(CAN_MCR_SLEEP | CAN_MCR_DBF);
 
-  can->mcr |= CAN_MCR_INRQ;
+  _initmode(can, 1);
 
-  while ((can->msr & CAN_MCR_INRQ) == 0)
-    ;
-
-  can->btr = (val_param(p->sjw, 0x3) << 24) | (val_param(p->ts2, 0x7) << 20) |
-             (val_param(p->ts1, 0xf) << 16) | val_param(p->prediv, 0x3ff);
+  _set_params(can, &c->params);
 
   can->fmr = 1;
   can->fm1r = 0;
@@ -181,7 +204,7 @@ static void can_init(candev_t *c, const unsigned int *id,
   can->fmr = 0;
 
   can->mcr |= CAN_MCR_RFLM | CAN_MCR_TXFP | CAN_MCR_ABOM;
-  can->mcr &= ~CAN_MCR_INRQ;
+  _initmode(can, 0);
 
   can->ier = (CAN_IER_FMPIE0 | CAN_IER_FFIE0 | CAN_IER_FOVIE0 | CAN_IER_TMEIE);
 
@@ -287,6 +310,20 @@ static void _put(void *p)
   interrupt_enable(saved);
 }
 
+static int _control(void *p, int control, va_list ap)
+{
+  candev_t *c = p;
+
+  switch (control) {
+  case QUEUE_CTRL_CAN_SET_PARAMS:
+  {
+    can_params_t *params = va_arg(ap, can_params_t *);
+    return can_set_params(c, params);
+  }
+  }
+
+  return -1;
+}
 
 bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
                        unsigned int id_len, bmos_queue_t *rxq,
@@ -308,7 +345,7 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
   c->txq = queue_create(tx_queue_name, QUEUE_TYPE_DRIVER);
   XASSERT(c->txq);
 
-  (void)queue_set_put_f(c->txq, _put, 0, (void *)c);
+  (void)queue_set_put_f(c->txq, _put, _control, (void *)c);
 
   c->rxq = rxq;
   c->op = (unsigned short)op;

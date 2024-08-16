@@ -323,6 +323,32 @@ static void _put(void *p)
   interrupt_enable(saved);
 }
 
+static int fdcan_bus_off(candev_t *c);
+static int fdcan_resume(candev_t *c);
+static int fdcan_status(candev_t *c);
+static int fdcan_set_params(candev_t *c, can_params_t *p);
+
+static int _control(void *p, int control, va_list ap)
+{
+  candev_t *c = p;
+
+  switch (control) {
+  case QUEUE_CTRL_STATUS:
+    return fdcan_status(c);
+  case QUEUE_CTRL_CAN_IS_BUS_OFF:
+    return fdcan_bus_off(c);
+  case QUEUE_CTRL_CAN_RESUME:
+    return fdcan_resume(c);
+  case QUEUE_CTRL_CAN_SET_PARAMS:
+  {
+    can_params_t *params = va_arg(ap, can_params_t *);
+    return fdcan_set_params(c, params);
+  }
+  }
+
+  return -1;
+}
+
 static void fdcan_filter(unsigned int inst,
                          const unsigned int *id, unsigned int id_len)
 {
@@ -334,14 +360,16 @@ static void fdcan_filter(unsigned int inst,
                            FDCAN_FILT_SFEC_FIFO0, id[i], 0x7ff);
 }
 
-void fdcan_resume(candev_t *c)
+static int fdcan_resume(candev_t *c)
 {
   stm32_fdcan_t *fdcan = c->base;
 
   fdcan->cccr &= ~FDCAN_CCCR_INIT;
+
+  return 0;
 }
 
-int fdcan_bus_off(candev_t *c)
+static int fdcan_bus_off(candev_t *c)
 {
   stm32_fdcan_t *fdcan = c->base;
 
@@ -351,12 +379,27 @@ int fdcan_bus_off(candev_t *c)
   return 0;
 }
 
+static void fdcan_configure(stm32_fdcan_t *fdcan, int en)
+{
+  if (en) {
+    fdcan->cccr |= FDCAN_CCCR_INIT;
+    while ((fdcan->cccr & FDCAN_CCCR_INIT) != FDCAN_CCCR_INIT)
+      ;
+    fdcan->cccr |= FDCAN_CCCR_CCE;
+  } else {
+    fdcan->cccr &= ~(FDCAN_CCCR_CCE | FDCAN_CCCR_INIT);
+    while ((fdcan->cccr & FDCAN_CCCR_INIT) == FDCAN_CCCR_INIT)
+      ;
+  }
+}
+
+
 static void fdcan_init(candev_t *c, const unsigned int *id, unsigned int id_len)
 {
   stm32_fdcan_t *fdcan = c->base;
   can_params_t *p = &c->params;
 
-  fdcan->cccr = (FDCAN_CCCR_CCE | FDCAN_CCCR_INIT);
+  fdcan_configure(fdcan, 1);
 
   fdcan->txbc &= ~FDCAN_TCBC_TFQM; /* FIFO mode */
 
@@ -400,7 +443,7 @@ static void fdcan_init(candev_t *c, const unsigned int *id, unsigned int id_len)
   } else
     fdcan->gfc = FDCAN_GFC(0, 0, 0, 0);
 
-  fdcan->cccr &= ~(FDCAN_CCCR_CCE | FDCAN_CCCR_INIT);
+  fdcan_configure(fdcan, 0);
 }
 
 bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
@@ -419,7 +462,7 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
   c->txq = queue_create(tx_queue_name, QUEUE_TYPE_DRIVER);
   XASSERT(c->txq);
 
-  (void)queue_set_put_f(c->txq, _put, 0, (void *)c);
+  (void)queue_set_put_f(c->txq, _put, _control, (void *)c);
 
   c->rxq = rxq;
   c->op = (unsigned short)op;
@@ -431,7 +474,7 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
   return c->txq;
 }
 
-void fdcan_status(candev_t *c)
+static int fdcan_status(candev_t *c)
 {
   stm32_fdcan_t *fdcan = c->base;
   unsigned int val;
@@ -448,6 +491,20 @@ void fdcan_status(candev_t *c)
   xprintf("PSR:  bo:%d   ew:%d   ep:%d  act:%d  lec:%d\n",
           (val >> 7) & 1, (val >> 6) & 1, (val >> 5) & 1,
           (val >> 3) & 0x3, (val >> 0) & 0x3);
+
+  return 0;
 }
 
+static int fdcan_set_params(candev_t *c, can_params_t *p)
+{
+  stm32_fdcan_t *fdcan = c->base;
+
+  fdcan_configure(fdcan, 1);
+
+  fdcan->nbtp = FDCAN_NBTP(p->prediv, p->ts1, p->ts2, p->sjw);
+
+  fdcan_configure(fdcan, 0);
+
+  return 0;
+}
 #endif
