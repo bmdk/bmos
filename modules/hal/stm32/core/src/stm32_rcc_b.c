@@ -297,8 +297,7 @@ void reset_apb1(unsigned int dev)
   if (dev >= 32) {
     RCC->apb1rstr2 |= BIT(dev - 32);
     RCC->apb1rstr2 &= ~BIT(dev - 32);
-  }
-  else {
+  } else {
     RCC->apb1rstr1 |= BIT(dev);
     RCC->apb1rstr1 &= ~BIT(dev);
   }

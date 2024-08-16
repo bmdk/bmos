@@ -122,7 +122,7 @@ int cmd_reboot(int argc, char *argv[])
 
   bl();
 
-  for(;;)
+  for (;;)
     ;
 
   return 0;

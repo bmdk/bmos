@@ -92,10 +92,9 @@ static int _xlog2(unsigned int div)
   if (div == 1)
     return 0;
 
-  for (i = 31; i > 0; i--) {
+  for (i = 31; i > 0; i--)
     if (div > BIT(i - 1))
       return i;
-  }
 
   return -1;
 }
