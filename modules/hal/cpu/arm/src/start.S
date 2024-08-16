@@ -61,6 +61,10 @@ vector_table:
 .globl	reset_handler
 .type   reset_handler, %function
 reset_handler:
+#ifdef CONFIG_BOOT_ARG
+  ldr	r2, =CONFIG_BOOT_ARG
+  str r0, [r2]
+#endif
 #if __ARM_ARCH_6M__
 	ldr	r0, =_stack_end
 	mov	sp, r0
