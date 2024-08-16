@@ -188,6 +188,7 @@ FILES += hal_dma.o
 FILES += stm32_dma_if.o
 FILES += stm32_rcc_ls.o
 FILES += xlib.o
+FILES += mshell.o
 
 # BMOS
 FILES += mutex.o

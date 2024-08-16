@@ -49,6 +49,7 @@
 #include "xtime.h"
 #include "kvlog.h"
 #include "onewire.h"
+#include "mshell.h"
 
 #if BOARD_F429D || BOARD_F746D || BOARD_H735DK
 #define LCD_DEMO 1
@@ -123,104 +124,6 @@ void button_int(void *data)
   debug_puts("X\n");
 }
 #endif
-
-static shell_t shell;
-
-static void polled_shell(void)
-{
-  shell_init(&shell, "> ");
-
-  for (;;) {
-    int c = debug_getc();
-    if (c >= 0)
-      shell_input(&shell, c);
-  }
-}
-
-#if STM32_H7XX || BOARD_G474N
-#define SHELL_SRC_COUNT 2
-#else
-#define SHELL_SRC_COUNT 1
-#endif
-
-typedef struct {
-  unsigned short dest;
-  bmos_queue_t *rxq;
-  bmos_queue_t *txq[SHELL_SRC_COUNT];
-  unsigned short txop[SHELL_SRC_COUNT];
-} shell_info_t;
-
-static shell_info_t shell_info;
-
-void shell_info_init(shell_info_t *info, const char *name, unsigned int dest)
-{
-  info->rxq = queue_create(name, QUEUE_TYPE_TASK);
-  info->dest = dest;
-}
-
-void shell_info_add_uart(shell_info_t *info, uart_t *u, unsigned int baud,
-                         unsigned int num, unsigned int txop)
-{
-  XASSERT(num < SHELL_SRC_COUNT);
-  XASSERT(info);
-  XASSERT(info->rxq);
-
-  shell_info.txq[num] = uart_open(u, baud, info->rxq, num);
-  shell_info.txop[num] = txop;
-}
-
-static int _xgetc(int timeout)
-{
-  unsigned char *data;
-  static bmos_op_msg_t *m = NULL;
-  static unsigned int pos = 0;
-  int c;
-
-  if (!m) {
-    m = op_msg_wait_ms(shell_info.rxq, timeout);
-
-    if (!m)
-      return -1;
-
-    if (m->op >= SHELL_SRC_COUNT || m->len == 0) {
-      op_msg_return(m);
-      m = NULL;
-      return -1;
-    }
-
-    if (m->op != shell_info.dest && shell_info.txq[m->op] != 0) {
-      io_set_output(shell_info.txq[m->op], shell_info.txop[m->op]);
-      shell_info.dest = m->op;
-    }
-
-    pos = 0;
-  }
-
-  data = BMOS_OP_MSG_GET_DATA(m);
-
-  c = data[pos];
-
-  pos++;
-  if (pos >= m->len) {
-    op_msg_return(m);
-    pos = 0;
-    m = NULL;
-  }
-
-  return c;
-}
-
-static void shell_task(void *arg)
-{
-  shell_init(&shell, "> ");
-
-  for (;;) {
-    int c = _xgetc(-1);
-
-    if (c >= 0)
-      shell_input(&shell, c);
-  }
-}
 
 #if BLINK_TASK
 static void blink_task(void *arg)
@@ -317,15 +220,11 @@ int main()
   adc_init_dma();
 #endif
 
-  shell_info_init(&shell_info, "sh1rx", 0);
-  shell_info_add_uart(&shell_info, &debug_uart, 115200, 0, 0);
+  mshell_init("sh1rx", 0);
 #if !BOARD_H745N && !BOARD_H745NM4 && STM32_H7XX || BOARD_G474N
-  shell_info_add_uart(&shell_info, &debug_uart_2, 115200, 1, 0);
+  mshell_add_uart(&debug_uart_2, 115200, 1, 0);
 #endif
-
-  task_init(shell_task, &shell_info, "shell", 2, 0, 768);
-
-  io_set_output(shell_info.txq[0], 0);
+  mshell_add_uart(&debug_uart, 115200, 0, 0);
 
 #if BOARD_F411BP || BOARD_F401BP || BOARD_F401BP64
   tusb_cdc_init();
