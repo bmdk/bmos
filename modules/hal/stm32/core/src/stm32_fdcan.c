@@ -419,7 +419,7 @@ bmos_queue_t *can_open(candev_t *c, const unsigned int *id,
   c->txq = queue_create(tx_queue_name, QUEUE_TYPE_DRIVER);
   XASSERT(c->txq);
 
-  (void)queue_set_put_f(c->txq, _put, (void *)c);
+  (void)queue_set_put_f(c->txq, _put, 0, (void *)c);
 
   c->rxq = rxq;
   c->op = (unsigned short)op;
