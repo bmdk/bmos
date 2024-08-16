@@ -172,6 +172,16 @@ static void adc_irq(void *arg)
   }
 }
 
+void stm32_adc_vbat(int en)
+{
+  stm32_adc_com_t *ac = ADC_COM;
+
+  if (en)
+    ac->ccr |= CCR_CH18SEL;
+  else
+    ac->ccr &= ~CCR_CH18SEL;
+}
+
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
                             unsigned int cnt, conv_done_f *conv_done)
 {
@@ -184,7 +194,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   cnt &= 0xf;
 
   /* CKMODE HCLK */
-  ac->ccr = CCR_CH18SEL | CCR_CH17SEL | CCR_VREFEN |
+  ac->ccr = CCR_CH17SEL | CCR_VREFEN | \
             CCR_PRESC(ADC_PRESC) | CCR_CKMODE(ADC_CKMODE);
 
   a->cr &= ~CR_DEEPPWD;

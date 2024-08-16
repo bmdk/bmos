@@ -31,4 +31,7 @@ void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
                         void *buf, unsigned int buflen, conv_done_f *conv_done);
 int stm32_adc_conv(void);
 
+/* enable vbat resistor divider */
+void stm32_adc_vbat(int en);
+
 #endif
