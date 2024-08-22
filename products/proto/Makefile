@@ -347,6 +347,7 @@ OPTFLAGS.c031n = -Os
 
 XCFLAGS.g474n += -DSTM32_G4XX -DSTM32_G474
 XCFLAGS.g474n += -DCONFIG_ENABLE_ADC
+XCFLAGS.g474n += -DCONFIG_CMD_TIMER
 STACK_END.g474n = 0x20020000
 
 XCFLAGS.g431kbn += -DSTM32_G4XX -DSTM32_G432
@@ -782,6 +783,9 @@ FILES.g474n += i2c_test.o
 FILES.g474n += can_test.o
 FILES.g474n += stm32_hal_adc.o
 FILES.g474n += adc.o
+FILES.g474n += stm32_hrtim.o
+FILES.g474n += stm32_opamp.o
+FILES.g474n += stm32_dac.o
 
 FILES.g431kbn += $(FILES.g4xx)
 FILES.g431kbn += stm32_hal_rtc.o

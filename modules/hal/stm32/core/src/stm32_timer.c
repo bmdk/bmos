@@ -63,7 +63,18 @@ typedef struct {
 } stm32_timer_t;
 
 #define CR1_CEN BIT(0)
+#define CR1_DIR BIT(4)
 #define CR1_PMEN BIT(10) /* AT32 plus mode */
+
+#define CCER_CC1E BIT(0)
+#define CCER_CC1P BIT(1)
+#define CCER_CC1NE BIT(2)
+#define CCER_CC1NP BIT(3)
+
+#define CCER_CC2E BIT(4)
+#define CCER_CC2P BIT(5)
+#define CCER_CC2NE BIT(6)
+#define CCER_CC2NP BIT(7)
 
 #define EGR_UG BIT(0)
 
@@ -266,6 +277,38 @@ void timer_init_pwm(void *base, unsigned int presc, unsigned int max,
   t->cr1 |= CR1_CEN;
 }
 
+static void timer_set_slave_mode(stm32_timer_t *t, unsigned int mode)
+{
+  reg_set_field(&t->smcr, 1, 16, (mode >> 3));
+  reg_set_field(&t->smcr, 3, 0, mode);
+}
+
+void timer_init_encoder(void *base, unsigned int presc,
+                        unsigned int max, int direction)
+{
+  stm32_timer_t *t = (stm32_timer_t *)base;
+
+  t->cr1 &= ~CR1_CEN;
+
+  t->cnt = 0;
+
+  if (direction)
+    t->cr1 &= ~CR1_DIR;
+  else
+    t->cr1 |= CR1_DIR;
+
+  /* map input pin 1 to input 1 and input pin 2 to input 2 */
+  reg_set_field(&t->ccmr[0], 2, 0, 1); /* CC1S = 1 */
+  reg_set_field(&t->ccmr[0], 2, 8, 1); /* CC2S = 1 */
+
+  t->ccer &= ~(CCER_CC1P | CCER_CC1NP | CCER_CC2P | CCER_CC2NP);
+  timer_set_slave_mode(t, 3); /* quadrature encoder x4 */
+  t->arr = max;
+  t->psc = presc - 1;
+
+  t->cr1 |= CR1_CEN;
+}
+
 void timer_init_dma(void *base, unsigned int presc, unsigned int max,
                     const unsigned int *compare, unsigned int compare_len,
                     int update_en)
@@ -309,9 +352,9 @@ void timer_stop(void *base)
 
 #if CONFIG_CMD_TIMER
 #if STM32_H7XX
-#define TIM_BASE TIM3_BASE
+#define TIM_CMD_BASE TIM3_BASE
 #else
-#define TIM_BASE TIM1_BASE
+#define TIM_CMD_BASE TIM1_BASE
 #endif
 int cmd_timer(int argc, char *argv[])
 {
@@ -322,19 +365,22 @@ int cmd_timer(int argc, char *argv[])
 
   switch (argv[1][0]) {
   case 'i':
-    timer_init_pwm(TIM_BASE, 1, 65535, compare, ARRSIZ(compare));
+    timer_init_pwm(TIM_CMD_BASE, 1, 65535, compare, ARRSIZ(compare));
     break;
   case 'c':
     if (argc < 3)
       return -1;
-    timer_set_compare(TIM_BASE, 2, atoi(argv[2]));
+    timer_set_compare(TIM_CMD_BASE, 2, atoi(argv[2]));
     break;
   case 's':
-    timer_stop(TIM_BASE);
+    timer_stop(TIM_CMD_BASE);
+    break;
+  case 'e':
+    timer_init_encoder(TIM_CMD_BASE, 1, -1, 0);
     break;
   default:
   case 'g':
-    xprintf("%u\n", timer_get(TIM_BASE));
+    xprintf("%u\n", timer_get(TIM_CMD_BASE));
     break;
   }
 

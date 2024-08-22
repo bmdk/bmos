@@ -45,14 +45,12 @@ void pin_init()
   enable_ahb2(2); /* GPIOC */
   enable_ahb2(5); /* GPIOF */
 
-  gpio_init_attr(GPIO(2, 13),
-                 GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
-
   /* LPUART1 */
   enable_apb1(32);
   gpio_init_attr(GPIO(0, 2), GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 12, GPIO_ALT));
   gpio_init_attr(GPIO(0, 3), GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 12, GPIO_ALT));
 
+#if APPL
 #if 1
   /* USART1 */
   enable_apb2(14);
@@ -60,7 +58,7 @@ void pin_init()
   gpio_init_attr(GPIO(2, 5), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 7, GPIO_ALT));
 #endif
 
-  /* SYSCFG */
+  /* SYSCFG (OPAMP) */
   enable_apb2(0);
 
   /* PWR */
@@ -69,8 +67,43 @@ void pin_init()
   /* TIM 1 */
   enable_apb2(11);
 
+  gpio_init(GPIO(0, 4), GPIO_ANALOG);
+  /* opamp 5 in:PA7,out:PA6 */
+  gpio_init(GPIO(0, 6), GPIO_ANALOG);
+  gpio_init(GPIO(0, 7), GPIO_ANALOG);
+  gpio_init(GPIO(0, 8), GPIO_ANALOG);
+  gpio_init(GPIO(1, 1), GPIO_ANALOG);
+  gpio_init(GPIO(1, 12), GPIO_ANALOG);
+  //gpio_init(GPIO(0, 5), GPIO_ANALOG);
+#define ENCODER_TIM1 1
+#if ENCODER_TIM1
+  /* TIM1 CH1 */
+  gpio_init_attr(GPIO(2, 0), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 2, GPIO_ALT));
+  /* TIM1 CH2 */
+  gpio_init_attr(GPIO(2, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 2, GPIO_ALT));
+#endif
+
   /* TIM 2 */
   enable_apb1(0);
+
+#if 0
+  /* HRTIM1 */
+  enable_apb2(26);
+
+  /* HRTIM1 A CHA1 - PA8 CHA2 - PA9 */
+  gpio_init_attr(GPIO(0, 8), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 13, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 9), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 13, GPIO_ALT));
+  /* HRTIM1 B CHA1 - PA10 CHA2 - PA11 */
+  gpio_init_attr(GPIO(0, 10), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 13, GPIO_ALT));
+  gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 13, GPIO_ALT));
+#endif
+
+  /* DAC1 */
+  enable_ahb2(16);
+  /* DAC3 */
+  enable_ahb2(18);
+  /* DAC4 */
+  enable_ahb2(19);
 
   /* DMA 1 */
   enable_ahb1(0);
@@ -83,8 +116,10 @@ void pin_init()
   /* FDCAN */
   enable_apb1(25);
 
+#if 0
   gpio_init_attr(GPIO(0, 11), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
   gpio_init_attr(GPIO(0, 12), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
+#endif
 
   /* I2C1 */
   enable_apb1(21);
@@ -100,12 +135,14 @@ void pin_init()
                                  GPIO_SPEED_HIG, 4, GPIO_ALT)); /* SDA */
 #endif
 
-  gpio_init(GPIO(0, 14), GPIO_OUTPUT); /* CN7 15 */
+  gpio_init_attr(GPIO(2, 13),
+                 GPIO_ATTR_STM32(0, GPIO_SPEED_LOW, 0, GPIO_INPUT));
 
   stm32_exti_irq_set_edge_rising(13, 1);
   stm32_exti_irq_enable(13, 1);
   stm32_exti_ev_enable(13, 1);
   stm32_syscfg_set_exti(2, 13);
+#endif
 }
 
 #define APB2_CLOCK 170000000
