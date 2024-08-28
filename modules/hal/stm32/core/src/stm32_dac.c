@@ -103,16 +103,9 @@ void dac_set_val(unsigned int dac_no, unsigned int channel, unsigned int val)
 int dacs_init()
 {
   dac_init(0, 0, 0);
-  dac_init(0, 1, 0);
+  //dac_init(0, 1, 0);
 
   dac_set_val(0, 0, 0xfff * 3 / 4);
-  dac_set_val(0, 1, 0xfff / );
-
-  dac_init(3, 0, 3);
-  dac_init(3, 1, 3);
-
-  dac_set_val(3, 0, 0);
-  dac_set_val(3, 1, 0);
 
   return 0;
 }

@@ -68,6 +68,7 @@ void pin_init()
   enable_apb2(11);
 
   gpio_init(GPIO(0, 4), GPIO_ANALOG);
+#if 0
   /* opamp 5 in:PA7,out:PA6 */
   gpio_init(GPIO(0, 6), GPIO_ANALOG);
   gpio_init(GPIO(0, 7), GPIO_ANALOG);
@@ -75,6 +76,7 @@ void pin_init()
   gpio_init(GPIO(1, 1), GPIO_ANALOG);
   gpio_init(GPIO(1, 12), GPIO_ANALOG);
   //gpio_init(GPIO(0, 5), GPIO_ANALOG);
+#endif
 #define ENCODER_TIM1 1
 #if ENCODER_TIM1
   /* TIM1 CH1 */
@@ -86,7 +88,7 @@ void pin_init()
   /* TIM 2 */
   enable_apb1(0);
 
-#if 0
+#if 1
   /* HRTIM1 */
   enable_apb2(26);
 

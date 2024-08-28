@@ -172,7 +172,7 @@ int hrtim_init()
 {
   hrtim->mcr &= ~(HRTIM_MCR_MCEN | HRTIM_MCR_TACEN | HRTIM_MCR_TBCEN);
 
-  hrtim->oenr = (HRTIM_OENR_TA1OEN | HRTIM_OENR_TA2OEN)
+  hrtim->oenr = (HRTIM_OENR_TA1OEN | HRTIM_OENR_TA2OEN);
   hrtim->mcntr = 0;
 
   hrtim->tim[0].cntr = 0;
@@ -206,6 +206,8 @@ int hrtim_init()
 
 int cmd_hrtim(int argc, char *argv[])
 {
+  int speed;
+
   if (argc < 2)
     return -1;
 
@@ -218,6 +220,7 @@ int cmd_hrtim(int argc, char *argv[])
     xprintf("isr0: %08x\n", hrtim->tim[0].isr);
     xprintf("cnt0: %04x\n", hrtim->tim[0].cntr);
     xprintf("per0: %04x\n", hrtim->tim[0].perr);
+    break;
   case 'p':
     {
       unsigned int pct, compare;
@@ -239,25 +242,26 @@ int cmd_hrtim(int argc, char *argv[])
       return -1;
 
     speed = atoi(argv[2]);
+    xprintf("set speed %d\n", speed);
     if (speed == 0) {
       hrtim->tim[0].set1r = 0;
-      hrtim->tim[0].rst1r = 0;
+      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_SST;
       hrtim->tim[0].set2r = 0;
-      hrtim->tim[0].rst2r = 0;
+      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_SST;
     } else if (speed > 0) {
       hrtim->tim[0].set1r = HRTIM_TIMX_SET_PER;
       hrtim->tim[0].rst1r = HRTIM_TIMX_SET_CMP1;
       hrtim->tim[0].set2r = 0;
-      hrtim->tim[0].rst2r = 0;
+      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_SST;
       hrtim_set_compare_pct(0, 0, speed);
     } else {
       hrtim->tim[0].set1r = 0;
-      hrtim->tim[0].rst1r = 0;
+      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_SST;
       hrtim->tim[0].set2r = HRTIM_TIMX_SET_PER;
       hrtim->tim[0].rst2r = HRTIM_TIMX_SET_CMP1;
       hrtim_set_compare_pct(0, 0, -speed);
     }
-  break;
+    break;
   }
 
   return 0;
