@@ -172,22 +172,22 @@ int hrtim_init()
 {
   hrtim->mcr &= ~(HRTIM_MCR_MCEN | HRTIM_MCR_TACEN | HRTIM_MCR_TBCEN);
 
-  hrtim->oenr = (HRTIM_OENR_TA1OEN | HRTIM_OENR_TA2OEN | \
-                 HRTIM_OENR_TB1OEN | HRTIM_OENR_TB2OEN);
+  hrtim->oenr = (HRTIM_OENR_TA1OEN | HRTIM_OENR_TA2OEN)
   hrtim->mcntr = 0;
 
   hrtim->tim[0].cntr = 0;
 
   hrtim->tim[0].cr |= HRTIM_TIMX_CR_CONT;
 
-  hrtim_set_compare_pct(0, 0, 10);
+  hrtim_set_compare_pct(0, 0, 0);
 
-  hrtim->tim[0].set1r = HRTIM_TIMX_SET_PER;
-  hrtim->tim[0].rst1r = HRTIM_TIMX_SET_CMP1;
+  hrtim->tim[0].set1r = 0;
+  hrtim->tim[0].rst1r = 0;
 
-  hrtim->tim[0].set2r = HRTIM_TIMX_SET_CMP1;
-  hrtim->tim[0].rst2r = HRTIM_TIMX_SET_PER;
+  hrtim->tim[0].set2r = 0;
+  hrtim->tim[0].rst2r = 0;
 
+#if 0
   hrtim->tim[1].cntr = 0x8000;
   hrtim->tim[1].cr |= HRTIM_TIMX_CR_CONT;
 
@@ -198,8 +198,9 @@ int hrtim_init()
 
   hrtim->tim[1].set2r = HRTIM_TIMX_SET_CMP1;
   hrtim->tim[1].rst2r = HRTIM_TIMX_SET_PER;
+#endif
 
-  hrtim->mcr |= (HRTIM_MCR_MCEN | HRTIM_MCR_TACEN | HRTIM_MCR_TBCEN);
+  hrtim->mcr |= HRTIM_MCR_TACEN;
   return 0;
 }
 
@@ -218,20 +219,44 @@ int cmd_hrtim(int argc, char *argv[])
     xprintf("cnt0: %04x\n", hrtim->tim[0].cntr);
     xprintf("per0: %04x\n", hrtim->tim[0].perr);
   case 'p':
-  {
-    unsigned int pct, compare;
+    {
+      unsigned int pct, compare;
 
+      if (argc < 3)
+        return -1;
+
+      pct = atoi(argv[2]);
+      if (pct > 100)
+        pct = 100;
+
+      compare = (0xffffU * pct + 50) / 100;
+
+      hrtim->tim[0].cmp1r = compare & 0xffffU;
+    }
+    break;
+  case 's':
     if (argc < 3)
       return -1;
 
-    pct = atoi(argv[2]);
-    if (pct > 100)
-      pct = 100;
-
-    compare = (0xffffU * pct + 50) / 100;
-
-    hrtim->tim[0].cmp1r = compare & 0xffffU;
-  }
+    speed = atoi(argv[2]);
+    if (speed == 0) {
+      hrtim->tim[0].set1r = 0;
+      hrtim->tim[0].rst1r = 0;
+      hrtim->tim[0].set2r = 0;
+      hrtim->tim[0].rst2r = 0;
+    } else if (speed > 0) {
+      hrtim->tim[0].set1r = HRTIM_TIMX_SET_PER;
+      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_CMP1;
+      hrtim->tim[0].set2r = 0;
+      hrtim->tim[0].rst2r = 0;
+      hrtim_set_compare_pct(0, 0, speed);
+    } else {
+      hrtim->tim[0].set1r = 0;
+      hrtim->tim[0].rst1r = 0;
+      hrtim->tim[0].set2r = HRTIM_TIMX_SET_PER;
+      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_CMP1;
+      hrtim_set_compare_pct(0, 0, -speed);
+    }
   break;
   }
 

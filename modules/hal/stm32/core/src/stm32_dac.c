@@ -105,8 +105,8 @@ int dacs_init()
   dac_init(0, 0, 0);
   dac_init(0, 1, 0);
 
-  dac_set_val(0, 0, 0xfff);
-  dac_set_val(0, 1, 0xfff / 2);
+  dac_set_val(0, 0, 0xfff * 3 / 4);
+  dac_set_val(0, 1, 0xfff / );
 
   dac_init(3, 0, 3);
   dac_init(3, 1, 3);
