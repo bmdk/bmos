@@ -56,6 +56,7 @@ void opamp_init(unsigned int n, unsigned int vm, unsigned int vp, int internal)
 
 void opamp_init_all()
 {
+#if 0
   /* follower mode DAC4 ch 1 - PB12 */
   opamp_init(3, 3, 3, 0);
   /* follower mode DAC4 ch 2 output to PA8 */
@@ -64,4 +65,5 @@ void opamp_init_all()
   /* pins
      opamp5 out pa8
      opamp4 out pb12 */
+#endif
 }
