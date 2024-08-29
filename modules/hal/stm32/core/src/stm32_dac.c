@@ -105,7 +105,7 @@ int dacs_init()
   dac_init(0, 0, 0);
   //dac_init(0, 1, 0);
 
-  dac_set_val(0, 0, 0xfff * 3 / 4);
+  dac_set_val(0, 0, 0xfff * 100 / 330);
 
   return 0;
 }
@@ -123,8 +123,7 @@ int cmd_dac(int argc, char *argv[])
     if (argc < 3)
       return -1;
     val = strtoul(argv[2], NULL, 0);
-    dac_set_val(3, 0, val);
-    dac_set_val(3, 1, val);
+    dac_set_val(0, 0, val);
     break;
   case 'g':
     xprintf("dac1: do1: %x do2: %x\n",  dac[0]->dor1 & 0xfff,

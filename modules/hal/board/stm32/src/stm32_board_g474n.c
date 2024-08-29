@@ -67,6 +67,9 @@ void pin_init()
   /* TIM 1 */
   enable_apb2(11);
 
+  /* ADC1 ch 1 */
+  gpio_init(GPIO(0, 0), GPIO_ANALOG);
+  /* DAC1 ch 1 */
   gpio_init(GPIO(0, 4), GPIO_ANALOG);
 #if 0
   /* opamp 5 in:PA7,out:PA6 */
