@@ -105,7 +105,7 @@ int dacs_init()
   dac_init(0, 0, 0);
   //dac_init(0, 1, 0);
 
-  dac_set_val(0, 0, 0xfff * 100 / 330);
+  dac_set_val(0, 0, 0xfff * 250 / 330);
 
   return 0;
 }
