@@ -67,8 +67,10 @@ void pin_init()
   /* TIM 1 */
   enable_apb2(11);
 
+#if 1
   /* ADC1 ch 1 */
-  gpio_init(GPIO(0, 0), GPIO_ANALOG);
+  gpio_init(GPIO(0, 1), GPIO_ANALOG);
+#endif
   /* DAC1 ch 1 */
   gpio_init(GPIO(0, 4), GPIO_ANALOG);
 #if 0
@@ -105,10 +107,12 @@ void pin_init()
 
   /* DAC1 */
   enable_ahb2(16);
+#if 0
   /* DAC3 */
   enable_ahb2(18);
   /* DAC4 */
   enable_ahb2(19);
+#endif
 
   /* DMA 1 */
   enable_ahb1(0);
