@@ -3,6 +3,7 @@
 #include "io.h"
 #include "shell.h"
 #include "common.h"
+#include "hal_common.h"
 
 typedef struct {
   reg32_t cr;
@@ -179,6 +180,9 @@ int hrtim_init()
 
   hrtim->tim[0].cr |= HRTIM_TIMX_CR_CONT;
 
+  /* divider to 2^n */
+  reg_set_field(&hrtim->tim[0].cr, 3, 0, 3);
+
   hrtim_set_compare_pct(0, 0, 0);
 
   hrtim->tim[0].set1r = 0;
@@ -249,16 +253,30 @@ int cmd_hrtim(int argc, char *argv[])
       hrtim->tim[0].set2r = 0;
       hrtim->tim[0].rst2r = HRTIM_TIMX_SET_SST;
     } else if (speed > 0) {
+#if 0
       hrtim->tim[0].set1r = HRTIM_TIMX_SET_PER;
       hrtim->tim[0].rst1r = HRTIM_TIMX_SET_CMP1;
       hrtim->tim[0].set2r = 0;
       hrtim->tim[0].rst2r = HRTIM_TIMX_SET_SST;
+#else
+      hrtim->tim[0].set1r = HRTIM_TIMX_SET_SST;
+      hrtim->tim[0].rst1r = 0;
+      hrtim->tim[0].set2r = HRTIM_TIMX_SET_CMP1;
+      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_PER;
+#endif
       hrtim_set_compare_pct(0, 0, speed);
     } else {
+#if 0
       hrtim->tim[0].set1r = 0;
       hrtim->tim[0].rst1r = HRTIM_TIMX_SET_SST;
       hrtim->tim[0].set2r = HRTIM_TIMX_SET_PER;
       hrtim->tim[0].rst2r = HRTIM_TIMX_SET_CMP1;
+#else
+      hrtim->tim[0].set1r = HRTIM_TIMX_SET_CMP1;
+      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_PER;
+      hrtim->tim[0].set2r = HRTIM_TIMX_SET_SST;
+      hrtim->tim[0].rst2r = 0;
+#endif
       hrtim_set_compare_pct(0, 0, -speed);
     }
     break;
