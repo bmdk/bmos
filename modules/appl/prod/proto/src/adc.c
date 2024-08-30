@@ -27,7 +27,7 @@
 #include "stm32_hal_adc.h"
 #include "xslog.h"
 
-unsigned short adc_val[2];
+unsigned short adc_val[3];
 
 #if AT32_F4XX
 unsigned char adc_seq[] = { 17, 16 };
@@ -50,7 +50,7 @@ unsigned char adc_seq[] = { 17, 16 };
 #if STM32_L4XX
 unsigned char adc_seq[] = { 0, 17 };
 #else
-unsigned char adc_seq[] = { 18, 16 };
+unsigned char adc_seq[] = { 18, 16, 2 };
 #endif
 
 #define TS_CAL1 *(unsigned short *)0x1FFF75A8
@@ -179,8 +179,12 @@ static void adc_conv_done(unsigned short *data, unsigned int count,
 #endif
   temp = get_temp(adc_val[1]);
 
-  xslog(LOG_INFO, "VDD:%d T:%d\n", get_vdd(), temp);
+#if STM32_G4XX
+  xslog(LOG_INFO, "val: %d\n", adc_val[2]);
 
+  if (0)
+#endif
+  xslog(LOG_INFO, "VDD:%d T:%d\n", get_vdd(), temp);
 }
 
 static void adc_task(void *arg)
