@@ -5,6 +5,13 @@
 #include "common.h"
 #include "hal_common.h"
 
+#define N_HRTIM_TIM 6
+
+typedef struct {
+  reg32_t set;
+  reg32_t rst;
+} stm32_hrtim_tim_output_t;
+
 typedef struct {
   reg32_t cr;
   reg32_t isr;
@@ -21,10 +28,7 @@ typedef struct {
   reg32_t cpt1r;
   reg32_t cpt2r;
   reg32_t dtr;
-  reg32_t set1r;
-  reg32_t rst1r;
-  reg32_t set2r;
-  reg32_t rst2r;
+  stm32_hrtim_tim_output_t out[2];
   reg32_t eef1r;
   reg32_t eef2r;
   reg32_t rstr;
@@ -98,6 +102,7 @@ typedef struct {
 #define HRTIM_MCR_CONT BIT(3) /* continuous */
 #define HRTIM_MCR_RETRIG BIT(4)
 #define HRTIM_MCR_MCEN BIT(16)
+#define HRTIM_MCR_TxCEN(n) BIT(17 + (n))
 #define HRTIM_MCR_TACEN BIT(17)
 #define HRTIM_MCR_TBCEN BIT(18)
 #define HRTIM_MCR_TCCEN BIT(19)
@@ -110,6 +115,7 @@ typedef struct {
 #define HRTIM_TIMX_SET_SST BIT(0)
 #define HRTIM_TIMX_SET_RESYNC BIT(1)
 #define HRTIM_TIMX_SET_PER BIT(2)
+#define HRTIM_TIMX_SET_CMPx(n) BIT(3 + (n))
 #define HRTIM_TIMX_SET_CMP1 BIT(3)
 #define HRTIM_TIMX_SET_CMP2 BIT(4)
 #define HRTIM_TIMX_SET_CMP3 BIT(5)
@@ -135,20 +141,22 @@ typedef struct {
 #define HRTIM_OENR_TF1OEN BIT(10)
 #define HRTIM_OENR_TF2OEN BIT(11)
 
-#define HRTIM_TIMX_CR_CONT BIT(3)
+#define HRTIM_TIMX_CR_CONT_NUM 3
+#define HRTIM_TIMX_CR_CONT BIT(HRTIM_TIMX_CR_CONT_NUM)
+
+#define HRTIM_TIM_FLG_O1EN_NUM 0
+#define HRTIM_TIM_FLG_O1EN BIT(HRTIM_TIM_FLG_O1EN_NUM)
+#define HRTIM_TIM_FLG_O2EN_NUM 1
+#define HRTIM_TIM_FLG_O2EN BIT(HRTIM_TIM_FLG_O2EN_NUM)
+#define HRTIM_TIM_FLG_CONT_NUM 2
+#define HRTIM_TIM_FLG_CONT BIT(HRTIM_TIM_FLG_CONT_NUM)
 
 static stm32_hrtim_t *hrtim = (stm32_hrtim_t *)HRTIM_BASE;
 
-void hrtim_set_compare_pct(unsigned int timer,
-                           unsigned int compare, unsigned int pct)
+void hrtim_set_compare(unsigned int timer,
+                       unsigned int compare, unsigned int val)
 {
-  unsigned int cval;
   reg32_t *cmpx;
-
-  if (pct > 100)
-    pct = 100;
-
-  cval = (0xffffU * pct + 50) / 100;
 
   switch (compare) {
   default:
@@ -166,47 +174,100 @@ void hrtim_set_compare_pct(unsigned int timer,
     break;
   }
 
-  *cmpx = cval & 0xffffU;
+  *cmpx = val & 0xffffU;
+}
+
+
+void hrtim_set_compare_pct(unsigned int timer,
+                           unsigned int compare, unsigned int pct)
+{
+  unsigned int cval;
+
+  if (pct > 100)
+    pct = 100;
+
+  cval = (0xffffU * pct + 50) / 100;
+
+  hrtim_set_compare(timer, compare, cval);
+}
+
+void hrtim_set_output(unsigned int timer, unsigned int o,
+                      unsigned int set, unsigned int rst)
+{
+  stm32_hrtim_tim_output_t *out;
+
+  if (timer >= N_HRTIM_TIM || o >= 2)
+    return;
+
+  out = &hrtim->tim[timer].out[o];
+
+  out->set = set;
+  out->rst = rst;
+}
+
+void hrtim_set_output_on(unsigned int timer, unsigned int o, int on)
+{
+  if (on)
+    hrtim_set_output(timer, o, HRTIM_TIMX_SET_PER, 0);
+  else
+    hrtim_set_output(timer, o, 0, HRTIM_TIMX_SET_PER);
+}
+
+void hrtim_set_output_compare(unsigned int timer, unsigned int o,
+                              unsigned int compare, int on)
+{
+  unsigned int on_flags, off_flags;
+
+  if (compare >= 4)
+    return;
+
+  if (on) {
+    on_flags = HRTIM_TIMX_SET_CMPx(compare);
+    off_flags = HRTIM_TIMX_SET_PER;
+  } else {
+    on_flags = HRTIM_TIMX_SET_PER;
+    off_flags = HRTIM_TIMX_SET_CMPx(compare);
+  }
+
+  hrtim_set_output(timer, o, on_flags, off_flags);
+}
+
+void hrtim_tim_init(unsigned int tim, unsigned int cntr,
+                   unsigned int div_pow_2, unsigned int flags)
+{
+  stm32_hrtim_tim_t *timn = &hrtim->tim[tim];
+
+  if (tim >= N_HRTIM_TIM)
+    return;
+
+  hrtim->mcr &= ~HRTIM_MCR_TxCEN(tim);
+
+  reg_set_field(&hrtim->oenr, 1, 2 * tim, flags >> HRTIM_TIM_FLG_O1EN_NUM);
+  reg_set_field(&hrtim->oenr, 1, 2 * tim + 1, flags >> HRTIM_TIM_FLG_O2EN_NUM);
+
+  reg_set_field(&timn->cr, 1, HRTIM_TIMX_CR_CONT_NUM,
+                flags >> HRTIM_TIM_FLG_CONT_NUM);
+
+  timn->cntr = cntr;
+
+  /* divider to 2^n */
+  reg_set_field(&timn->cr, 3, 0, div_pow_2);
+
+  hrtim_set_output(tim, 0, 0, 0);
+  hrtim_set_output(tim, 1, 0, 0);
+  hrtim_set_compare(0, 0, 0);
+
+  hrtim->mcr |= HRTIM_MCR_TxCEN(tim);
 }
 
 int hrtim_init()
 {
-  hrtim->mcr &= ~(HRTIM_MCR_MCEN | HRTIM_MCR_TACEN | HRTIM_MCR_TBCEN);
-
-  hrtim->oenr = (HRTIM_OENR_TA1OEN | HRTIM_OENR_TA2OEN);
-  hrtim->mcntr = 0;
-
-  hrtim->tim[0].cntr = 0;
-
-  hrtim->tim[0].cr |= HRTIM_TIMX_CR_CONT;
-
-  /* divider to 2^n */
-  reg_set_field(&hrtim->tim[0].cr, 3, 0, 3);
-
-  hrtim_set_compare_pct(0, 0, 0);
-
-  hrtim->tim[0].set1r = 0;
-  hrtim->tim[0].rst1r = 0;
-
-  hrtim->tim[0].set2r = 0;
-  hrtim->tim[0].rst2r = 0;
-
-#if 0
-  hrtim->tim[1].cntr = 0x8000;
-  hrtim->tim[1].cr |= HRTIM_TIMX_CR_CONT;
-
-  hrtim_set_compare_pct(1, 0, 50);
-
-  hrtim->tim[1].set1r = HRTIM_TIMX_SET_PER;
-  hrtim->tim[1].rst1r = HRTIM_TIMX_SET_CMP1;
-
-  hrtim->tim[1].set2r = HRTIM_TIMX_SET_CMP1;
-  hrtim->tim[1].rst2r = HRTIM_TIMX_SET_PER;
-#endif
-
-  hrtim->mcr |= HRTIM_MCR_TACEN;
+  hrtim_tim_init(0, 0, 3,
+                 HRTIM_TIM_FLG_O1EN | HRTIM_TIM_FLG_O2EN | HRTIM_TIM_FLG_CONT);
   return 0;
 }
+
+static int high;
 
 int cmd_hrtim(int argc, char *argv[])
 {
@@ -217,6 +278,12 @@ int cmd_hrtim(int argc, char *argv[])
 
   switch (argv[1][0]) {
   default:
+  case 'h':
+    if (argc < 3)
+      return -1;
+    high = atoi(argv[2]);
+
+    break;
   case 'g':
     xprintf("mcr: %x\n", hrtim->mcr);
     xprintf("mcnt: %x\n", hrtim->mcntr);
@@ -226,20 +293,10 @@ int cmd_hrtim(int argc, char *argv[])
     xprintf("per0: %04x\n", hrtim->tim[0].perr);
     break;
   case 'p':
-    {
-      unsigned int pct, compare;
+    if (argc < 3)
+      return -1;
 
-      if (argc < 3)
-        return -1;
-
-      pct = atoi(argv[2]);
-      if (pct > 100)
-        pct = 100;
-
-      compare = (0xffffU * pct + 50) / 100;
-
-      hrtim->tim[0].cmp1r = compare & 0xffffU;
-    }
+    hrtim_set_compare_pct(0, 0, atoi(argv[2]));
     break;
   case 's':
     if (argc < 3)
@@ -248,35 +305,25 @@ int cmd_hrtim(int argc, char *argv[])
     speed = atoi(argv[2]);
     xprintf("set speed %d\n", speed);
     if (speed == 0) {
-      hrtim->tim[0].set1r = 0;
-      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_SST;
-      hrtim->tim[0].set2r = 0;
-      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_SST;
+      hrtim_set_output_on(0, 0, 0);
+      hrtim_set_output_on(0, 1, 0);
     } else if (speed > 0) {
-#if 0
-      hrtim->tim[0].set1r = HRTIM_TIMX_SET_PER;
-      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_CMP1;
-      hrtim->tim[0].set2r = 0;
-      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_SST;
-#else
-      hrtim->tim[0].set1r = HRTIM_TIMX_SET_SST;
-      hrtim->tim[0].rst1r = 0;
-      hrtim->tim[0].set2r = HRTIM_TIMX_SET_CMP1;
-      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_PER;
-#endif
+      if (high) {
+        hrtim_set_output_on(0, 0, 1);
+        hrtim_set_output_compare(0, 1, 0, 1);
+      } else {
+        hrtim_set_output_compare(0, 0, 0, 0);
+        hrtim_set_output_on(0, 1, 0);
+      }
       hrtim_set_compare_pct(0, 0, speed);
     } else {
-#if 0
-      hrtim->tim[0].set1r = 0;
-      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_SST;
-      hrtim->tim[0].set2r = HRTIM_TIMX_SET_PER;
-      hrtim->tim[0].rst2r = HRTIM_TIMX_SET_CMP1;
-#else
-      hrtim->tim[0].set1r = HRTIM_TIMX_SET_CMP1;
-      hrtim->tim[0].rst1r = HRTIM_TIMX_SET_PER;
-      hrtim->tim[0].set2r = HRTIM_TIMX_SET_SST;
-      hrtim->tim[0].rst2r = 0;
-#endif
+      if (high) {
+        hrtim_set_output_compare(0, 0, 0, 1);
+        hrtim_set_output_on(0, 1, 1);
+      } else {
+        hrtim_set_output_on(0, 0, 0);
+        hrtim_set_output_compare(0, 1, 0, 0);
+      }
       hrtim_set_compare_pct(0, 0, -speed);
     }
     break;
