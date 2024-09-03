@@ -120,6 +120,9 @@ void pin_init()
   /* DMA 2 */
   enable_ahb1(1);
 
+  /* DMAMUX1 */
+  enable_ahb1(2);
+
   enable_ahb2(13); /* ADC12 */
 
   /* FDCAN */
