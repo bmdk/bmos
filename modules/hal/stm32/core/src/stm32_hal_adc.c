@@ -22,12 +22,22 @@
 #include "common.h"
 #include "fast_log.h"
 #include "hal_common.h"
+#include "hal_dma.h"
 #include "hal_int.h"
 #include "hal_time.h"
 #include "io.h"
 #include "shell.h"
 #include "stm32_hal.h"
 #include "stm32_hal_adc.h"
+
+#if STM32_G4XX
+#define ADC_USE_DMA 1
+/* since we have a DMAMUX the dma number and channel are arbitrary */
+#define DMA_NUM 0
+#define DMA_CHAN 1
+#define DMA_DEVID 5 /* ADC1 */
+#define DMA_IRQ 12 /* DMA1 CH1 */
+#endif
 
 typedef struct {
   reg32_t isr;
@@ -108,6 +118,9 @@ typedef struct {
 #define CR_ADDIS BIT(1)
 #define CR_ADEN BIT(0)
 
+#define CFGR_DMAEN BIT(0)
+#define CFGR_DMACFG BIT(1)
+
 #define ISR_OVR BIT(4)
 #define ISR_EOS BIT(3)
 #define ISR_EOC BIT(2)
@@ -143,9 +156,12 @@ typedef struct {
 typedef struct {
   unsigned short res[16];
   conv_done_f *conv_done;
-  unsigned char count;
+  unsigned char tcount; /* sample count in each conversion */
+  unsigned char count; /* samples received so far */
   unsigned char flags;
 } adc_data_t;
+
+#define ADC_DATA_FLAGS_CONV_ACTIVE BIT(0)
 
 static adc_data_t adc_data;
 
@@ -156,8 +172,10 @@ static void adc_irq(void *arg)
 
   isr = a->isr;
 
-  if (isr & ISR_OVR)
+  if (isr & ISR_OVR) {
+    a->isr |= ISR_OVR;
     FAST_LOG('A', "adc overflow\n", 0, 0);
+  }
 
   if (isr & ISR_EOC) {
     dr = a->dr;
@@ -169,8 +187,28 @@ static void adc_irq(void *arg)
     if (adc_data.conv_done)
       adc_data.conv_done(adc_data.res, adc_data.count, 0);
     adc_data.count = 0;
+
+    adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
   }
 }
+
+#if ADC_USE_DMA
+static void adc_dma_irq(void *data)
+{
+  unsigned int status;
+
+  status = dma_irq_ack(DMA_NUM, DMA_CHAN);
+  if (status & DMA_IRQ_STATUS_FULL)
+    FAST_LOG('A', "adc dma full\n", 0, 0);
+  if (status & DMA_IRQ_STATUS_HALF)
+    FAST_LOG('A', "adc dma half\n", 0, 0);
+
+  if (adc_data.flags & ADC_DATA_FLAGS_CONV_ACTIVE) {
+    adc_data.conv_done(adc_data.res, adc_data.tcount, 0);
+    adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
+  }
+}
+#endif
 
 void stm32_adc_vbat(int en)
 {
@@ -181,6 +219,34 @@ void stm32_adc_vbat(int en)
   else
     ac->ccr &= ~CCR_CH18SEL;
 }
+
+#if ADC_USE_DMA
+static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
+                                void *buf, unsigned int cnt)
+{
+  dma_attr_t attr;
+
+  dma_en(DMA_NUM, DMA_CHAN, 0);
+
+  dma_set_chan(DMA_NUM, DMA_CHAN, DMA_DEVID);
+
+  attr.ssiz = DMA_SIZ_4;
+  attr.dsiz = DMA_SIZ_2;
+  attr.dir = DMA_DIR_FROM;
+  attr.prio = 1;
+  attr.sinc = 0;
+  attr.dinc = 1;
+  attr.irq = 1;
+
+  if (circ) {
+    attr.circ = 1;
+    attr.irq_half = 1;
+  }
+
+  dma_trans(DMA_NUM, DMA_CHAN, (void *)&a->dr, buf, cnt, attr);
+  dma_en(DMA_NUM, DMA_CHAN, 1);
+}
+#endif
 
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
                             unsigned int cnt, conv_done_f *conv_done)
@@ -206,6 +272,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 
   while (a->cr & CR_ADCAL)
     ;
+
+  adc_data.tcount = cnt;
 
   for (i = 0; i < cnt; i++) {
     unsigned int n = (i + 1) % 5;
@@ -238,8 +306,12 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->isr = 0xffffffff;
 
   irq_register("adc1", adc_irq, 0, ADC1_IRQ);
-
+#if ADC_USE_DMA
+  irq_register("adc_dma", adc_dma_irq, a, DMA_IRQ);
+  a->ier |= IER_OVRIE;
+#else
   a->ier |= IER_OVRIE | IER_EOCIE | IER_EOSIE;
+#endif
 }
 
 void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
@@ -248,6 +320,26 @@ void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
   _stm32_adc_init(ADC, reg_seq, cnt, conv_done);
 }
 
+#if ADC_USE_DMA
+static int _stm32_adc_conv(void *base)
+{
+  stm32_adc_t *a = (stm32_adc_t *)base;
+
+  if (adc_data.flags & ADC_DATA_FLAGS_CONV_ACTIVE)
+    return -1;
+
+  if (a->cr & CR_ADSTART)
+    return -1;
+
+  _stm32_adc_dma_init(a, 0, &adc_data.res, adc_data.tcount);
+  adc_data.flags |= ADC_DATA_FLAGS_CONV_ACTIVE;
+
+  a->cfgr |= CFGR_DMAEN;
+  a->cr |= CR_ADSTART;
+
+  return 0;
+}
+#else
 static int _stm32_adc_conv(void *base)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
@@ -255,10 +347,13 @@ static int _stm32_adc_conv(void *base)
   if ((a->cr & CR_ADSTART))
     return -1;
 
+  adc_data.count = 0;
+
   a->cr |= CR_ADSTART;
 
   return 0;
 }
+#endif
 
 int stm32_adc_conv()
 {
