@@ -284,7 +284,7 @@ static void timer_set_slave_mode(stm32_timer_t *t, unsigned int mode)
 }
 
 void timer_init_encoder(void *base, unsigned int presc,
-                        unsigned int max, int direction)
+                        unsigned int max, int direction, unsigned int filter)
 {
   stm32_timer_t *t = (stm32_timer_t *)base;
 
@@ -300,6 +300,9 @@ void timer_init_encoder(void *base, unsigned int presc,
   /* map input pin 1 to input 1 and input pin 2 to input 2 */
   reg_set_field(&t->ccmr[0], 2, 0, 1); /* CC1S = 1 */
   reg_set_field(&t->ccmr[0], 2, 8, 1); /* CC2S = 1 */
+
+  reg_set_field(&t->ccmr[0], 4, 4, filter); /* IC1F */
+  reg_set_field(&t->ccmr[0], 4, 12, filter); /* IC2F */
 
   t->ccer &= ~(CCER_CC1P | CCER_CC1NP | CCER_CC2P | CCER_CC2NP);
   timer_set_slave_mode(t, 3); /* quadrature encoder x4 */
@@ -376,7 +379,7 @@ int cmd_timer(int argc, char *argv[])
     timer_stop(TIM_CMD_BASE);
     break;
   case 'e':
-    timer_init_encoder(TIM_CMD_BASE, 1, -1, 0);
+    timer_init_encoder(TIM_CMD_BASE, 1, -1, 0, 0xf);
     break;
   default:
   case 'g':
