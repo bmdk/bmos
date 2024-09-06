@@ -37,7 +37,7 @@
 #include "stm32_hal_spi.h"
 #include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_f4xx.h"
+#include "stm32_pwr_f4.h"
 #include "stm32_rcc_a.h"
 
 void pin_init()

@@ -31,7 +31,7 @@
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_f7xx.h"
+#include "stm32_pwr_f7.h"
 #include "stm32_rcc_a.h"
 
 #if APPL

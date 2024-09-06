@@ -33,7 +33,7 @@
 #include "stm32_pwr.h"
 #include "stm32_rcc_f1.h"
 #include "shell.h"
-#include "stm32_pwr_f4xx.h"
+#include "stm32_pwr_f4.h"
 #include "hal_int.h"
 #include "io.h"
 

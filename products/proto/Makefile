@@ -447,13 +447,13 @@ endif
 
 FILES.h5xx += stm32_usart_b.o
 FILES.h5xx += stm32_rcc_h5.o
-FILES.h5xx += stm32_pwr_h5xx.o
+FILES.h5xx += stm32_pwr_h5.o
 FILES.h5xx += stm32_flash.o
 FILES.h5xx += stm32_hal_gpdma.o
-FILES.h5xx += stm32_exti_uxxx.o
+FILES.h5xx += stm32_exti_ux.o
 FILES.h5xx += stm32_hal_rtc.o
 FILES.h5xx += stm32_wdog.o
-FILES.h5xx += stm32_eth_h7xx.o
+FILES.h5xx += stm32_eth_h7.o
 FILES.h5xx += stm32_hal_sleep.o
 
 FILES.h563n += $(FILES.h5xx)
@@ -461,11 +461,11 @@ FILES.h563n += $(FILES.h5xx)
 FILES.h7xx += stm32_usart_b.o
 FILES.h7xx += stm32_rcc_h7.o
 FILES.h7xx += stm32_hal_rtc.o
-FILES.h7xx += stm32_flash_h7xx.o
+FILES.h7xx += stm32_flash_h7.o
 FILES.h7xx += stm32_wdog.o
-FILES.h7xx += stm32_exti_h7xx.o
-FILES.h7xx += stm32_pwr_h7xx.o
-FILES.h7xx += stm32_eth_h7xx.o
+FILES.h7xx += stm32_exti_h7.o
+FILES.h7xx += stm32_pwr_h7.o
+FILES.h7xx += stm32_eth_h7.o
 FILES.h7xx += stm32_hal_bdma.o
 FILES.h7xx += stm32_hal_dma.o
 FILES.h7xx += stm32_hal_dmamux.o
@@ -496,17 +496,17 @@ FILES.h745n += can_test.o
 FILES.h563n += stm32_fdcan.o
 FILES.h563n += can_test.o
 
-FILES.f7xx += stm32_pwr_f7xx.o
+FILES.f7xx += stm32_pwr_f7.o
 FILES.f7xx += stm32_flash.o
-FILES.f4xx += stm32_pwr_f4xx.o
+FILES.f4xx += stm32_pwr_f4.o
 FILES.f4xx += stm32_flash.o
-FILES.fxxx += stm32_exti_fxxx.o
+FILES.fxxx += stm32_exti_fx.o
 
 FILES.f0xx += stm32_usart_b.o
 FILES.f0xx += stm32_rcc_f1.o
 FILES.f0xx += stm32_flash_f1.o
 FILES.f0xx += stm32_hal_bdma.o
-FILES.f0xx += stm32_pwr_f0xx.o
+FILES.f0xx += stm32_pwr_f0.o
 #FILES.f0xx += stm32_hal_rtc.o
 
 XSLOG.f030demo += xslog_simple.o
@@ -515,19 +515,19 @@ FILES.f030demo += $(FILES.f0xx)
 XSLOG.f072n += xslog_simple.o
 FILES.f072n += $(FILES.f0xx)
 
-FILES.f1xx += stm32_exti_fxxx.o
+FILES.f1xx += stm32_exti_fx.o
 FILES.f1xx += stm32_flash_f1.o
 FILES.f1xx += stm32_hal_bdma.o
-FILES.f1xx += stm32_pwr_f1xx.o
+FILES.f1xx += stm32_pwr_f1.o
 FILES.f1xx += stm32_rcc_f1.o
 FILES.f1xx += stm32_usart_a.o
-FILES.f1xx += stm32_hal_adc_fxxx.o
+FILES.f1xx += stm32_hal_adc_fx.o
 
-FILES.f3xx += stm32_exti_fxxx.o
+FILES.f3xx += stm32_exti_fx.o
 FILES.f3xx += stm32_flash_f1.o
 FILES.f3xx += stm32_hal_bdma.o
 FILES.f3xx += stm32_hal_rtc.o
-FILES.f3xx += stm32_pwr_f1xx.o
+FILES.f3xx += stm32_pwr_f1.o
 FILES.f3xx += stm32_rcc_f1.o
 FILES.f3xx += stm32_usart_b.o
 
@@ -566,7 +566,7 @@ FILES.f411bp += ssd1306_fonts.o
 FILES.f411bp += i2c_test.o
 FILES.f411bp += ws2811.o
 FILES.f411bp += ws2811_task.o
-FILES.f411bp += stm32_hal_adc_fxxx.o
+FILES.f411bp += stm32_hal_adc_fx.o
 FILES.f411bp += adc.o
 FILES.f411bp += kvlog.o
 
@@ -592,7 +592,7 @@ FILES.f401bp += ws2811.o
 FILES.f401bp += ws2811_task.o
 FILES.f401bp += font1.o
 FILES.f401bp += fb.o
-FILES.f401bp += stm32_hal_adc_fxxx.o
+FILES.f401bp += stm32_hal_adc_fx.o
 FILES.f401bp += adc.o
 FILES.f401bp += kvlog.o
 FILES.f401bp += $(FILES.tusb)
@@ -667,7 +667,7 @@ FILES.g0xx += stm32_flash.o
 FILES.g0xx += stm32_hal_bdma.o
 FILES.g0xx += stm32_hal_dmamux.o
 FILES.g0xx += stm32_hal_rtc.o
-FILES.g0xx += stm32_pwr_g0xx.o
+FILES.g0xx += stm32_pwr_g0.o
 FILES.g0xx += stm32_rcc_g0.o
 FILES.g0xx += stm32_usart_b.o
 
@@ -679,7 +679,7 @@ FILES.c0xx += stm32_flash.o
 FILES.c0xx += stm32_hal_bdma.o
 FILES.c0xx += stm32_hal_dmamux.o
 FILES.c0xx += stm32_hal_rtc.o
-FILES.c0xx += stm32_pwr_g0xx.o
+FILES.c0xx += stm32_pwr_g0.o
 FILES.c0xx += stm32_rcc_g0.o
 FILES.c0xx += stm32_usart_b.o
 FILES.c0xx += stm32_hal_adc_g0.o
@@ -690,29 +690,29 @@ FILES.c0xx += fb.o
 FILES.c0xx += i2c_test.o
 
 FILES.c031n += $(FILES.c0xx)
-FILES.c031n += stm32_exti_uxxx.o
+FILES.c031n += stm32_exti_ux.o
 FILES.c031n += adc.o
 
 FILES.g030deb += $(FILES.g0xx)
-FILES.g030deb += stm32_exti_uxxx.o
+FILES.g030deb += stm32_exti_ux.o
 XSLOG.g030deb += xslog_simple.o
 
 FILES.g4xx += crc_ccitt16.o
-FILES.g4xx += stm32_exti_lxxx.o
+FILES.g4xx += stm32_exti_lx.o
 FILES.g4xx += stm32_flash.o
 FILES.g4xx += stm32_hal_bdma.o
 FILES.g4xx += stm32_hal_dmamux.o
-FILES.g4xx += stm32_pwr_lxxx.o
+FILES.g4xx += stm32_pwr_lx.o
 FILES.g4xx += stm32_rcc_b.o
 FILES.g4xx += stm32_usart_b.o
 FILES.g4xx += stm32_wdog.o
 FILES.g4xx += stm32_fdcan.o
 
 FILES.wbxx += crc_ccitt16.o
-FILES.wbxx += stm32_exti_lxxx.o
+FILES.wbxx += stm32_exti_lx.o
 FILES.wbxx += stm32_flash.o
 FILES.wbxx += stm32_hal_bdma.o
-FILES.wbxx += stm32_pwr_lxxx.o
+FILES.wbxx += stm32_pwr_lx.o
 FILES.wbxx += stm32_rcc_b.o
 FILES.wbxx += stm32_usart_b.o
 FILES.wbxx += stm32_wdog.o
@@ -720,7 +720,7 @@ FILES.wbxx += stm32_wdog.o
 FILES.l0xx += stm32_usart_b.o
 FILES.l0xx += stm32_rcc_l0.o
 FILES.l0xx += stm32_flash_l0.o
-FILES.l0xx += stm32_pwr_l0xx.o
+FILES.l0xx += stm32_pwr_l0.o
 FILES.l0xx += stm32_hal_bdma.o
 
 FILES.l073n += $(FILES.l0xx)
@@ -730,8 +730,8 @@ FILES.l4xx += stm32_rcc_b.o
 FILES.l4xx += stm32_flash.o
 FILES.l4xx += crc_ccitt16.o
 FILES.l4xx += stm32_wdog.o
-FILES.l4xx += stm32_pwr_lxxx.o
-FILES.l4xx += stm32_exti_lxxx.o
+FILES.l4xx += stm32_pwr_lx.o
+FILES.l4xx += stm32_exti_lx.o
 
 FILES.l432n += stm32_hal_bdma.o
 FILES.l432n += stm32_hal_rtc.o
@@ -768,8 +768,8 @@ FILES.l4rn += stm32_hal_bdma.o
 FILES.l4rn += stm32_usart_b.o
 FILES.l4rn += stm32_rcc_b.o
 FILES.l4rn += stm32_wdog.o
-FILES.l4rn += stm32_pwr_lxxx.o
-FILES.l4rn += stm32_exti_lxxx.o
+FILES.l4rn += stm32_pwr_lx.o
+FILES.l4rn += stm32_exti_lx.o
 FILES.l4rn += stm32_flash.o
 
 FILES.g474n += $(FILES.g4xx)
@@ -790,8 +790,8 @@ FILES.g431kbn += stm32_hal_adc.o
 FILES.g431kbn += adc.o
 
 FILES.u083n += stm32_hal_rtc.o
-FILES.u083n += stm32_exti_uxxx.o
-FILES.u083n += stm32_pwr_g0xx.o
+FILES.u083n += stm32_exti_ux.o
+FILES.u083n += stm32_pwr_g0.o
 FILES.u083n += stm32_rcc_g0.o
 FILES.u083n += stm32_usart_b.o
 FILES.u083n += stm32_hal_bdma.o
@@ -799,8 +799,8 @@ FILES.u083n += stm32_hal_dmamux.o
 FILES.u083n += stm32_flash.o
 
 FILES.u575n += stm32_hal_rtc.o
-FILES.u575n += stm32_exti_uxxx.o
-FILES.u575n += stm32_pwr_uxxx.o
+FILES.u575n += stm32_exti_ux.o
+FILES.u575n += stm32_pwr_ux.o
 FILES.u575n += stm32_rcc_u5.o
 FILES.u575n += stm32_usart_b.o
 FILES.u575n += stm32_hal_gpdma.o

@@ -21,7 +21,7 @@
 
 #include "common.h"
 #include "hal_common.h"
-#include "stm32_pwr_h7xx.h"
+#include "stm32_pwr_h7.h"
 
 #define PWR_BASE 0x58024800
 

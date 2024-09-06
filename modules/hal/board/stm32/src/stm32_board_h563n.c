@@ -36,7 +36,7 @@
 #include "stm32_hal_gpio.h"
 #include "stm32_hal_uart.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_h5xx.h"
+#include "stm32_pwr_h5.h"
 #include "stm32_rcc_h5.h"
 #include "stm32_timer.h"
 

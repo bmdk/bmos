@@ -35,7 +35,7 @@
 #include "stm32_hal_uart.h"
 #include "stm32_lcd.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_h7xx.h"
+#include "stm32_pwr_h7.h"
 #include "stm32_rcc_h7.h"
 #include "stm32_timer.h"
 

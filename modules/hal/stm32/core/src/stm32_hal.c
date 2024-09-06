@@ -411,7 +411,7 @@ SHELL_CMD(led, cmd_led);
 
 #if BOARD_H745N
 #include "stm32_rcc_h7.h"
-#include "stm32_pwr_h7xx.h"
+#include "stm32_pwr_h7.h"
 #include "stm32_flash.h"
 #include "stm32_wwdg.h"
 

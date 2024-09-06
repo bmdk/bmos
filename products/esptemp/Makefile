@@ -203,9 +203,9 @@ FILES += libc.o
 FILES += malloc.o
 endif
 
-FILES.f4xx += stm32_pwr_f4xx.o
+FILES.f4xx += stm32_pwr_f4.o
 FILES.f4xx += stm32_flash.o
-FILES.fxxx += stm32_exti_fxxx.o
+FILES.fxxx += stm32_exti_fx.o
 
 FILES.f411bp += stm32_hal_rtc.o
 FILES.f411bp += stm32_usart_a.o
@@ -220,7 +220,7 @@ FILES.f411bp += fb.o
 FILES.f411bp += ssd1306_fonts.o
 FILES.f411bp += i2c_test.o
 FILES.f411bp += ws2811.o
-FILES.f411bp += stm32_hal_adc_fxxx.o
+FILES.f411bp += stm32_hal_adc_fx.o
 FILES.f411bp += adc.o
 FILES.f411bp += kvlog.o
 
@@ -246,7 +246,7 @@ FILES.f401bp += stm32_hal_dma.o
 #FILES.f401bp += ws2811.o
 FILES.f401bp += font1.o
 FILES.f401bp += fb.o
-FILES.f401bp += stm32_hal_adc_fxxx.o
+FILES.f401bp += stm32_hal_adc_fx.o
 FILES.f401bp += adc.o
 FILES.f401bp += kvlog.o
 FILES.f401bp += onewire.o

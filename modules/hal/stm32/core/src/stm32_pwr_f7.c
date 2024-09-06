@@ -21,33 +21,14 @@
 
 #include "common.h"
 #include "hal_common.h"
-#include "stm32_pwr_f4xx.h"
-
-typedef struct {
-  unsigned int memrmp;
-  unsigned int pmc;
-  unsigned int exticr[4];
-  unsigned int rsvd0;
-  unsigned int cbr;
-  unsigned int cmpcr;
-} stm32_syscfg_t;
-
-typedef struct {
-  unsigned int cr;
-  unsigned int csr;
-} stm32_pwr_t;
-
-#define SYSCFG ((volatile stm32_syscfg_t *)(0x40013800))
-#define PWR ((volatile stm32_pwr_t *)(0x40007000))
-
-#define PWR_CR1_DBP BIT(8)
+#include "stm32_pwr_f7.h"
 
 void backup_domain_protect(int on)
 {
   if (on)
-    PWR->cr &= ~PWR_CR1_DBP;
+    PWR->cr[0] &= ~PWR_CR1_DBP;
   else
-    PWR->cr |= PWR_CR1_DBP;
+    PWR->cr[0] |= PWR_CR1_DBP;
 }
 
 void stm32_syscfg_eth_phy(unsigned int rmii)
@@ -69,23 +50,4 @@ void stm32_syscfg_set_exti(unsigned int v, unsigned int n)
   ofs = n % 4;
 
   reg_set_field(&SYSCFG->exticr[reg], 4, ofs << 2, v);
-}
-
-#define PWR_CSR_VOSRDY BIT(14)
-
-int stm32_pwr_vos_rdy(void)
-{
-  return (PWR->csr & PWR_CSR_VOSRDY) != 0;
-}
-
-/* vos is only activated when the pll is activated with HSI or HSE as
-   clock source so we cannot wait for ready immediately after setting */
-void stm32_pwr_vos(unsigned int vos)
-{
-  reg_set_field(&PWR->cr, 2, 14, vos);
-}
-
-void stm32_memmap(unsigned int val)
-{
-  SYSCFG->memrmp = val & 0x3;
 }

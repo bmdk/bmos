@@ -25,7 +25,7 @@
 #include "hal_common.h"
 #include "stm32_hal.h"
 #include "stm32_pwr.h"
-#include "stm32_pwr_h7xx.h"
+#include "stm32_pwr_h7.h"
 #include "stm32_rcc_h7.h"
 #include "stm32_rcc_ls.h"
 
