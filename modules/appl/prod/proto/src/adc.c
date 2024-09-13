@@ -26,6 +26,7 @@
 #include "fast_log.h"
 #include "stm32_hal_adc.h"
 #include "xslog.h"
+#include "io.h"
 
 unsigned short adc_val[3];
 
@@ -202,9 +203,40 @@ void adc_init()
   task_init(adc_task, NULL, "adc", 2, 0, 194);
 }
 
+#if 0
 unsigned short dma_buf[5000 * 2 * 2];
 
 void adc_init_dma()
 {
   stm32_adc_init_dma(adc_seq, sizeof(adc_seq), dma_buf, sizeof(dma_buf), 0);
 }
+#else
+int stm32_adc_trig();
+
+static void adc_task_dma(void *arg)
+{
+  for (;;) {
+    task_delay(100);
+    stm32_adc_trig();
+  }
+}
+
+#define DMA_BUF_LEN_H (16 * sizeof(adc_seq))
+
+unsigned short dma_buf[2 * DMA_BUF_LEN_H];
+
+static void adc_conv_done_dma(unsigned short *data, unsigned int count,
+                          unsigned int flags)
+{
+  xslog(LOG_INFO, "flags:%d buf:%p, l:%d\n", flags, data, count);
+}
+
+void adc_init_dma()
+{
+  debug_printf("dma_buf %p\n", dma_buf);
+  stm32_adc_init_dma(adc_seq, sizeof(adc_seq),
+                     dma_buf, sizeof(dma_buf), adc_conv_done_dma);
+
+  task_init(adc_task_dma, NULL, "adc", 2, 0, 194);
+}
+#endif

@@ -159,6 +159,9 @@ typedef struct {
   unsigned char tcount; /* sample count in each conversion */
   unsigned char count; /* samples received so far */
   unsigned char flags;
+  void *dma_buf;
+  void *dma_bufh;
+  unsigned int dma_buflen;
 } adc_data_t;
 
 #define ADC_DATA_FLAGS_CONV_ACTIVE BIT(0)
@@ -198,14 +201,18 @@ static void adc_dma_irq(void *data)
   unsigned int status;
 
   status = dma_irq_ack(DMA_NUM, DMA_CHAN);
-  if (status & DMA_IRQ_STATUS_FULL)
-    FAST_LOG('A', "adc dma full\n", 0, 0);
-  if (status & DMA_IRQ_STATUS_HALF)
-    FAST_LOG('A', "adc dma half\n", 0, 0);
 
   if (adc_data.flags & ADC_DATA_FLAGS_CONV_ACTIVE) {
     adc_data.conv_done(adc_data.res, adc_data.tcount, 0);
     adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
+  } else {
+    if (status & DMA_IRQ_STATUS_FULL) {
+      adc_data.conv_done(adc_data.dma_bufh, adc_data.dma_buflen, ADC_CONV_DONE_TYPE_FULL);
+      FAST_LOG('A', "adc dma full\n", 0, 0);
+    } else if (status & DMA_IRQ_STATUS_HALF) {
+      adc_data.conv_done(adc_data.dma_buf, adc_data.dma_buflen, ADC_CONV_DONE_TYPE_HALF);
+      FAST_LOG('A', "adc dma half\n", 0, 0);
+    }
   }
 }
 #endif
@@ -339,6 +346,25 @@ static int _stm32_adc_conv(void *base)
 
   return 0;
 }
+
+void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
+                        void *buf, unsigned int buflen, conv_done_f *conv_done)
+{
+  _stm32_adc_init(ADC, reg_seq, cnt, conv_done);
+
+  adc_data.tcount = 0;
+  adc_data.dma_buf = buf;
+  /* no of samples in a half dma buffer */
+  adc_data.dma_buflen = buflen / 4;
+  adc_data.dma_bufh = (void *)((unsigned char *)buf + 2 * adc_data.dma_buflen);
+
+  /* translate buffer length to number of samples */
+  _stm32_adc_dma_init(ADC, 1, buf, 2 * adc_data.dma_buflen);
+
+  stm32_adc_t *a = ADC;
+
+  a->cfgr |= CFGR_DMAEN | CFGR_DMACFG;
+}
 #else
 static int _stm32_adc_conv(void *base)
 {
@@ -358,4 +384,21 @@ static int _stm32_adc_conv(void *base)
 int stm32_adc_conv()
 {
   return _stm32_adc_conv(ADC);
+}
+
+static int _stm32_adc_trig(void *base)
+{
+  stm32_adc_t *a = (stm32_adc_t *)base;
+
+  if (a->cr & CR_ADSTART)
+    return -1;
+
+  a->cr |= CR_ADSTART;
+
+  return 0;
+}
+
+int stm32_adc_trig()
+{
+  return _stm32_adc_trig(ADC);
 }

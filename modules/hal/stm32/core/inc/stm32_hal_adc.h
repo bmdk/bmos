@@ -22,6 +22,10 @@
 #ifndef STM32_HAL_ADC_H
 #define STM32_HAL_ADC_H
 
+#define ADC_CONV_DONE_TYPE_NONE 0
+#define ADC_CONV_DONE_TYPE_HALF 1
+#define ADC_CONV_DONE_TYPE_FULL 2
+
 typedef void conv_done_f (unsigned short *adc_dat, unsigned int count,
                           unsigned int type);
 
