@@ -308,3 +308,10 @@ void reset_apb2(unsigned int dev)
   RCC->apb2rstr |= BIT(dev);
   RCC->apb2rstr &= ~BIT(dev);
 }
+
+void set_ccipr(int item, unsigned int sel)
+{
+  if (item >= 16)
+    return;
+  reg_set_field(&RCC->ccipr, 2, item << 1, sel);
+}

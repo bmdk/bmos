@@ -76,4 +76,6 @@ void clock_init_low();
 
 void msi_set_range(unsigned int range);
 
+void set_ccipr(int item, unsigned int sel);
+
 #endif

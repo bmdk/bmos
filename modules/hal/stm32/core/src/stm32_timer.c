@@ -42,6 +42,10 @@
 #define TIM_BASE TIM2_BASE
 #endif
 
+#if STM32_G4XX
+#define CONFIG_TIMER_EXTENDED 1
+#endif
+
 typedef struct {
   reg32_t cr1;
   reg32_t cr2;
@@ -57,14 +61,52 @@ typedef struct {
   reg32_t rcr;
   reg32_t ccr[4];
   reg32_t bdtr;
+#if STM32_G4XX
+  reg32_t ccr5;
+  reg32_t ccr6;
+  reg32_t ccmr3;
+  reg32_t dtr2;
+  reg32_t ecr;
+  reg32_t tisel;
+  reg32_t af[2];
+  reg32_t pad1[221];
   reg32_t dcr;
   reg32_t dmar;
-  reg32_t or[2];
+#else
+  reg32_t dcr;
+  reg32_t dmar;
+  reg32_t or1;
+  reg32_t ccmr3;
+  reg32_t ccr5;
+  reg32_t ccr6;
+  reg32_t or2;
+  reg32_t or3;
+  reg32_t tisel;
+#endif
 } stm32_timer_t;
 
 #define CR1_CEN BIT(0)
 #define CR1_DIR BIT(4)
 #define CR1_PMEN BIT(10) /* AT32 plus mode */
+
+#define DIER_UIE BIT(0)
+#define DIER_CCIE(n) BIT(n + 1)
+#define DIER_CC1IE DIER_CCIE(0)
+#define DIER_CC2IE DIER_CCIE(1)
+#define DIER_CC3IE DIER_CCIE(2)
+#define DIER_CC4IE DIER_CCIE(3)
+#define DIER_COMIE BIT(5)
+#define DIER_TIE BIT(6)
+#define DIER_BIE BIT(7)
+#define DIER_UDE BIT(8)
+#define DIER_CCDE(n) BIT(n + 9)
+#define DIER_CC1DE DIER_CCDE(0)
+#define DIER_CC2DE DIER_CCDE(1)
+#define DIER_CC3DE DIER_CCDE(2)
+#define DIER_CC4DE DIER_CCDE(3)
+#define DIER_COMDE BIT(13)
+#define DIER_TDE BIT(14)
+
 
 #define CCER_CC1E BIT(0)
 #define CCER_CC1P BIT(1)
@@ -100,6 +142,20 @@ static void timer_presc(void *base, unsigned int presc)
   t->cr1 = CR1_CEN;
   /* restore the the saved counter */
   t->cnt = ocnt;
+}
+
+static void _timer_mms(stm32_timer_t *t, unsigned int mode)
+{
+  /* the 4 bits are split the msb is at bit 25 and the rest at bit offset 4 */
+  reg_set_field(&t->cr2, 1, 25, mode >> 3);
+  reg_set_field(&t->cr2, 3, 4, mode);
+}
+
+void timer_mms(void *base, unsigned int mode)
+{
+  stm32_timer_t *t = (stm32_timer_t *)base;
+
+  _timer_mms(t, mode);
 }
 
 void timer_init(void *base, unsigned int presc)
@@ -168,6 +224,16 @@ hal_time_us_t hal_time_us(void)
 #define TIM_DIV 1
 #endif
 
+unsigned int timer_get_clear_status(void *base)
+{
+  stm32_timer_t *t = (stm32_timer_t *)base;
+  unsigned int status = t->sr;
+
+  t->sr = 0;
+
+  return status;
+}
+
 static unsigned int timer_calc_div(void)
 {
   return (HAL_CPU_CLOCK / TIM_DIV  + (1000000 / 2 - 1)) / 1000000;
@@ -192,6 +258,16 @@ unsigned int timer_get(void *base)
   stm32_timer_t *t = (stm32_timer_t *)base;
 
   return t->cnt;
+}
+
+unsigned int timer_get_cap(void *base, unsigned int unit)
+{
+  stm32_timer_t *t = (stm32_timer_t *)base;
+
+  if (unit > 4)
+    return 0;
+
+  return t->ccr[unit];
 }
 
 int timer_init_compare(void *base, unsigned int presc, unsigned int max,
@@ -277,29 +353,46 @@ void timer_init_pwm(void *base, unsigned int presc, unsigned int max,
   t->cr1 |= CR1_CEN;
 }
 
+static void timer_set_trigger(stm32_timer_t *t, unsigned int trigger)
+{
+  reg_set_field(&t->smcr, 2, 20, (trigger >> 3)); /* MSb */
+  reg_set_field(&t->smcr, 3, 4, trigger);
+}
+
 static void timer_set_slave_mode(stm32_timer_t *t, unsigned int mode)
 {
-  reg_set_field(&t->smcr, 1, 16, (mode >> 3));
+  reg_set_field(&t->smcr, 1, 16, (mode >> 3)); /* MSb */
   reg_set_field(&t->smcr, 3, 0, mode);
 }
 
+#define CCMR_CCXS_OUT 0
+#define CCMR_CCXS_IN_DIRECT 1
+#define CCMR_CCXS_IN_SWAP 2
+#define CCMR_CCXS_IN_TRC 3
+
 void timer_init_encoder(void *base, unsigned int presc,
-                        unsigned int max, int direction, unsigned int filter)
+                        unsigned int max, unsigned int filter)
 {
   stm32_timer_t *t = (stm32_timer_t *)base;
+  unsigned int map;
 
   t->cr1 &= ~CR1_CEN;
 
   t->cnt = 0;
 
-  if (direction)
-    t->cr1 &= ~CR1_DIR;
+  if (1)
+    /* map input pin 1 to input 2 and input pin 2 to input 1 */
+    map = CCMR_CCXS_IN_SWAP;
   else
-    t->cr1 |= CR1_DIR;
+    /* map input pin 1 to input 1 and input pin 2 to input 2 */
+    map = CCMR_CCXS_IN_DIRECT;
 
-  /* map input pin 1 to input 1 and input pin 2 to input 2 */
-  reg_set_field(&t->ccmr[0], 2, 0, 1); /* CC1S = 1 */
-  reg_set_field(&t->ccmr[0], 2, 8, 1); /* CC2S = 1 */
+  reg_set_field(&t->ccmr[0], 2, 0, map); /* CC1S = 1 */
+  reg_set_field(&t->ccmr[0], 2, 8, map); /* CC2S = 1 */
+
+  /* set event counter prescaler to 1 */
+  reg_set_field(&t->ccmr[0], 2, 2, 0);
+  reg_set_field(&t->ccmr[0], 2, 10, 0);
 
   reg_set_field(&t->ccmr[0], 4, 4, filter); /* IC1F */
   reg_set_field(&t->ccmr[0], 4, 12, filter); /* IC2F */
@@ -308,6 +401,39 @@ void timer_init_encoder(void *base, unsigned int presc,
   timer_set_slave_mode(t, 3); /* quadrature encoder x4 */
   t->arr = max;
   t->psc = presc - 1;
+
+  t->cr1 |= CR1_CEN;
+}
+
+void timer_init_capture(void *base, unsigned int presc, unsigned int trig_src)
+{
+  stm32_timer_t *t = (stm32_timer_t *)base;
+
+  t->cr1 &= ~CR1_CEN;
+
+  t->cnt = 0;
+
+  /* compare1 from tim_trc */
+  reg_set_field(&t->ccmr[0], 2, 0, CCMR_CCXS_IN_TRC);
+  reg_set_field(&t->ccmr[0], 2, 8, CCMR_CCXS_OUT);
+
+  /* set event counter prescaler to 1 */
+  reg_set_field(&t->ccmr[0], 2, 2, 0);
+  reg_set_field(&t->ccmr[0], 2, 10, 0);
+
+#define FILTER_LEN 0
+  reg_set_field(&t->ccmr[0], 4, 4, FILTER_LEN); /* IC1F */
+  reg_set_field(&t->ccmr[0], 4, 12, FILTER_LEN); /* IC2F */
+
+  t->ccer &= ~(CCER_CC1P | CCER_CC1NP | CCER_CC2P | CCER_CC2NP);
+  t->ccer |= CCER_CC1E;
+
+  timer_set_trigger(t, trig_src);
+  timer_set_slave_mode(t, 0);
+  t->arr = 0xffff;
+  t->psc = presc - 1;
+
+  t->dier = DIER_CC1IE;
 
   t->cr1 |= CR1_CEN;
 }
@@ -379,7 +505,7 @@ int cmd_timer(int argc, char *argv[])
     timer_stop(TIM_CMD_BASE);
     break;
   case 'e':
-    timer_init_encoder(TIM_CMD_BASE, 1, -1, 0, 0xf);
+    timer_init_encoder(TIM_CMD_BASE, 1, -1, 0xf);
     break;
   default:
   case 'g':

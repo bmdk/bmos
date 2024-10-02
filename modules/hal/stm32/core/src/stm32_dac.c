@@ -4,6 +4,7 @@
 #include "hal_common.h"
 #include "io.h"
 #include "shell.h"
+#include "stm32_dac.h"
 
 typedef struct {
   reg32_t cr;
@@ -71,6 +72,8 @@ void dac_init(unsigned int dac_no, unsigned int channel, unsigned int cfg)
 
   d = dac[dac_no];
 
+  d->cr &= ~STM32_DAC_CR_EN(channel);
+
   /* high speed */
   reg_set_field(&d->mcr, 2, 14, 2);
 
@@ -98,16 +101,6 @@ void dac_set_val(unsigned int dac_no, unsigned int channel, unsigned int val)
     r = &d->dhr12r2;
 
   *r = val & 0xfff;
-}
-
-int dacs_init()
-{
-  dac_init(0, 0, 0);
-  //dac_init(0, 1, 0);
-
-  dac_set_val(0, 0, 0xfff * 250 / 330);
-
-  return 0;
 }
 
 int cmd_dac(int argc, char *argv[])

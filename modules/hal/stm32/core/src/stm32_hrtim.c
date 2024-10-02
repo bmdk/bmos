@@ -4,6 +4,7 @@
 #include "shell.h"
 #include "common.h"
 #include "hal_common.h"
+#include "stm32_hrtim.h"
 
 #define N_HRTIM_TIM 6
 
@@ -72,10 +73,7 @@ typedef struct {
   reg32_t eecr1;
   reg32_t eecr2;
   reg32_t eecr3;
-  reg32_t adc1r;
-  reg32_t adc2r;
-  reg32_t adc3r;
-  reg32_t adc4r;
+  reg32_t adc[4];
   reg32_t dllcr;
   reg32_t fltinr1;
   reg32_t fltinr2;
@@ -99,7 +97,8 @@ typedef struct {
 #define HRTIM_BASE 0x40016800
 #endif
 
-#define HRTIM_MCR_CONT BIT(3) /* continuous */
+#define HRTIM_MCR_CONT_NUM 3
+#define HRTIM_MCR_CONT BIT(HRTIM_MCR_CONT_NUM) /* continuous */
 #define HRTIM_MCR_RETRIG BIT(4)
 #define HRTIM_MCR_MCEN BIT(16)
 #define HRTIM_MCR_TxCEN(n) BIT(17 + (n))
@@ -144,14 +143,12 @@ typedef struct {
 #define HRTIM_TIMX_CR_CONT_NUM 3
 #define HRTIM_TIMX_CR_CONT BIT(HRTIM_TIMX_CR_CONT_NUM)
 
-#define HRTIM_TIM_FLG_O1EN_NUM 0
-#define HRTIM_TIM_FLG_O1EN BIT(HRTIM_TIM_FLG_O1EN_NUM)
-#define HRTIM_TIM_FLG_O2EN_NUM 1
-#define HRTIM_TIM_FLG_O2EN BIT(HRTIM_TIM_FLG_O2EN_NUM)
-#define HRTIM_TIM_FLG_CONT_NUM 2
-#define HRTIM_TIM_FLG_CONT BIT(HRTIM_TIM_FLG_CONT_NUM)
-
 static stm32_hrtim_t *hrtim = (stm32_hrtim_t *)HRTIM_BASE;
+
+void hrtim_adc_trig_en(unsigned int adc_trig, unsigned int bit, int en)
+{
+  reg_set_field(&hrtim->adc[adc_trig], 1, bit, en);
+}
 
 void hrtim_set_compare(unsigned int timer,
                        unsigned int compare, unsigned int val)
@@ -166,10 +163,10 @@ void hrtim_set_compare(unsigned int timer,
   case 1:
     cmpx = &hrtim->tim[timer].cmp2r;
     break;
-  case 3:
+  case 2:
     cmpx = &hrtim->tim[timer].cmp3r;
     break;
-  case 4:
+  case 3:
     cmpx = &hrtim->tim[timer].cmp4r;
     break;
   }
@@ -177,18 +174,27 @@ void hrtim_set_compare(unsigned int timer,
   *cmpx = val & 0xffffU;
 }
 
-
-void hrtim_set_compare_pct(unsigned int timer,
-                           unsigned int compare, unsigned int pct)
+void hrtim_mst_set_compare(unsigned int compare, unsigned int val)
 {
-  unsigned int cval;
+  reg32_t *cmpx;
 
-  if (pct > 100)
-    pct = 100;
+  switch (compare) {
+  default:
+  case 0:
+    cmpx = &hrtim->mcmp1r;
+    break;
+  case 1:
+    cmpx = &hrtim->mcmp2r;
+    break;
+  case 2:
+    cmpx = &hrtim->mcmp3r;
+    break;
+  case 3:
+    cmpx = &hrtim->mcmp4r;
+    break;
+  }
 
-  cval = (0xffffU * pct + 50) / 100;
-
-  hrtim_set_compare(timer, compare, cval);
+  *cmpx = val & 0xffffU;
 }
 
 void hrtim_set_output(unsigned int timer, unsigned int o,
@@ -249,6 +255,7 @@ void hrtim_tim_init(unsigned int tim, unsigned int cntr,
                 flags >> HRTIM_TIM_FLG_CONT_NUM);
 
   timn->cntr = cntr;
+  timn->perr = HRTIM_TIMX_PERR_MAX;
 
   /* divider to 2^n */
   reg_set_field(&timn->cr, 3, 0, div_pow_2);
@@ -260,76 +267,21 @@ void hrtim_tim_init(unsigned int tim, unsigned int cntr,
   hrtim->mcr |= HRTIM_MCR_TxCEN(tim);
 }
 
-int hrtim_init()
+void hrtim_mst_init(unsigned int cntr,
+                    unsigned int div_pow_2, unsigned int flags)
 {
-  hrtim_tim_init(0, 0, 3,
-                 HRTIM_TIM_FLG_O1EN | HRTIM_TIM_FLG_O2EN | HRTIM_TIM_FLG_CONT);
-  return 0;
+  hrtim->mcr &= ~HRTIM_MCR_MCEN;
+
+  reg_set_field(&hrtim->mcr, 1, HRTIM_MCR_CONT_NUM,
+                flags >> HRTIM_TIM_FLG_CONT_NUM);
+
+  hrtim->mcntr = cntr;
+  hrtim->mper = HRTIM_TIMX_PERR_MAX;
+
+  /* divider to 2^n */
+  reg_set_field(&hrtim->mcr, 3, 0, div_pow_2);
+
+  hrtim_mst_set_compare(0, 0);
+
+  hrtim->mcr |= HRTIM_MCR_MCEN;
 }
-
-static int high;
-
-int cmd_hrtim(int argc, char *argv[])
-{
-  int speed;
-
-  if (argc < 2)
-    return -1;
-
-  switch (argv[1][0]) {
-  default:
-  case 'h':
-    if (argc < 3)
-      return -1;
-    high = atoi(argv[2]);
-
-    break;
-  case 'g':
-    xprintf("mcr: %x\n", hrtim->mcr);
-    xprintf("mcnt: %x\n", hrtim->mcntr);
-    xprintf("mper: %x\n", hrtim->mper);
-    xprintf("isr0: %08x\n", hrtim->tim[0].isr);
-    xprintf("cnt0: %04x\n", hrtim->tim[0].cntr);
-    xprintf("per0: %04x\n", hrtim->tim[0].perr);
-    break;
-  case 'p':
-    if (argc < 3)
-      return -1;
-
-    hrtim_set_compare_pct(0, 0, atoi(argv[2]));
-    break;
-  case 's':
-    if (argc < 3)
-      return -1;
-
-    speed = atoi(argv[2]);
-    xprintf("set speed %d\n", speed);
-    if (speed == 0) {
-      hrtim_set_output_on(0, 0, 0);
-      hrtim_set_output_on(0, 1, 0);
-    } else if (speed > 0) {
-      if (high) {
-        hrtim_set_output_on(0, 0, 1);
-        hrtim_set_output_compare(0, 1, 0, 1);
-      } else {
-        hrtim_set_output_compare(0, 0, 0, 0);
-        hrtim_set_output_on(0, 1, 0);
-      }
-      hrtim_set_compare_pct(0, 0, speed);
-    } else {
-      if (high) {
-        hrtim_set_output_compare(0, 0, 0, 1);
-        hrtim_set_output_on(0, 1, 1);
-      } else {
-        hrtim_set_output_on(0, 0, 0);
-        hrtim_set_output_compare(0, 1, 0, 0);
-      }
-      hrtim_set_compare_pct(0, 0, -speed);
-    }
-    break;
-  }
-
-  return 0;
-}
-
-SHELL_CMD(hrtim, cmd_hrtim);

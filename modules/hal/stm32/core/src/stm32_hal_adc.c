@@ -120,6 +120,8 @@ typedef struct {
 
 #define CFGR_DMAEN BIT(0)
 #define CFGR_DMACFG BIT(1)
+#define CFGR_CONT BIT(13)
+#define CFGR_DISCEN BIT(16)
 
 #define ISR_OVR BIT(4)
 #define ISR_EOS BIT(3)
@@ -255,6 +257,21 @@ static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
 }
 #endif
 
+static void _stm32_adc_trig_ev(void *base, int event)
+{
+  stm32_adc_t *a = (stm32_adc_t *)base;
+
+  a->cfgr &= ~(CFGR_DISCEN | CFGR_CONT);
+
+  reg_set_field(&a->cfgr, 5, 5, event); /* EXTSEL */
+  reg_set_field(&a->cfgr, 2, 10, 1); /* EXTEN positive edges */
+}
+
+void stm32_adc_trig_ev(int event)
+{
+  _stm32_adc_trig_ev(ADC, event);
+}
+
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
                             unsigned int cnt, conv_done_f *conv_done)
 {
@@ -386,7 +403,7 @@ int stm32_adc_conv()
   return _stm32_adc_conv(ADC);
 }
 
-static int _stm32_adc_trig(void *base)
+static int _stm32_adc_start(void *base)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
 
@@ -398,7 +415,7 @@ static int _stm32_adc_trig(void *base)
   return 0;
 }
 
-int stm32_adc_trig()
+int stm32_adc_start()
 {
-  return _stm32_adc_trig(ADC);
+  return _stm32_adc_start(ADC);
 }

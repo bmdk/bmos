@@ -38,4 +38,10 @@ int stm32_adc_conv(void);
 /* enable vbat resistor divider */
 void stm32_adc_vbat(int en);
 
+/* start a conversion from software */
+int stm32_adc_start();
+
+/* configure a trigger event */
+void stm32_adc_trig_ev(int event);
+
 #endif
