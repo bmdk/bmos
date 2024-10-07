@@ -396,7 +396,7 @@ bmos_task_t *task_get_current(void)
 
 char task_state_to_char(unsigned int state)
 {
-  char state_char[] = { 'x', 'r', 's' };
+  char state_char[] = "xrs";
 
   if (state > TASK_STATE_SLEEP)
     return 'I';
