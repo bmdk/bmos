@@ -31,6 +31,7 @@
 #include "hal_gpio.h"
 #include "hal_avr_uart.h"
 #include "hal_avr_i2c.h"
+#include "hal_avr_spi.h"
 #include "hal_time.h"
 #include "io.h"
 #include "shell.h"
@@ -234,6 +235,55 @@ static int cmd_i2c(int argc, char *argv[])
 
 SHELL_CMD(i2c, cmd_i2c);
 
+#define SPI_CS GPIO(1, 2)
+static int cmd_spi(int argc, char *argv[])
+{
+  unsigned char blank[] = { 0xff, 0xff };
+  unsigned char rdata[2];
+  unsigned int data;
+
+  spi_write_read_buf(SPI_CS, blank, rdata, 2);
+
+  data = (rdata[0] << 8) + rdata[1];
+
+  /* remove msb - always 1 */
+  data &= ~BIT(15);
+
+  xprintf("%x %u\n", data, data);
+
+  return 0;
+}
+
+SHELL_CMD(spi, cmd_spi);
+
+xtime_ms_t spi_last;
+
+static void spi_task_init(void *data)
+{
+}
+
+static void spi_task_body(void *data)
+{
+  unsigned char blank[] = { 0xff, 0xff };
+  unsigned char rdata[2];
+  unsigned int enc_data;
+  xtime_ms_t now;
+
+  now = systick_count;
+
+  if (now - spi_last < 20)
+    return;
+
+  spi_write_read_buf(SPI_CS, blank, rdata, 2);
+
+  enc_data = (rdata[0] << 8) + rdata[1];
+
+  xprintf("%u\n", enc_data);
+
+  spi_last = now;
+}
+
+
 static unsigned int invalid_interrupts;
 
 void __vector_default()
@@ -315,6 +365,7 @@ static hd44780_data_t disp_data = { hd44780_write_byte, hd44780_delay };
 /* *INDENT-OFF* */
 static polled_task_t tasks[] = {
   { shell_task_init, shell_task_body, (void *)&shell_task_data },
+  { spi_task_init, spi_task_body, 0 },
 };
 /* *INDENT-ON* */
 
@@ -334,6 +385,7 @@ int main()
   timer_init();
   uart_init();
   i2c_init();
+  spi_init(SPI_CS);
 
   xputs("\nBOOT\n\n");
 

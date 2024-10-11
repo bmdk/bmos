@@ -122,6 +122,7 @@ FILES += xslog_simple.o
 FILES += hal_gpio.o
 FILES += hal_avr_uart.o
 FILES += hal_avr_i2c.o
+FILES += hal_avr_spi.o
 FILES += hal_avr_gpio.o
 FILES += util.o
 #FILES += malloc.o
