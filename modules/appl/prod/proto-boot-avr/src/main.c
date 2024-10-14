@@ -246,9 +246,6 @@ static int cmd_spi(int argc, char *argv[])
 
   data = (rdata[0] << 8) + rdata[1];
 
-  /* remove msb - always 1 */
-  data &= ~BIT(15);
-
   xprintf("%x %u\n", data, data);
 
   return 0;
