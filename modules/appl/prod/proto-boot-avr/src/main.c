@@ -269,9 +269,9 @@ static void spi_task_body(void *data)
   unsigned int enc_data;
   xtime_ms_t now;
 
-  now = systick_count;
+  now = xtime_ms();
 
-  if (now - spi_last < 20)
+  if (xtime_diff_ms(now, spi_last) < 20)
     return;
 
   spi_write_read_buf(SPI_CS, blank, rdata, 2);
