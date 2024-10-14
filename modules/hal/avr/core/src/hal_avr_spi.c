@@ -44,7 +44,7 @@ void spi_init(gpio_handle_t cs)
 {
   /* f/4 = 4 MHz */
   SPSR = 0;
-  SPCR = SPCR_CPOL | SPCR_CPHA | SPCR_MSTR | SPCR_SPE;
+  SPCR = SPCR_CPOL | SPCR_MSTR | SPCR_SPE;
 
   gpio_set(cs, 1);
   gpio_init(cs, GPIO_OUTPUT);
