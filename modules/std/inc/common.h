@@ -22,7 +22,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#define BIT(_x_) (1U << (_x_))
+#define BIT(_x_) (1UL << (_x_))
 
 #define ARRSIZ(arr) (sizeof(arr) / sizeof(arr[0]))
 

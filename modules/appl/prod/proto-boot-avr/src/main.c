@@ -278,6 +278,9 @@ static void spi_task_body(void *data)
 
   enc_data = (rdata[0] << 8) + rdata[1];
 
+  /* remove msb - always 1 */
+  enc_data &= ~BIT(15);
+
   xprintf("%u\n", enc_data);
 
   spi_last = now;
