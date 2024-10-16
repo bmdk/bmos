@@ -267,6 +267,33 @@ static void _tx(candev_t *c)
   op_msg_return(m);
 }
 
+int fdcan_get_rx_idx(const stm32_fdcan_t *fdcan, unsigned int *idx)
+{
+  unsigned int rxs, cnt;
+
+  rxs = fdcan->rxf0s;
+  *idx = (rxs >> 8) & 0x3;
+  cnt = (rxs) & 0xf;
+
+  return cnt;
+}
+
+void fdcan_get_rx_pkt(const stm32_fdcan_t *fdcan,
+                             unsigned int inst,
+                             unsigned int idx,
+                             can_t *cdata)
+{
+  fdcan_buf_t *rx = (void *)(FDCAN_MES_BASE(inst) + MESRAM_RXFIFO0_OFS);
+  unsigned int flags, id;
+
+  id = rx[idx].id;
+  cdata->id = (id >> 18) & 0x7ff;
+  flags = rx[idx].flags;
+  cdata->len = (flags >> 16) & 0xf;
+
+  memcpy(cdata->data, &rx[idx].data.c[0], cdata->len);
+}
+
 void irq_fdcan(void *arg)
 {
   candev_t *c = arg;
@@ -279,27 +306,18 @@ void irq_fdcan(void *arg)
     _tx(c);
 
   if (ir & FDCAN_IR_RF0N) {
-    unsigned int rxs, flags, id, idx, cnt;
-    fdcan_buf_t *rx = (void *)(FDCAN_MES_BASE(c->inst) + MESRAM_RXFIFO0_OFS);
+    unsigned int idx;
 
     for (;;) {
-      rxs = fdcan->rxf0s;
-      idx = (rxs >> 8) & 0x3;
-      cnt = (rxs) & 0xf;
-
-      if (cnt == 0)
+      if (fdcan_get_rx_idx(fdcan, &idx) == 0)
         break;
 
       m = op_msg_get(c->pool);
       if (m) {
         cdata = BMOS_OP_MSG_GET_DATA(m);
 
-        id = rx[idx].id;
-        cdata->id = (id >> 18) & 0x7ff;
-        flags = rx[idx].flags;
-        cdata->len = (flags >> 16) & 0xf;
+        fdcan_get_rx_pkt(fdcan, c->inst, idx, cdata);
 
-        memcpy(cdata->data, &rx[idx].data.c[0], cdata->len);
         op_msg_put(c->rxq, m, c->op, sizeof(can_t));
       } else
         c->stats.overrun++;
