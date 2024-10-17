@@ -395,32 +395,37 @@ SHELL_CMD(flash, flash_cmd);
 #endif
 
 #if FLASH_TEST_CMD
-char data[4096];
+static char data[256];
 
 int cmd_flash(int argc, char *argv[])
 {
-  int err;
+  unsigned int addr, sect, count;
+  int err, bank;
 
   if (argc < 2)
     return -1;
 
   switch (argv[1][0]) {
   case 'e':
-    flash_erase(4, 1);
+    if (argc < 5)
+      return -1;
+    sect = atoi(argv[2]);
+    count = atoi(argv[3]);
+    bank = atoi(argv[4]);
+    if (bank != 0)
+      sect |= FLASH_START_BANK1;
+
+    flash_erase(sect, count);
     break;
   case 'p':
+    if (argc < 3)
+      return -1;
+    addr = strtoul(argv[2], 0, 16);
     for (int i = 0; i < sizeof(data); i++)
       data[i] = i & 0xff;
-    //memset(data, 0x5a, sizeof(data));
-    err = flash_program(0x08008000, data, sizeof(data));
+    err = flash_program(addr, data, sizeof(data));
     xprintf("err %d\n", err);
     break;
-#if 0
-  case 'q':
-    err = flash_program_test(0x08020000, 256);
-    xprintf("err %d\n", err);
-    break;
-#endif
   }
 
   return 0;
