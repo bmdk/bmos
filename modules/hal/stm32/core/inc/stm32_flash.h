@@ -22,6 +22,8 @@
 #ifndef STM32_FLASH_H
 #define STM32_FLASH_H
 
+#define FLASH_START_BANK1 BIT(31)
+
 int flash_erase(unsigned int start, unsigned int count);
 int flash_program(unsigned int addr, const void *data, unsigned int len);
 void flash_data_cache_invalidate();

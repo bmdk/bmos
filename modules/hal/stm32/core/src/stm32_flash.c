@@ -26,6 +26,7 @@
 #include "hal_int.h"
 #include "io.h"
 #include "shell.h"
+#include "stm32_flash.h"
 #include "xslog.h"
 
 #if STM32_F7XX || STM32_F4XX
@@ -140,6 +141,7 @@ typedef struct {
 #define MIN_WRITE_POW2 2
 #elif FLASH_TYPE2 || FLASH_TYPE3
 #define FLASH_CR_OPTLOCK BIT(30)
+#define FLASH_CR_BKER BIT(11)
 #define FLASH_CR_PNB(page) (((page) & 0xff) << 3)
 #define FLASH_CR_MER1 BIT(2)
 #define MIN_WRITE_POW2 3
@@ -236,6 +238,14 @@ int flash_erase(unsigned int start, unsigned int count)
 {
   unsigned int cr;
   unsigned int page;
+  unsigned int flash_bank = 0;
+
+#if FLASH_TYPE2
+  if (start & FLASH_START_BANK1) {
+    flash_bank |= FLASH_CR_BKER;
+    start &= ~FLASH_START_BANK1;
+  }
+#endif
 
   clear_status();
 
@@ -246,7 +256,7 @@ int flash_erase(unsigned int start, unsigned int count)
     cr = FLASH->cr;
 
     cr &= ~0x7ffff;
-    cr |= FLASH_CR_STRT | FLASH_CR_PNB(page) | FLASH_CR_PER;
+    cr |= FLASH_CR_STRT | FLASH_CR_PNB(page) | FLASH_CR_PER | flash_bank;
 
     FLASH->cr = cr;
 
