@@ -54,6 +54,10 @@ static void telnet_shell_put(void *arg)
 
     op_msg_return(m);
   }
+
+  rerr = tcp_output(telnet_pcb);
+  if (rerr != ERR_OK)
+    FAST_LOG('t', "tcp output error %d\n", rerr, 0);
 }
 
 #define TELNET_WILL 251
