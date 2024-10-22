@@ -66,6 +66,19 @@
 
 unsigned int orig_vtor;
 
+#if FLOATING_POINT
+static void fp_enable()
+{
+  reg32_t *cpacr = (reg32_t *)(CP_BASE);
+
+  *cpacr |= (0xf << 20); /* enable CP10 + 11 */
+
+  /* disable automatic floating point context saving
+     - only one thread has access to floating point */
+  FPC->fpccr &= ~(FPCCR_ASPEN|FPCCR_LSPEN);
+}
+#endif
+
 void hal_cpu_init()
 {
   unsigned int i;
@@ -78,6 +91,10 @@ void hal_cpu_init()
   /* enable 8 byte stack alignment
      unaligned access and divide by zero exception */
   SCB->ccr |= BIT(9) | BIT(4) | BIT(3);
+
+#if FLOATING_POINT
+  fp_enable();
+#endif
 
 #if 1
   /* set exception priorities */
