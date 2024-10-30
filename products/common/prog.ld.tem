@@ -163,6 +163,14 @@ SECTIONS
   _flash_end = LOADADDR(.data) + SIZEOF(.data);
 
   . = ALIGN(4);
+  .noinit :
+  {
+    *(.noinit)
+    *(.noinit*)
+    . = ALIGN(4);
+  } >RAM
+
+  . = ALIGN(4);
   .bss :
   {
     _sbss = .;
