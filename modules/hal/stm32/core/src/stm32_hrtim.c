@@ -254,11 +254,11 @@ void hrtim_tim_init(unsigned int tim, unsigned int cntr,
   reg_set_field(&timn->cr, 1, HRTIM_TIMX_CR_CONT_NUM,
                 flags >> HRTIM_TIM_FLG_CONT_NUM);
 
-  timn->cntr = cntr;
-  timn->perr = HRTIM_TIMX_PERR_MAX;
-
   /* divider to 2^n */
   reg_set_field(&timn->cr, 3, 0, div_pow_2);
+
+  timn->cntr = cntr;
+  timn->perr = HRTIM_TIMX_PERR_MAX;
 
   hrtim_set_output(tim, 0, 0, 0);
   hrtim_set_output(tim, 1, 0, 0);
@@ -276,10 +276,11 @@ void hrtim_mst_init(unsigned int cntr,
                 flags >> HRTIM_TIM_FLG_CONT_NUM);
 
   hrtim->mcntr = cntr;
-  hrtim->mper = HRTIM_TIMX_PERR_MAX;
 
   /* divider to 2^n */
   reg_set_field(&hrtim->mcr, 3, 0, div_pow_2);
+
+  hrtim->mper = HRTIM_TIMX_PERR_MAX;
 
   hrtim_mst_set_compare(0, 0);
 
