@@ -55,6 +55,8 @@ void xdsyslog(const char *format, ...);
 
 typedef struct _syslog_entry_t {
   xtime_ms_t ts;
+  unsigned char priority;
+  unsigned char pad[3];
   char e[SYSLOG_MAX];
 } syslog_entry_t;
 
@@ -62,6 +64,7 @@ static unsigned int missed_count = 0;
 static int slog_idx = 0;
 static syslog_entry_t slog[NSYSLOG];
 static unsigned char slog_pri = LOG_INFO;
+static signed char slog_cons_pri = -1;
 
 void _slog(syslog_entry_t *s)
 {
@@ -97,6 +100,7 @@ void xvslog(int priority, const char *format, va_list ap)
 
   (void)vsnprintf(s->e, SYSLOG_MAX, format, ap);
   s->ts = xtime_ms();
+  s->priority = priority;
 
   op_msg_put(slogq, m, OP_SYSLOG_DATA, sizeof(syslog_entry_t));
 }
@@ -128,6 +132,13 @@ static void slog_task(void *arg)
     m = op_msg_wait(slogq);
 
     s = (syslog_entry_t *)BMOS_OP_MSG_GET_DATA(m);
+
+    if ((slog_cons_pri >= 0) && (s->priority <= slog_cons_pri)) {
+      xtime_ms_t t = s->ts;
+      unsigned int l = strlen(s->e) - 1;
+      xprintf("%5d.%03d: %s%s", t / 1000, t % 1000, s->e,
+          s->e[l] == '\n' ? "" : "\n");
+    }
 
     _slog(s);
 
@@ -188,6 +199,14 @@ static void slog_set_pri(unsigned int pri)
   slog_pri = pri;
 }
 
+static void slog_set_cons_pri(int pri)
+{
+  if (pri > LOG_DEBUG)
+    pri = LOG_DEBUG;
+
+  slog_cons_pri = pri;
+}
+
 /* *INDENT-OFF* */
 static const char *pri_names[] = { "emerg",   "alert",  "crit", "err",
                                    "warning", "notice", "info", "debug" };
@@ -199,6 +218,16 @@ static void slog_show_pri()
     xprintf("invalid priority %d\n", slog_pri);
   else
     xprintf("priority: %s\n", pri_names[slog_pri]);
+}
+
+static void slog_show_cons_pri()
+{
+  if (slog_cons_pri < 0)
+    xprintf("off\n", slog_pri);
+  else if (slog_cons_pri >= ARRSIZ(pri_names))
+    xprintf("invalid priority %d\n", slog_cons_pri);
+  else
+    xprintf("priority: %s\n", pri_names[slog_cons_pri]);
 }
 
 
@@ -224,6 +253,12 @@ int cmd_slog(int argc, char *argv[])
     }
     slog_show_pri();
     break;
+  case 'c':
+    if (argc > 2) {
+      val = atoi(argv[2]);
+      slog_set_cons_pri(val);
+    }
+    slog_show_cons_pri();
   }
 
   return 0;
