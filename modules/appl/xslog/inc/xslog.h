@@ -48,5 +48,4 @@ extern unsigned char xdslog_mask[];
     }                           \
   } while (0)
 
-
 #endif

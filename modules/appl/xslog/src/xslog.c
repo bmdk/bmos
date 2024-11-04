@@ -66,7 +66,7 @@ unsigned char xdslog_mask[XDSLOG_ITEMS_LEN];
 static unsigned int missed_count = 0;
 static int slog_idx = 0;
 static syslog_entry_t slog[NSYSLOG];
-static unsigned char slog_pri = LOG_INFO;
+static signed char slog_pri = LOG_INFO;
 static signed char slog_cons_pri = -1;
 
 void _slog(syslog_entry_t *s)
@@ -87,9 +87,6 @@ void xvslog(int priority, const char *format, va_list ap)
   syslog_entry_t *s;
 
   if (!slogp)
-    return;
-
-  if (priority > slog_pri)
     return;
 
   m = op_msg_get(slogp);
@@ -140,10 +137,11 @@ static void slog_task(void *arg)
       xtime_ms_t t = s->ts;
       unsigned int l = strlen(s->e) - 1;
       xprintf("%5d.%03d: %s%s", t / 1000, t % 1000, s->e,
-          s->e[l] == '\n' ? "" : "\n");
+              s->e[l] == '\n' ? "" : "\n");
     }
 
-    _slog(s);
+    if ((slog_pri >= 0) && (s->priority <= slog_pri))
+      _slog(s);
 
     op_msg_return(m);
   }
