@@ -39,4 +39,14 @@ void xdslog(const char *format, ...);
 
 void xslog_init();
 
+extern unsigned char xdslog_mask[];
+
+#define XDSLOG(_m_, fmt, ...)   \
+  do {                          \
+    if (xdslog_mask[_m_]) {     \
+      xdslog(fmt, __VA_ARGS__); \
+    }                           \
+  } while (0)
+
+
 #endif

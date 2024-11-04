@@ -60,6 +60,9 @@ typedef struct _syslog_entry_t {
   char e[SYSLOG_MAX];
 } syslog_entry_t;
 
+#define XDSLOG_ITEMS_LEN 128
+unsigned char xdslog_mask[XDSLOG_ITEMS_LEN];
+
 static unsigned int missed_count = 0;
 static int slog_idx = 0;
 static syslog_entry_t slog[NSYSLOG];
@@ -230,6 +233,42 @@ static void slog_show_cons_pri()
     xprintf("priority: %s\n", pri_names[slog_cons_pri]);
 }
 
+#define XDSLOG_ENABLE 0xff
+#define XDSLOG_DISABLE 0x00
+
+static void xdslog_enable_items(const char *items, int enable)
+{
+  unsigned char mask;
+
+  if (!items)
+    return;
+
+  if (enable)
+    mask = XDSLOG_ENABLE;
+  else
+    mask = XDSLOG_DISABLE;
+
+  if (*items == '*')
+    memset(xdslog_mask, mask, sizeof(xdslog_mask));
+  else {
+    unsigned int c;
+    for (c = *items++; c != '\0'; c = *items++) {
+      if (c >= XDSLOG_ITEMS_LEN)
+        continue;
+      xdslog_mask[c] = mask;
+    }
+  }
+}
+
+static void xdslog_show_items(void)
+{
+  unsigned int i;
+
+  for (i = 0; i < XDSLOG_ITEMS_LEN; i++)
+    if (xdslog_mask[i])
+      xprintf("%c", i);
+  xprintf("\n");
+}
 
 int cmd_slog(int argc, char *argv[])
 {
@@ -259,6 +298,19 @@ int cmd_slog(int argc, char *argv[])
       slog_set_cons_pri(val);
     }
     slog_show_cons_pri();
+  case 'e':
+    if (argc <= 2)
+      return -1;
+    xdslog_enable_items(argv[2], 1);
+    break;
+  case 'd':
+    if (argc <= 2)
+      return -1;
+    xdslog_enable_items(argv[2], 0);
+    break;
+  case 'i':
+    xdslog_show_items();
+    break;
   }
 
   return 0;
