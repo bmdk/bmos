@@ -124,7 +124,7 @@ typedef struct {
 } fdcan_buf_t;
 
 #ifdef STM32_G4XX
-#define FDCAN_MES_BASE(_i_) 0x4000A400
+#define FDCAN_MES_BASE(_i_) (0x4000A400 + 0x350 * (_i_))
 #elif STM32_H7XX || STM32_U5XX || STM32_H5XX
 #define FDCAN_MES_BASE(_i_) (0x4000AC00 + 0x350 * (_i_))
 #elif STM32_G0XX
