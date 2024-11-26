@@ -30,13 +30,41 @@
 #include "stm32_hal.h"
 #include "stm32_hal_adc.h"
 
+typedef struct {
+  unsigned short res[16];
+  conv_done_f *conv_done;
+  unsigned char tcount; /* sample count in each conversion */
+  unsigned char count;  /* samples received so far */
+  unsigned char flags;
+  void *dma_buf;
+  void *dma_bufh;
+  unsigned int dma_buflen;
+} adc_data_t;
+
+typedef struct {
+  unsigned int base;
+  unsigned int irq;
+  char *name;
+  unsigned int dma_irq;
+  char *dma_name;
+  char dma_num;
+  char dma_chan;
+  char dma_devid;
+  adc_data_t adc_data;
+} adc_t;
+
 #if STM32_G4XX
 #define ADC_USE_DMA 1
 /* since we have a DMAMUX the dma number and channel are arbitrary */
-#define DMA_NUM 0
-#define DMA_CHAN 1
-#define DMA_DEVID 5 /* ADC1 */
-#define DMA_IRQ 12  /* DMA1 CH1 */
+#define ADC1_DMA_NUM 0
+#define ADC1_DMA_CHAN 1
+#define ADC1_DMA_DEVID 5 /* ADC1 */
+#define ADC1_DMA_IRQ 12  /* DMA1 CH2 */
+
+#define ADC3_DMA_NUM 0
+#define ADC3_DMA_CHAN 2
+#define ADC3_DMA_DEVID 37 /* ADC3 */
+#define ADC3_DMA_IRQ 13   /* DMA1 CH3 */
 #endif
 
 typedef struct {
@@ -77,17 +105,20 @@ typedef struct {
 
 #if STM32_L4XX
 #define ADC_BASE 0x50040000
-#define ADC_COM_BASE (ADC_BASE + 0x300)
 #define ADC_CKMODE 1
 #define ADC1_IRQ 18
 #elif STM32_G4XX
-#define ADC_BASE 0x50000000
-#define ADC_COM_BASE (ADC_BASE + 0x300)
+#define ADC12_BASE 0x50000000
+#define ADC345_BASE 0x50000400
+#define ADC_BASE ADC12_BASE
 #define ADC_CKMODE 3
-#define ADC1_IRQ 18
+#define ADC1_2_IRQ 18
+#define ADC1_IRQ ADC1_2_IRQ
+#define ADC3_IRQ 47
+#define ADC4_IRQ 61
+#define ADC5_IRQ 62
 #elif STM32_H5XX
 #include "stm32_h5xx.h"
-#define ADC_COM_BASE (ADC_BASE + 0x300)
 /* clock range 1.5 - 75MHz
    250MHz / 4 = 62.5 MHz */
 #define ADC_CKMODE 3
@@ -101,17 +132,36 @@ typedef struct {
 #error Define ADC_BASE for this platform
 #endif
 
-#define ADC (stm32_adc_t *)ADC_BASE
-#define ADC_COM (stm32_adc_com_t *)ADC_COM_BASE
+#define ADC_COM(base) (stm32_adc_com_t *)(base + 0x300)
 
-#define SAM_RATE_2_5 0
-#define SAM_RATE_6_5 1
-#define SAM_RATE_12_5 2
-#define SAM_RATE_24_5 3
-#define SAM_RATE_47_5 4
-#define SAM_RATE_92_5 5
-#define SAM_RATE_247_5 6
-#define SAM_RATE_640_5 7
+static adc_t instance[] = {
+  {
+    .base = ADC_BASE,
+    .irq = ADC1_IRQ,
+    .name = "adc1",
+#if ADC_USE_DMA
+    .dma_irq = ADC1_DMA_IRQ,
+    .dma_name = "adc1_dma",
+    .dma_num = ADC1_DMA_NUM,
+    .dma_chan = ADC1_DMA_CHAN,
+    .dma_devid = ADC1_DMA_DEVID
+#endif
+  },
+#if STM32_G4XX
+  {
+    .base = ADC345_BASE,
+    .irq = ADC3_IRQ,
+    .name = "adc3",
+#if ADC_USE_DMA
+    .dma_irq = ADC3_DMA_IRQ,
+    .dma_name = "adc3_dma",
+    .dma_num = ADC3_DMA_NUM,
+    .dma_chan = ADC3_DMA_CHAN,
+    .dma_devid = ADC3_DMA_DEVID
+#endif
+  },
+#endif
+};
 
 #define CR_ADCAL BIT(31)
 #define CR_ADCALDIF BIT(30)
@@ -166,24 +216,13 @@ typedef struct {
 #define ADC_PRESC CCR_PRESC_1
 #endif
 
-typedef struct {
-  unsigned short res[16];
-  conv_done_f *conv_done;
-  unsigned char tcount; /* sample count in each conversion */
-  unsigned char count;  /* samples received so far */
-  unsigned char flags;
-  void *dma_buf;
-  void *dma_bufh;
-  unsigned int dma_buflen;
-} adc_data_t;
-
 #define ADC_DATA_FLAGS_CONV_ACTIVE BIT(0)
-
-static adc_data_t adc_data;
 
 static void adc_irq(void *arg)
 {
-  stm32_adc_t *a = ADC;
+  adc_t *adc = (adc_t *)arg;
+  stm32_adc_t *a = (stm32_adc_t *)adc->base;
+  adc_data_t *adc_data = &adc->adc_data;
   unsigned int dr, isr;
 
   isr = a->isr;
@@ -195,16 +234,16 @@ static void adc_irq(void *arg)
 
   if (isr & ISR_EOC) {
     dr = a->dr;
-    adc_data.res[adc_data.count++] = dr;
+    adc_data->res[adc_data->count++] = dr;
   }
 
   if (isr & ISR_EOS) {
     a->isr |= ISR_EOS;
-    if (adc_data.conv_done)
-      adc_data.conv_done(adc_data.res, adc_data.count, 0);
-    adc_data.count = 0;
+    if (adc_data->conv_done)
+      adc_data->conv_done(adc_data->res, adc_data->count, 0);
+    adc_data->count = 0;
 
-    adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
+    adc_data->flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
   }
 }
 
@@ -212,29 +251,31 @@ static void adc_irq(void *arg)
 static void adc_dma_irq(void *data)
 {
   unsigned int status;
+  adc_t *adc = (adc_t *)data;
+  adc_data_t *adc_data = &adc->adc_data;
 
-  status = dma_irq_ack(DMA_NUM, DMA_CHAN);
+  status = dma_irq_ack(adc->dma_num, adc->dma_chan);
 
-  if (adc_data.flags & ADC_DATA_FLAGS_CONV_ACTIVE) {
-    adc_data.conv_done(adc_data.res, adc_data.tcount, 0);
-    adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
+  if (adc_data->flags & ADC_DATA_FLAGS_CONV_ACTIVE) {
+    adc_data->conv_done(adc_data->res, adc_data->tcount, 0);
+    adc_data->flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
   } else {
     if (status & DMA_IRQ_STATUS_FULL) {
-      adc_data.conv_done(adc_data.dma_bufh, adc_data.dma_buflen,
+      adc_data->conv_done(adc_data->dma_bufh, adc_data->dma_buflen,
                          ADC_CONV_DONE_TYPE_FULL);
-      FAST_LOG('A', "adc dma full len=%d\n", adc_data.dma_buflen, 0);
+      FAST_LOG('A', "adc dma full len=%d\n", adc_data->dma_buflen, 0);
     } else if (status & DMA_IRQ_STATUS_HALF) {
-      adc_data.conv_done(adc_data.dma_buf, adc_data.dma_buflen,
+      adc_data->conv_done(adc_data->dma_buf, adc_data->dma_buflen,
                          ADC_CONV_DONE_TYPE_HALF);
-      FAST_LOG('A', "adc dma half len=%d\n", adc_data.dma_buflen, 0);
+      FAST_LOG('A', "adc dma half len=%d\n", adc_data->dma_buflen, 0);
     }
   }
 }
 #endif
 
-void stm32_adc_vbat(int en)
+void stm32_adc_vbat(unsigned int inst, int en)
 {
-  stm32_adc_com_t *ac = ADC_COM;
+  stm32_adc_com_t *ac = ADC_COM(instance[inst].base);
 
   if (en)
     ac->ccr |= CCR_CH18SEL;
@@ -243,14 +284,15 @@ void stm32_adc_vbat(int en)
 }
 
 #if ADC_USE_DMA
-static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
+static void _stm32_adc_dma_init(adc_t *adc, int circ,
                                 void *buf, unsigned int cnt)
 {
   dma_attr_t attr;
+  stm32_adc_t *a = (stm32_adc_t *)adc->base;
 
-  dma_en(DMA_NUM, DMA_CHAN, 0);
+  dma_en(adc->dma_num, adc->dma_chan, 0);
 
-  dma_set_chan(DMA_NUM, DMA_CHAN, DMA_DEVID);
+  dma_set_chan(adc->dma_num, adc->dma_chan, adc->dma_devid);
 
   attr.ssiz = DMA_SIZ_4;
   attr.dsiz = DMA_SIZ_2;
@@ -265,14 +307,14 @@ static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
     attr.irq_half = 1;
   }
 
-  dma_trans(DMA_NUM, DMA_CHAN, (void *)&a->dr, buf, cnt, attr);
-  dma_en(DMA_NUM, DMA_CHAN, 1);
+  dma_trans(adc->dma_num, adc->dma_chan, (void *)&a->dr, buf, cnt, attr);
+  dma_en(adc->dma_num, adc->dma_chan, 1);
 }
 #endif
 
-static void _stm32_adc_trig_ev(void *base, int event)
+static void _stm32_adc_trig_ev(adc_t *adc, int event)
 {
-  stm32_adc_t *a = (stm32_adc_t *)base;
+  stm32_adc_t *a = (stm32_adc_t *)(adc->base);
 
   a->cfgr &= ~(CFGR_DISCEN | CFGR_CONT);
 
@@ -280,9 +322,9 @@ static void _stm32_adc_trig_ev(void *base, int event)
   reg_set_field(&a->cfgr, 2, 10, 1);    /* EXTEN positive edges */
 }
 
-void stm32_adc_trig_ev(int event)
+void stm32_adc_trig_ev(unsigned int inst, int event)
 {
-  _stm32_adc_trig_ev(ADC, event);
+  _stm32_adc_trig_ev(&instance[inst], event);
 }
 
 #if STM32_U5XX
@@ -299,14 +341,18 @@ void stm32_adc_trig_ev(int event)
 
 #define ADC_RES_DEFAULT ADC_RES_BIT12
 
-static void _stm32_adc_init(void *base, unsigned char *reg_seq,
-                            unsigned int cnt, conv_done_f *conv_done)
+static void _stm32_adc_init(adc_t *adc, unsigned char *reg_seq,
+                            unsigned int cnt, int rate, conv_done_f *conv_done)
 {
-  stm32_adc_t *a = (stm32_adc_t *)base;
-  stm32_adc_com_t *ac = ADC_COM;
+  stm32_adc_t *a = (stm32_adc_t *)adc->base;
+  stm32_adc_com_t *ac = ADC_COM(adc->base);
+  adc_data_t *adc_data = &adc->adc_data;
   unsigned int i;
 
-  adc_data.conv_done = conv_done;
+  if (rate < 0)
+    rate = SAM_RATE_640_5;
+
+  adc_data->conv_done = conv_done;
 
   cnt &= 0xf;
 
@@ -326,7 +372,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   while (a->cr & CR_ADCAL)
     ;
 
-  adc_data.tcount = cnt;
+  adc_data->tcount = cnt;
 
   for (i = 0; i < cnt; i++) {
     unsigned int n = (i + 1) % 5;
@@ -347,7 +393,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
     n = (reg_seq[i]) % 10;
     reg = (reg_seq[i]) / 10;
 
-    reg_set_field(&a->smpr[reg], 3, n * 3, SAM_RATE_640_5);
+    reg_set_field(&a->smpr[reg], 3, n * 3, rate);
   }
 
   reg_set_field(&a->sqr[0], 4, 0, cnt - 1);
@@ -362,34 +408,37 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
 
   a->isr = 0xffffffff;
 
-  irq_register("adc1", adc_irq, 0, ADC1_IRQ);
+  irq_register(adc->name, adc_irq, adc, adc->irq);
 #if ADC_USE_DMA
-  irq_register("adc_dma", adc_dma_irq, a, DMA_IRQ);
+  irq_register(adc->dma_name, adc_dma_irq, adc, adc->dma_irq);
   a->ier |= IER_OVRIE;
 #else
   a->ier |= IER_OVRIE | IER_EOCIE | IER_EOSIE;
 #endif
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+void stm32_adc_init(unsigned int inst,
+                    unsigned char *reg_seq, unsigned int cnt,
+                    int rate,
                     conv_done_f *conv_done)
 {
-  _stm32_adc_init(ADC, reg_seq, cnt, conv_done);
+  _stm32_adc_init(&instance[inst], reg_seq, cnt, rate, conv_done);
 }
 
 #if ADC_USE_DMA
-static int _stm32_adc_conv(void *base)
+static int _stm32_adc_conv(adc_t *adc)
 {
-  stm32_adc_t *a = (stm32_adc_t *)base;
+  stm32_adc_t *a = (stm32_adc_t *)adc->base;
+  adc_data_t *adc_data = &adc->adc_data;
 
-  if (adc_data.flags & ADC_DATA_FLAGS_CONV_ACTIVE)
+  if (adc_data->flags & ADC_DATA_FLAGS_CONV_ACTIVE)
     return -1;
 
   if (a->cr & CR_ADSTART)
     return -1;
 
-  _stm32_adc_dma_init(a, 0, &adc_data.res, adc_data.tcount);
-  adc_data.flags |= ADC_DATA_FLAGS_CONV_ACTIVE;
+  _stm32_adc_dma_init(adc, 0, &adc_data->res, adc_data->tcount);
+  adc_data->flags |= ADC_DATA_FLAGS_CONV_ACTIVE;
 
   a->cfgr |= CFGR_DMAEN;
   a->cr |= CR_ADSTART;
@@ -397,33 +446,39 @@ static int _stm32_adc_conv(void *base)
   return 0;
 }
 
-void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
+void stm32_adc_init_dma(unsigned int inst,
+                        unsigned char *reg_seq, unsigned int cnt, int rate,
                         void *buf, unsigned int buflen, conv_done_f *conv_done)
 {
-  _stm32_adc_init(ADC, reg_seq, cnt, conv_done);
+  adc_t *adc = &instance[inst];
+  adc_data_t *adc_data = &adc->adc_data;
 
-  adc_data.tcount = 0;
-  adc_data.dma_buf = buf;
+  _stm32_adc_init(adc, reg_seq, cnt, rate, conv_done);
+
+  adc_data->tcount = 0;
+  adc_data->dma_buf = buf;
   /* no of samples in a half dma buffer */
-  adc_data.dma_buflen = buflen / 4;
-  adc_data.dma_bufh = (void *)((unsigned char *)buf + 2 * adc_data.dma_buflen);
+  adc_data->dma_buflen = buflen / 4;
+  adc_data->dma_bufh =
+    (void *)((unsigned char *)buf + 2 * adc_data->dma_buflen);
 
   /* translate buffer length to number of samples */
-  _stm32_adc_dma_init(ADC, 1, buf, 2 * adc_data.dma_buflen);
+  _stm32_adc_dma_init(adc, 1, buf, 2 * adc_data->dma_buflen);
 
-  stm32_adc_t *a = ADC;
+  stm32_adc_t *a = (stm32_adc_t *)adc->base;
 
   a->cfgr |= CFGR_DMAEN | CFGR_DMACFG;
 }
 #else
-static int _stm32_adc_conv(void *base)
+static int _stm32_adc_conv(adc_t *adc)
 {
-  stm32_adc_t *a = (stm32_adc_t *)base;
+  stm32_adc_t *a = (stm32_adc_t *)(adc->base);
+  adc_data_t *adc_data = &adc->adc_data;
 
   if ((a->cr & CR_ADSTART))
     return -1;
 
-  adc_data.count = 0;
+  adc_data->count = 0;
 
   a->cr |= CR_ADSTART;
 
@@ -431,14 +486,14 @@ static int _stm32_adc_conv(void *base)
 }
 #endif
 
-int stm32_adc_conv()
+int stm32_adc_conv(unsigned int inst)
 {
-  return _stm32_adc_conv(ADC);
+  return _stm32_adc_conv(&instance[inst]);
 }
 
-static int _stm32_adc_start(void *base)
+static int _stm32_adc_start(adc_t *adc)
 {
-  stm32_adc_t *a = (stm32_adc_t *)base;
+  stm32_adc_t *a = (stm32_adc_t *)(adc->base);
 
   if (a->cr & CR_ADSTART)
     return -1;
@@ -448,7 +503,7 @@ static int _stm32_adc_start(void *base)
   return 0;
 }
 
-int stm32_adc_start()
+int stm32_adc_start(unsigned int inst)
 {
-  return _stm32_adc_start(ADC);
+  return _stm32_adc_start(&instance[inst]);
 }

@@ -26,22 +26,33 @@
 #define ADC_CONV_DONE_TYPE_HALF 1
 #define ADC_CONV_DONE_TYPE_FULL 2
 
+#define SAM_RATE_2_5 0
+#define SAM_RATE_6_5 1
+#define SAM_RATE_12_5 2
+#define SAM_RATE_24_5 3
+#define SAM_RATE_47_5 4
+#define SAM_RATE_92_5 5
+#define SAM_RATE_247_5 6
+#define SAM_RATE_640_5 7
+
 typedef void conv_done_f (unsigned short *adc_dat, unsigned int count,
                           unsigned int type);
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+void stm32_adc_init(unsigned int inst,
+                    unsigned char *reg_seq, unsigned int cnt, int rate,
                     conv_done_f *conv_done);
-void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
+void stm32_adc_init_dma(unsigned int inst,
+                        unsigned char *reg_seq, unsigned int cnt, int rate,
                         void *buf, unsigned int buflen, conv_done_f *conv_done);
-int stm32_adc_conv(void);
+int stm32_adc_conv(unsigned int inst);
 
 /* enable vbat resistor divider */
-void stm32_adc_vbat(int en);
+void stm32_adc_vbat(unsigned int inst, int en);
 
 /* start a conversion from software */
-int stm32_adc_start();
+int stm32_adc_start(unsigned int inst);
 
 /* configure a trigger event */
-void stm32_adc_trig_ev(int event);
+void stm32_adc_trig_ev(unsigned int inst, int event);
 
 #endif
