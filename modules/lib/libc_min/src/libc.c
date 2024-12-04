@@ -363,10 +363,13 @@ end:
 static int printi(char *str, size_t size, int width, int zero, int val)
 {
   unsigned int count = 0;
+  int neg = 0;
 
   if (val < 0) {
-    OUT('-');
     val = -val;
+    neg = 1;
+    if (zero || width == 0)
+      OUT('-');
   }
 
   for (;;) {
@@ -382,6 +385,8 @@ static int printi(char *str, size_t size, int width, int zero, int val)
     char padchr = ' ';
     if (zero)
       padchr = '0';
+    else if (neg)
+      INS('-');
     width -= count;
     for (i = 0; i < width; i++)
       INS(padchr);
