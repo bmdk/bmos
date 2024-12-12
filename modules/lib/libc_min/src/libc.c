@@ -368,7 +368,7 @@ static int printi(char *str, size_t size, int width, int zero, int val)
   if (val < 0) {
     val = -val;
     neg = 1;
-    if (zero || width == 0)
+    if (zero || width <= 0)
       OUT('-');
   }
 
