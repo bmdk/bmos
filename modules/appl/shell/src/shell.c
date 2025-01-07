@@ -69,6 +69,9 @@ static void history_insert(sh_hist_t *hist, const char *line)
   if (strlen(line) == 0)
     return;
 
+  if (hist->count > 0 && !strcmp(hist->lines[0], line))
+    return;
+
   if (hist->count < CONFIG_SHELL_HIST)
     hist->count++;
 
