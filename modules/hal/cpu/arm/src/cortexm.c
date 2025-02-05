@@ -186,7 +186,7 @@ static void _exception_handler(sw_stack_frame_t *xsf, unsigned int exc_return)
   /* bit 2 of exc_return(lr) indicates where the exception frame
      was saved - on process stack or main stack. */
   if ((exc_return & 0x4) == 0) {
-    debug_printf("\nmain stack: %08x\n", sf);
+    debug_printf("\nmain stack: %p\n", sf);
 
     dump_stack_frame(sf);
   } else {
@@ -194,7 +194,7 @@ static void _exception_handler(sw_stack_frame_t *xsf, unsigned int exc_return)
     asm volatile ("MRS %0, psp\n"  : "=r" (psf) );
 
     if (psf) {
-      debug_printf("\nprocess stack: %08x\n", psf);
+      debug_printf("\nprocess stack: %p\n", psf);
       dump_stack_frame(psf);
     }
   }

@@ -1,7 +1,7 @@
 #ifndef LWIP_ARCH_CC_H
 #define LWIP_ARCH_CC_H
 
-#define LWIP_PLATFORM_DIAG(x) do {xprintf x;} while(0)
+#define LWIP_PLATFORM_DIAG(x) do {xprintf_nocheck x;} while(0)
 #include <io.h>
 
 #define LWIP_PLATFORM_ASSERT(x) do {xpanic("Assertion failed at line %d in %s\n", \

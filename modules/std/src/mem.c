@@ -191,7 +191,7 @@ static int cmd_mf(int argc, char *argv[])
   }
 
   xprintf("addr %08x val %x count %d rpt %d time %d\n", saddr, val, count, rpt,
-          hal_time_us() - start);
+          (int)(hal_time_us() - start));
 
   return 0;
 }
