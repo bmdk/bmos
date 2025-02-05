@@ -33,8 +33,16 @@
 #define LOG_INFO 6
 #define LOG_DEBUG 7
 
+#define CONFIG_IO_CHECK 1
+
+#if CONFIG_IO_CHECK
+#define __CHECK_SLOG__ __attribute__ ((format(printf, 2, 3)))
+#else
+#define __CHECK_SLOG__
+#endif
+
 void xvslog(int priority, const char *format, va_list ap);
-void xslog(int priority, const char *format, ...);
+void xslog(int priority, const char *format, ...) __CHECK_SLOG__;
 void xdslog(const char *format, ...);
 
 void xslog_init();

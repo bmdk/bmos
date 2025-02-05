@@ -224,7 +224,7 @@ static void slog_show_pri()
 static void slog_show_cons_pri()
 {
   if (slog_cons_pri < 0)
-    xprintf("off\n", slog_pri);
+    xprintf("off\n");
   else if (slog_cons_pri >= ARRSIZ(pri_names))
     xprintf("invalid priority %d\n", slog_cons_pri);
   else

@@ -24,13 +24,33 @@
 
 #include <stdarg.h>
 
+#define CONFIG_IO_CHECK 1
+
+#if CONFIG_IO_CHECK
+#define __CHECK_PRINTF__ __attribute__ ((format (printf, 1, 2)))
+#else
+#define __CHECK_PRINTF__
+#endif
+
 void xputs(const char *str);
-int xprintf(const char *fmt, ...);
+int xprintf(const char *fmt, ...) __CHECK_PRINTF__;
 int xvprintf(const char *fmt, va_list ap);
+
+static inline int xprintf_nocheck(const char *fmt, ...)
+{
+  va_list ap;
+  int rc;
+
+  va_start(ap, fmt);
+  rc = xvprintf(fmt, ap);
+  va_end(ap);
+
+  return rc;
+}
 
 void debug_puts(const char *str);
 int debug_vprintf(const char *fmt, va_list ap);
-int debug_printf(const char *fmt, ...);
+int debug_printf(const char *fmt, ...) __CHECK_PRINTF__;
 
 #ifdef BMOS
 #include "bmos_queue.h"
