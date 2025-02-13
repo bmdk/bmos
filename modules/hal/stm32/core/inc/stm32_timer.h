@@ -22,9 +22,12 @@
 #ifndef STM32_TIMER_H
 #define STM32_TIMER_H
 
-#if STM32_G4XX || STM32_H5XX
+#if STM32_G4XX || STM32_H5XX || STM32_C0XX || STM32_F0XX || \
+    STM32_F1XX || STM32_G0XX
 #define TIM1_BASE ((void *)0x40012C00)
-#elif STM32_H7XX || STM32_F411 || STM32_F401
+#elif STM32_H7XX || STM32_F4XX
+#define TIM1_BASE ((void *)0x40010000)
+#elif AT32_F4XX
 #define TIM1_BASE ((void *)0x40010000)
 #endif
 
