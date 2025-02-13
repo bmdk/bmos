@@ -348,6 +348,15 @@ int cmd_devid(int argc, char *argv[])
     idstr = "L0xx cat1";
     break;
 #elif STM32_U5XX
+  case 0x455:
+    idstr = "U535/545";
+    break;
+  case 0x476:
+    idstr = "U5Fx/5Gx";
+    break;
+  case 0x481:
+    idstr = "U59x/5Ax";
+    break;
   case 0x482:
     idstr = "U575/585";
     break;

@@ -59,6 +59,7 @@ PROG += l452np
 PROG += l496n
 PROG += l4rn
 PROG += u083n
+PROG += u545n
 PROG += u575n
 PROG += wb55n
 PROG += wb55usb
@@ -362,6 +363,10 @@ STACK_END.u083n = 0x2000a000
 XCFLAGS.u575n += -DSTM32_U575 -DSTM32_U5XX
 CPU.u575n = cortex-m33
 STACK_END.u575n = 0x200c0000
+
+XCFLAGS.u545n += -DSTM32_U545 -DSTM32_U5XX
+CPU.u545n = cortex-m33
+STACK_END.u545n = 0x20040000
 
 XCFLAGS.wb55n += -DSTM32_WBXX -DSTM32_WB55
 STACK_END.wb55n = 0x20030000
@@ -803,15 +808,18 @@ FILES.u083n += stm32_hal_bdma.o
 FILES.u083n += stm32_hal_dmamux.o
 FILES.u083n += stm32_flash.o
 
-FILES.u575n += stm32_hal_rtc.o
-FILES.u575n += stm32_exti_ux.o
-FILES.u575n += stm32_pwr_ux.o
-FILES.u575n += stm32_rcc_u5.o
-FILES.u575n += stm32_usart_b.o
-FILES.u575n += stm32_hal_gpdma.o
-FILES.u575n += stm32_fdcan.o
-FILES.u575n += can_test.o
-FILES.u575n += stm32_flash.o
+FILES.u5xx += stm32_hal_rtc.o
+FILES.u5xx += stm32_exti_ux.o
+FILES.u5xx += stm32_pwr_ux.o
+FILES.u5xx += stm32_rcc_u5.o
+FILES.u5xx += stm32_usart_b.o
+FILES.u5xx += stm32_hal_gpdma.o
+FILES.u5xx += stm32_fdcan.o
+FILES.u5xx += can_test.o
+FILES.u5xx += stm32_flash.o
+
+FILES.u575n += $(FILES.u5xx)
+FILES.u545n += $(FILES.u5xx)
 
 FILES.wb55n += $(FILES.wbxx)
 FILES.wb55n += stm32_hal_rtc.o

@@ -57,6 +57,7 @@ PROG += l452np
 PROG += l496n
 PROG += l4rn
 PROG += u083n
+PROG += u545n
 PROG += u575n
 PROG += wb55n
 PROG += wb55usb
@@ -278,6 +279,10 @@ XCFLAGS.u575n += -DSTM32_U5XX
 STACK_END.u575n = 0x200c0000
 CPU.u575n = cortex-m33
 
+XCFLAGS.u545n += -DSTM32_U5XX
+STACK_END.u545n = 0x20040000
+CPU.u545n = cortex-m33
+
 XCFLAGS.wb55n += -DSTM32_WBXX
 STACK_END.wb55n = 0x20030000
 
@@ -490,6 +495,8 @@ FILES.u5xx += stm32_flash.o
 #FILES.u5xx += stm32_pwr_lx.o
 
 FILES.u575n += $(FILES.u5xx)
+
+FILES.u545n += $(FILES.u5xx)
 
 FILES.wbxx += stm32_usart_b.o
 FILES.wbxx += stm32_rcc_b.o
