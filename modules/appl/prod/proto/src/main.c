@@ -184,10 +184,6 @@ void adc_init();
 void adc_init_dma();
 void esp_init();
 
-int hrtim_init();
-int dacs_init();
-void opamp_init_all();
-
 int main()
 {
   INTERRUPT_OFF();
@@ -236,12 +232,6 @@ int main()
 
 #if ONE_WIRE
   esp_init();
-#endif
-
-#if BOARD_G474N
-  hrtim_init();
-  dacs_init();
-  opamp_init_all();
 #endif
 
 #if LCD_DEMO
