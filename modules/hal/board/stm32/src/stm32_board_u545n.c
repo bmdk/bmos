@@ -99,7 +99,7 @@ void pin_init()
 #define APB1_CLOCK 160000000
 
 #if BMOS
-uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 61, 0 };
+uart_t debug_uart = { "debug", USART1_BASE, APB2_CLOCK, 61, STM32_UART_FIFO };
 #endif
 
 static const gpio_handle_t leds[] = { GPIO(0, 5) };

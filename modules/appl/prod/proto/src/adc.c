@@ -224,7 +224,7 @@ static void adc_task_dma(void *arg)
 unsigned short dma_buf[2 * DMA_BUF_LEN_H];
 
 static void adc_conv_done_dma(unsigned short *data, unsigned int count,
-                          unsigned int flags)
+                              unsigned int flags)
 {
   xslog(LOG_INFO, "flags:%d buf:%p, l:%d\n", flags, data, count);
 }
