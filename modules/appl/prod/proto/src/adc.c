@@ -211,13 +211,11 @@ void adc_init_dma()
   stm32_adc_init_dma(adc_seq, sizeof(adc_seq), dma_buf, sizeof(dma_buf), 0);
 }
 #else
-int stm32_adc_trig();
-
 static void adc_task_dma(void *arg)
 {
   for (;;) {
     task_delay(100);
-    stm32_adc_trig();
+    stm32_adc_start();
   }
 }
 
