@@ -817,9 +817,11 @@ FILES.u5xx += stm32_hal_gpdma.o
 FILES.u5xx += stm32_fdcan.o
 FILES.u5xx += can_test.o
 FILES.u5xx += stm32_flash.o
+FILES.u5xx += stm32_hal_i2c.o
 
 FILES.u575n += $(FILES.u5xx)
 FILES.u545n += $(FILES.u5xx)
+FILES.u545n += i2c_test.o
 
 FILES.wb55n += $(FILES.wbxx)
 FILES.wb55n += stm32_hal_rtc.o

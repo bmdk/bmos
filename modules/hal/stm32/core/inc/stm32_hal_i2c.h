@@ -41,9 +41,11 @@ int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
 #if STM32_G4XX
 #define I2C3_BASE 0x40007800
 #define I2C4_BASE 0x40008400
+#elif STM32_U5XX
+#define I2C3_BASE 0x46002800
+#define I2C4_BASE 0x40008400
 #else
 #define I2C3_BASE 0x40005C00
-
 #define I2C4_BASE 0x58001C00
 #endif
 

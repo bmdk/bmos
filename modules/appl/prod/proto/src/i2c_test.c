@@ -43,6 +43,8 @@
 #define I2C ((stm32_i2c_t *)I2C1_BASE)
 #elif STM32_H7XX
 #define I2C ((stm32_i2c_t *)I2C2_BASE)
+#elif STM32_U5XX
+#define I2C ((stm32_i2c_t *)I2C3_BASE)
 #else
 #define I2C ((stm32_i2c_t *)I2C4_BASE)
 #endif

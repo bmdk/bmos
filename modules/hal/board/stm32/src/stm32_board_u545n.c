@@ -79,6 +79,17 @@ void pin_init()
   gpio_init_attr(GPIO(3, 1), GPIO_ATTR_STM32(0, GPIO_SPEED_HIG, 9, GPIO_ALT));
 #endif
 
+#if 1
+  /* I2C3 */
+  enable_apb3(7);
+  /* PC0 - SCL */
+  gpio_init_attr(GPIO(2, 0), GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                                             GPIO_SPEED_HIG, 4, GPIO_ALT));
+  /* PC1 - SDA */
+  gpio_init_attr(GPIO(2, 1), GPIO_ATTR_STM32(GPIO_FLAG_OPEN_DRAIN,
+                                             GPIO_SPEED_HIG, 4, GPIO_ALT));
+#endif
+
   enable_apb3(1);  /* SYSCFG */
   enable_ahb3(2);  /* PWR */
   enable_apb2(11); /* TIM 1 */
