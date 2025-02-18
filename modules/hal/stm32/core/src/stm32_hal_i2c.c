@@ -25,11 +25,12 @@
 #include "common.h"
 #include "shell.h"
 #include "io.h"
+#include "hal_int.h"
 #include "hal_time.h"
 
 #include "stm32_hal_i2c.h"
 
-struct _stm32_i2c_t {
+typedef struct _stm32_i2c_t {
   reg32_t cr1;
   reg32_t cr2;
   reg32_t oar1;
@@ -41,9 +42,20 @@ struct _stm32_i2c_t {
   reg32_t pecr;
   reg32_t rxdr;
   reg32_t txdr;
-};
+} stm32_i2c_t;
 
 #define I2C_CR1_PE BIT(0)
+#define I2C_CR1_TXIE BIT(1)
+#define I2C_CR1_RXIE BIT(2)
+#define I2C_CR1_NACKIE BIT(4)
+#define I2C_CR1_STOPIE BIT(5)
+#define I2C_CR1_TCIE BIT(6)
+#define I2C_CR1_ERRIE BIT(7)
+#define I2C_CR1_ANFOFF BIT(12)
+#define I2C_CR1_TXDMAEN BIT(14)
+#define I2C_CR1_RXDMAEN BIT(15)
+#define I2C_CR1_SBC BIT(16)
+#define I2C_CR1_NOSTRETCH BIT(17)
 
 #define I2C_CR2_AUTOEND BIT(25)
 #define I2C_CR2_RELOAD BIT(24)
@@ -66,33 +78,119 @@ struct _stm32_i2c_t {
 #define I2C_ISR_TC BIT(6)
 #define I2C_ISR_STOPF BIT(5)
 #define I2C_ISR_NACKF BIT(4)
+#define I2C_ISR_ADDRCF BIT(3)
 #define I2C_ISR_RXNE BIT(2)
 #define I2C_ISR_TXIS BIT(1)
 #define I2C_ISR_TXE BIT(0)
 
+#define I2C_ICR_MSK (I2C_ISR_ADDRCF|I2C_ISR_NACKF|I2C_ISR_STOPF)
+
+#define I2C_ISR_ERR_MSK (0x00003f00)
+
+#define I2C_MAX_BYTES 255
 typedef struct {
-  unsigned char presc;
-  unsigned char scldel;
-  unsigned char sdadel;
-  unsigned char sclh;
-  unsigned char scll;
-} i2c_timing_t;
+  unsigned char read;
+  unsigned char buf[I2C_MAX_BYTES];
+  unsigned char buflen;
+  volatile unsigned char bufc;
+  volatile signed char wait;
+} i2c_irq_data_t;
 
-static i2c_timing_t i2c_timing[] = {
-#if STM32_C0XX
-  { 0x2, 0x3, 0x0, 0x3e, 0x5d }
-#elif STM32_H5XX
-  { 0x6, 0x8, 0x0, 0x8c, 0xd3 }
-#elif STM32_U5XX
-  { 0x0, 0xf, 0x0, 0x7b, 0xff }
-#else
-  { 0x2, 0xc, 0x0, 0x08, 0x08 }
-#endif
-};
+static i2c_irq_data_t irq_data;
 
-void i2c_init(stm32_i2c_t *i2c)
+static void i2c_irq(void *p)
 {
-  i2c_timing_t *t = &i2c_timing[0];
+  stm32_i2c_t *i2c = (stm32_i2c_t *)p;
+  unsigned int isr = i2c->isr;
+  i2c_irq_data_t *id = &irq_data;
+
+#if 0
+  debug_printf("I2C ISR %x\n", isr);
+#endif
+
+  if (isr & I2C_ISR_NACKF) {
+    if (!id->read)
+      i2c->cr2 |= I2C_CR2_STOP;
+    id->wait = -1;
+#if 0
+    debug_printf("NAK\n");
+#endif
+  }
+
+#if 0
+  if (isr & I2C_ISR_STOPF) {
+    debug_printf("STP\n");
+  }
+#endif
+
+#if 1
+  if (isr & I2C_ISR_TC) {
+#if 0
+    debug_printf("TC\n");
+#endif
+    i2c->cr2 |= I2C_CR2_STOP;
+    if (id->wait > 0)
+      id->wait = 0;
+  }
+#endif
+
+  if (isr & I2C_ISR_RXNE) {
+    unsigned char ch = i2c->rxdr;
+#if 0
+    debug_printf("RX %d %02x\n", id->bufc, ch);
+#endif
+    if (id->bufc < id->buflen)
+      id->buf[id->bufc++] = ch;
+    if (id->bufc >= id->buflen && id->wait > 0)
+      id->wait = 0;
+  }
+
+#if 0
+  /* seems to be identical with TXE? */
+  if (isr & I2C_ISR_TXIS) {
+    debug_printf("TXIS\n");
+  }
+#endif
+
+  if (!id->read && (isr & I2C_ISR_TXE)) {
+    int rem = id->buflen - id->bufc;
+
+#if 0
+    debug_printf("TXE %d\n", rem);
+#endif
+
+    if (rem > 0)
+      i2c->txdr = id->buf[id->bufc++];
+  }
+
+  i2c->icr = (isr & I2C_ICR_MSK);
+}
+
+static void i2c_err_irq(void *p)
+{
+  stm32_i2c_t *i2c = (stm32_i2c_t *)p;
+  unsigned int isr = i2c->isr & I2C_ISR_ERR_MSK;
+
+  debug_printf("i2c err %x\n", isr);
+
+  i2c->icr = isr;
+}
+
+#if 0
+static void i2c_restart(stm32_i2c_t *i2c)
+{
+  i2c->cr1 &= ~I2C_CR1_PE;
+
+  (volatile void)i2c->cr1;
+
+  i2c->cr1 |= I2C_CR1_PE;
+}
+#endif
+
+void i2c_init(i2c_dev_t *i2cdev)
+{
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
+  i2c_timing_t *t = &i2cdev->timing[0];
 
   i2c->cr1 &= ~I2C_CR1_PE;
 
@@ -101,7 +199,95 @@ void i2c_init(stm32_i2c_t *i2c)
                  I2C_TIMINGR_SDADEL(t->sdadel) | \
                  I2C_TIMINGR_SCLH(t->sclh) | I2C_TIMINGR_SCLL(t->scll);
 
+  if (i2cdev->irq >= 0) {
+    int irq_err = i2cdev->irq_err;
+
+    irq_register("i2c", i2c_irq, i2c, i2cdev->irq);
+
+    if (irq_err < 0)
+      irq_err = i2cdev->irq + 1;
+
+    irq_register("i2c_err", i2c_err_irq, i2c, irq_err);
+
+    i2c->cr1 |= I2C_CR1_ERRIE;
+    i2c->cr1 |= (I2C_CR1_RXIE|I2C_CR1_NACKIE|I2C_CR1_TCIE|I2C_CR1_TXIE);
+  }
+
   i2c->cr1 |= I2C_CR1_PE;
+}
+
+static int _i2c_write_buf_irq(stm32_i2c_t *i2c, unsigned int addr,
+                          const void *bufp, unsigned int buflen)
+{
+  i2c_irq_data_t *id = &irq_data;
+
+#if 0
+  debug_printf("_i2c_write_buf_irq %02x %d\n", addr, buflen);
+#endif
+
+#if 0
+  while(i2c->isr & I2C_ISR_BUSY)
+    ;
+#endif
+
+#if 0
+  debug_printf("_i2c_write_buf_irq\n");
+#endif
+
+  if (buflen > I2C_MAX_BYTES)
+    return -1;
+
+  memcpy(id->buf, bufp, buflen);
+  id->buflen = buflen;
+  id->bufc = 0;
+  id->wait = 1;
+  id->read = 0;
+
+#if 1
+  /* flush tx buffer */
+#if 0
+  while ((i2c->isr & I2C_ISR_TXE) == 0)
+#endif
+  i2c->isr = I2C_ISR_TXE|I2C_ISR_TXIS;
+#endif
+  i2c->cr2 = /* I2C_CR2_AUTOEND | */ I2C_CR2_NBYTES(buflen) | I2C_CR2_SADD(addr << 1);
+  i2c->cr2 |= I2C_CR2_START;
+
+  while (id->wait > 0)
+    ;
+
+  if (id->wait < 0)
+    return -1;
+
+  return 0;
+}
+
+static int _i2c_read_buf_irq(stm32_i2c_t *i2c, unsigned int addr,
+                         void *bufp, unsigned int buflen)
+{
+  i2c_irq_data_t *id = &irq_data;
+
+  if (buflen == 0)
+    return -1;
+
+  i2c->cr2 = I2C_CR2_AUTOEND | I2C_CR2_NBYTES(buflen) | I2C_CR2_RD_WRN |
+             I2C_CR2_SADD(addr << 1);
+  i2c->cr2 |= I2C_CR2_START;
+
+  id->buflen = buflen;
+  id->bufc = 0;
+  id->wait = 1;
+  id->read = 1;
+
+  while (id->wait > 0)
+    ;
+
+  if (id->bufc < buflen)
+    return -1;
+
+  memcpy(bufp, id->buf, buflen);
+
+  return 0;
 }
 
 static int _i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
@@ -109,10 +295,13 @@ static int _i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
 {
   const char *buf = bufp;
 
+  /* flush tx buffer */
+  i2c->isr = I2C_ISR_TXE;
+
   i2c->cr2 = I2C_CR2_AUTOEND | I2C_CR2_NBYTES(buflen) | I2C_CR2_SADD(addr << 1);
   i2c->cr2 |= I2C_CR2_START;
 
-  i2c->icr |= I2C_ISR_STOPF | I2C_ISR_NACKF;
+  i2c->icr = I2C_ISR_STOPF | I2C_ISR_NACKF;
 
   while (buflen) {
     unsigned int timeout = 1000000;
@@ -151,7 +340,7 @@ static int _i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
              I2C_CR2_SADD(addr << 1);
   i2c->cr2 |= I2C_CR2_START;
 
-  i2c->icr |= I2C_ISR_STOPF | I2C_ISR_NACKF;
+  i2c->icr = I2C_ISR_STOPF | I2C_ISR_NACKF;
 
   while (buflen) {
     unsigned int timeout = 1000000;
@@ -181,30 +370,53 @@ static int _i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_read_buf(i2c_dev_t *i2cdev, unsigned int addr,
                        void *wbufp, unsigned int wbuflen,
                        void *rbufp, unsigned int rbuflen)
 {
-  if (_i2c_write_buf(i2c, addr, wbufp, wbuflen) < 0)
-    return -1;
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
 
-  if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
-    return -1;
+  if (i2cdev->irq >= 0) {
+    if (_i2c_write_buf_irq(i2c, addr, wbufp, wbuflen) < 0)
+      return -1;
+
+    if (_i2c_read_buf_irq(i2c, addr, rbufp, rbuflen) < 0)
+      return -1;
+   } else {
+    if (_i2c_write_buf(i2c, addr, wbufp, wbuflen) < 0)
+      return -1;
+
+    if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
+      return -1;
+  }
 
   return 0;
 }
 
-int i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_read_buf(i2c_dev_t *i2cdev, unsigned int addr,
                  void *rbufp, unsigned int rbuflen)
 {
-  if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
-    return -1;
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
+
+  if (i2cdev->irq >= 0) {
+    if (_i2c_read_buf_irq(i2c, addr, rbufp, rbuflen) < 0)
+      return -1;
+  } else {
+    if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
+      return -1;
+  }
 
   return 0;
 }
 
-int i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_buf(i2c_dev_t *i2cdev, unsigned int addr,
                   const void *bufp, unsigned int buflen)
 {
-  return _i2c_write_buf(i2c, addr, bufp, buflen);
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
+
+  if (i2cdev->irq >= 0) {
+    return _i2c_write_buf_irq(i2c, addr, bufp, buflen);
+  } else {
+    return _i2c_write_buf(i2c, addr, bufp, buflen);
+  }
 }

@@ -97,4 +97,10 @@ void set_mco(unsigned int sel, unsigned int div);
 #define FDCANSEL_PLL2P 2
 void set_fdcansel(unsigned int sel);
 
+#define I2C3SEL_PCLK3 0
+#define I2C3SEL_SYSCLK 1
+#define I2C3SEL_HSI16 2
+#define I2C3SEL_MSIK 3
+void set_i2c3sel(unsigned int sel);
+
 #endif

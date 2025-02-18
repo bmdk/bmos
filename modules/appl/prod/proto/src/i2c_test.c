@@ -36,18 +36,47 @@
 #include "stm32_hal_i2c.h"
 
 #if BOARD_F411BP
-#define I2C ((stm32_i2c_t *)I2C1_BASE)
+#define I2C_BASE I2C1_BASE
 #elif STM32_G4XX
-#define I2C ((stm32_i2c_t *)I2C1_BASE)
+#define I2C_BASE I2C1_BASE
 #elif STM32_C0XX
-#define I2C ((stm32_i2c_t *)I2C1_BASE)
+#define I2C_BASE I2C1_BASE
 #elif STM32_H7XX
-#define I2C ((stm32_i2c_t *)I2C2_BASE)
+#define I2C_BASE I2C2_BASE
 #elif STM32_U5XX
-#define I2C ((stm32_i2c_t *)I2C3_BASE)
+#define I2C_BASE I2C3_BASE
 #else
-#define I2C ((stm32_i2c_t *)I2C4_BASE)
+#define I2C_BASE I2C4_BASE
 #endif
+
+static i2c_timing_t i2c_timing[] = {
+#if STM32_C0XX
+  { 0x2, 0x3, 0x0, 0x3e, 0x5d }
+#elif STM32_H5XX
+  { 0x6, 0x8, 0x0, 0x8c, 0xd3 }
+#elif STM32_U5XX
+  { 0x0, 0xf, 0, 0x7b, 0xff }
+#elif STM32_G4XX || STM32_H7XX
+  { 0x2, 0xc, 0x0, 0x08, 0x08 }
+#elif STM32_F4XX
+  /* not used */
+  { 0x0 }
+#else
+#error Define i2c timings for this system
+#endif
+};
+
+static i2c_dev_t i2c_dev = {
+  .base = (void *)I2C_BASE,
+#if STM32_U5XX
+  .irq = 88,
+  .irq_err = 89,
+#else
+  .irq = -1,
+  .irq_err = -1,
+#endif
+  .timing = i2c_timing,
+};
 
 #if DISP
 #define SSD1306_SETCONTRAST 0x81
@@ -83,7 +112,7 @@ static int disp_cmd(unsigned char cmd)
   buf[0] = 0;
   buf[1] = cmd;
 
-  return i2c_write_buf(I2C, DISP_ADDR, buf, 2);
+  return i2c_write_buf(&i2c_dev, DISP_ADDR, buf, 2);
 }
 
 static int disp_data(void *data, unsigned int len)
@@ -98,7 +127,7 @@ static int disp_data(void *data, unsigned int len)
 
   memcpy(buf + 1, data, len);
 
-  err = i2c_write_buf(I2C, DISP_ADDR, buf, len + 1);
+  err = i2c_write_buf(&i2c_dev, DISP_ADDR, buf, len + 1);
   if (err != 0)
     return -1;
 
@@ -255,14 +284,14 @@ static void hd44780_write_byte(unsigned int b)
 {
   unsigned char c = b;
 
-  i2c_write_buf(I2C, 0x27, &c, 1);
+  i2c_write_buf(&i2c_dev, 0x27, &c, 1);
 }
 
 static unsigned int hd44780_read_byte(void)
 {
   unsigned char c;
 
-  i2c_read_buf(I2C, 0x27, &c, 1);
+  i2c_read_buf(&i2c_dev, 0x27, &c, 1);
 
   return c;
 }
@@ -288,7 +317,7 @@ void task_i2c_clock()
   char disp[16];
 #endif
 
-  i2c_init(I2C);
+  i2c_init(&i2c_dev);
 #if DISP
   disp_init();
 #else
@@ -355,12 +384,12 @@ static int i2c_cmd(int argc, char *argv[])
 
   switch (argv[1][0]) {
   case 'i':
-    xprintf("init %p\n", I2C);
-    i2c_init(I2C);
+    xprintf("init %p\n", i2c_dev.base);
+    i2c_init(&i2c_dev);
     break;
   case 't':
     buf[0] = 0x5a;
-    err = i2c_write_buf(I2C, 0x3c, buf, 1);
+    err = i2c_write_buf(&i2c_dev, 0x3c, buf, 1);
     xprintf("err %d\n", err);
     break;
   case 'w':
@@ -374,7 +403,7 @@ static int i2c_cmd(int argc, char *argv[])
     for (i = 0; i < len; i++)
       buf[i] = strtoul(argv[3 + i], 0, 0);
 
-    err = i2c_write_buf(I2C, addr, buf, len);
+    err = i2c_write_buf(&i2c_dev, addr, buf, len);
     if (err != 0)
       xprintf("error %d\n", err);
     break;
@@ -390,7 +419,7 @@ static int i2c_cmd(int argc, char *argv[])
 
     wbuf = reg & 0xff;
 
-    err = i2c_write_read_buf(I2C, addr, &wbuf, 1, buf, len);
+    err = i2c_write_read_buf(&i2c_dev, addr, &wbuf, 1, buf, len);
     if (err != 0)
       xprintf("error %d\n", err);
 
@@ -402,10 +431,10 @@ static int i2c_cmd(int argc, char *argv[])
     break;
   case 'p':
     buf[0] = 0xff;
+    i2c_init(&i2c_dev);
     for (addr = 8; addr < 0x78; addr++) {
-      i2c_init(I2C);
       hal_delay_us(1000);
-      err = i2c_write_buf(I2C, addr, buf, 1);
+      err = i2c_write_buf(&i2c_dev, addr, buf, 0);
       if (err == 0)
         xprintf("addr %02x\n", addr);
     }
@@ -434,7 +463,7 @@ static int i2c_cmd(int argc, char *argv[])
     addr = 0x40;
     wbuf = 0x5e;
 
-    err = i2c_write_read_buf(I2C, addr, &wbuf, 1, buf, 2);
+    err = i2c_write_read_buf(&i2c_dev, addr, &wbuf, 1, buf, 2);
     if (err != 0)
       xprintf("error %d\n", err);
 
@@ -444,7 +473,7 @@ static int i2c_cmd(int argc, char *argv[])
     break;
   case 'q':
     fb_clear(fb);
-    //disp_str(fb, 0, 48, "HELLO BRIAN", 11);
+    disp_str(fb, 0, 48, "HELLO BRIAN", 11);
     disp_char_w(fb, 0, 0, 16);
     disp_char_w(fb, 32, 0, 17);
     disp_char_w(fb, 64, 0, 18);

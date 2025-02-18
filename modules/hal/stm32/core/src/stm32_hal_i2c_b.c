@@ -29,7 +29,7 @@
 
 #include "stm32_hal_i2c.h"
 
-struct _stm32_i2c_t {
+typedef struct {
   reg32_t cr1;
   reg32_t cr2;
   reg32_t oar1;
@@ -40,7 +40,7 @@ struct _stm32_i2c_t {
   reg32_t ccr;
   reg32_t trise;
   reg32_t fltr;
-};
+} stm32_i2c_t;
 
 #define I2C_CR1_PE BIT(0)
 #define I2C_CR1_START BIT(8)
@@ -62,8 +62,9 @@ struct _stm32_i2c_t {
 #define FREQ 48      /* MHz */
 #define I2C_FREQ 100 /* kHz */
 
-void i2c_init(stm32_i2c_t *i2c)
+void i2c_init(i2c_dev_t *i2cdev)
 {
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
   unsigned int div;
 
   i2c->cr1 &= ~I2C_CR1_PE;
@@ -213,10 +214,12 @@ static int _i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
 }
 
 
-int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_read_buf(i2c_dev_t *i2cdev, unsigned int addr,
                        void *wbufp, unsigned int wbuflen,
                        void *rbufp, unsigned int rbuflen)
 {
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
+
   if (_i2c_write_buf(i2c, addr, wbufp, wbuflen) < 0)
     return -1;
 
@@ -226,15 +229,19 @@ int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
   return 0;
 }
 
-int i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_buf(i2c_dev_t *i2cdev, unsigned int addr,
                   const void *bufp, unsigned int buflen)
 {
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
+
   return _i2c_write_buf(i2c, addr, bufp, buflen);
 }
 
-int i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_read_buf(i2c_dev_t *i2cdev, unsigned int addr,
                  void *rbufp, unsigned int rbuflen)
 {
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
+
   if (_i2c_read_buf(i2c, addr, rbufp, rbuflen) < 0)
     return -1;
 

@@ -145,6 +145,7 @@ void hal_board_init()
   stm32_pwr_power(STM32_PWR_POWER_SMPS);
 
   set_fdcansel(FDCANSEL_PLL1Q);
+  set_i2c3sel(I2C3SEL_PCLK3);
 
 #if APPL
   backup_domain_protect(0);

@@ -352,3 +352,8 @@ void set_fdcansel(unsigned int sel)
 {
   reg_set_field(&RCC->ccipr[0], 2, 24, sel);
 }
+
+void set_i2c3sel(unsigned int sel)
+{
+  reg_set_field(&RCC->ccipr[2], 2, 6, sel);
+}

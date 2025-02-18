@@ -22,16 +22,29 @@
 #ifndef STM32_HAL_I2C_H
 #define STM32_HAL_I2C_H
 
-typedef struct _stm32_i2c_t stm32_i2c_t;
+typedef struct {
+  unsigned char presc;
+  unsigned char scldel;
+  unsigned char sdadel;
+  unsigned char sclh;
+  unsigned char scll;
+} i2c_timing_t;
 
-void i2c_init(stm32_i2c_t *i2c);
-int i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
+typedef struct {
+  void *base;
+  int irq;
+  int irq_err;
+  i2c_timing_t *timing;
+} i2c_dev_t;
+
+void i2c_init(i2c_dev_t *i2c);
+int i2c_write_buf(i2c_dev_t *i2c, unsigned int addr,
                   const void *bufp, unsigned int buflen);
 
-int i2c_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_read_buf(i2c_dev_t *i2c, unsigned int addr,
                  void *rbufp, unsigned int rbuflen);
 
-int i2c_write_read_buf(stm32_i2c_t *i2c, unsigned int addr,
+int i2c_write_read_buf(i2c_dev_t *i2c, unsigned int addr,
                        void *wbufp, unsigned int wbuflen,
                        void *rbufp, unsigned int rbuflen);
 
