@@ -90,6 +90,8 @@ typedef struct _stm32_i2c_t {
 
 #define I2C_MAX_BYTES 255
 
+#define I2C_DMA_IRQ 1
+
 #if I2C_DMA_IRQ
 static void i2c_dma_irq(void *data)
 {
@@ -108,14 +110,18 @@ void i2c_dma_init(i2c_dev_t *i2cdev, void *buf, unsigned int len, int tx)
   stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
   dma_attr_t attr;
   int dmadevid;
-  void *reg;
+  void *src, *dst;
+
+  dma_en(i2cdev->dmanum, i2cdev->dmachan, 0);
 
   if (tx) {
     dmadevid = i2cdev->dmadevid_tx;
-    reg = (void *)&i2c->txdr;
+    src = buf;
+    dst = (void *)&i2c->txdr;
   } else {
     dmadevid = i2cdev->dmadevid_rx;
-    reg = (void *)&i2c->rxdr;
+    src = (void *)&i2c->rxdr;
+    dst = buf;
   }
 
   dma_set_chan(i2cdev->dmanum, i2cdev->dmachan, dmadevid);
@@ -134,13 +140,13 @@ void i2c_dma_init(i2c_dev_t *i2cdev, void *buf, unsigned int len, int tx)
   }
   attr.irq = 1;
 
-  dma_trans(i2cdev->dmanum, i2cdev->dmachan, buf, reg, len, attr);
+  dma_trans(i2cdev->dmanum, i2cdev->dmachan, src, dst, len, attr);
   dma_en(i2cdev->dmanum, i2cdev->dmachan, 1);
 }
 
 typedef struct {
-  unsigned char read;
   unsigned char buf[I2C_MAX_BYTES];
+  unsigned char read;
   unsigned char buflen;
   volatile unsigned char bufc;
   volatile signed char wait;
@@ -186,6 +192,7 @@ static void i2c_irq(void *p)
   }
 #endif
 
+#if 0
   if (isr & I2C_ISR_RXNE) {
     unsigned char ch = i2c->rxdr;
 #if 0
@@ -196,6 +203,7 @@ static void i2c_irq(void *p)
     if (id->bufc >= id->buflen && id->wait > 0)
       id->wait = 0;
   }
+#endif
 
 #if 0
   /* seems to be identical with TXE? */
@@ -305,6 +313,7 @@ static int _i2c_write_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   id->read = 0;
 
   i2c_dma_init(i2cdev, id->buf, buflen, 1);
+  i2c->cr1 &= ~I2C_CR1_RXDMAEN;
   i2c->cr1 |= I2C_CR1_TXDMAEN;
 
 #if 1
@@ -333,26 +342,34 @@ static int _i2c_read_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
   i2c_irq_data_t *id = &irq_data;
 
+#if 0
+  debug_printf("_i2c_read_buf_irq %02x %d %p\n", addr, buflen, &id->buf);
+#endif
+
   if (buflen == 0)
     return -1;
 
+  i2c_dma_init(i2cdev, id->buf, buflen, 0);
+  i2c->cr1 &= ~I2C_CR1_TXDMAEN;
+  i2c->cr1 |= I2C_CR1_RXDMAEN;
+
   i2c->cr2 = /* I2C_CR2_AUTOEND | */ I2C_CR2_NBYTES(buflen) | I2C_CR2_RD_WRN |
              I2C_CR2_SADD(addr << 1);
-  i2c->cr2 |= I2C_CR2_START;
 
   id->buflen = buflen;
   id->bufc = 0;
   id->wait = 1;
   id->read = 1;
 
-  i2c_dma_init(i2cdev, id->buf, buflen, 0);
-  i2c->cr1 |= I2C_CR1_RXDMAEN;
+  i2c->cr2 |= I2C_CR2_START;
 
   while (id->wait > 0)
     ;
 
+#if 0
   if (id->bufc < buflen)
     return -1;
+#endif
 
   memcpy(bufp, id->buf, buflen);
 
