@@ -394,7 +394,7 @@ void timer_init_encoder(void *base, unsigned int presc,
   reg_set_field(&t->ccmr[0], 2, 2, 0);
   reg_set_field(&t->ccmr[0], 2, 10, 0);
 
-  reg_set_field(&t->ccmr[0], 4, 4, filter); /* IC1F */
+  reg_set_field(&t->ccmr[0], 4, 4, filter);  /* IC1F */
   reg_set_field(&t->ccmr[0], 4, 12, filter); /* IC2F */
 
   t->ccer &= ~(CCER_CC1P | CCER_CC1NP | CCER_CC2P | CCER_CC2NP);
@@ -422,7 +422,7 @@ void timer_init_capture(void *base, unsigned int presc, unsigned int trig_src)
   reg_set_field(&t->ccmr[0], 2, 10, 0);
 
 #define FILTER_LEN 0
-  reg_set_field(&t->ccmr[0], 4, 4, FILTER_LEN); /* IC1F */
+  reg_set_field(&t->ccmr[0], 4, 4, FILTER_LEN);  /* IC1F */
   reg_set_field(&t->ccmr[0], 4, 12, FILTER_LEN); /* IC2F */
 
   t->ccer &= ~(CCER_CC1P | CCER_CC1NP | CCER_CC2P | CCER_CC2NP);
