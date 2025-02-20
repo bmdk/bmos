@@ -49,13 +49,14 @@
 #define I2C_BASE I2C4_BASE
 #endif
 
+/* *INDENT-OFF* */
 static i2c_timing_t i2c_timing[] = {
 #if STM32_C0XX
   { 0x2, 0x3, 0x0, 0x3e, 0x5d }
 #elif STM32_H5XX
   { 0x6, 0x8, 0x0, 0x8c, 0xd3 }
 #elif STM32_U5XX
-  { 0x0, 0xf, 0, 0x7b, 0xff }
+  { 0x0, 0xf, 0,   0x7b, 0xff }
 #elif STM32_G4XX || STM32_H7XX
   { 0x2, 0xc, 0x0, 0x08, 0x08 }
 #elif STM32_F4XX
@@ -65,24 +66,25 @@ static i2c_timing_t i2c_timing[] = {
 #error Define i2c timings for this system
 #endif
 };
+/* *INDENT-ON* */
 
 static i2c_dev_t i2c_dev = {
-  .base = (void *)I2C_BASE,
+  .base        = (void *)I2C_BASE,
 #if STM32_U5XX
 #define STM32_U5XX_I2C_DMACHAN 1
 #define STM32_U5XX_I2C_DMAIRQ (STM32_U5XX_I2C_DMACHAN + 29)
-  .irq = 88,
-  .irq_err = 89,
-  .dmanum = 0,
-  .dmachan = 1,
+  .irq         = 88,
+  .irq_err     = 89,
+  .dmanum      = 0,
+  .dmachan     = 1,
   .dmadevid_tx = 19,
   .dmadevid_rx = 18,
-  .dmairq = STM32_U5XX_I2C_DMAIRQ,
+  .dmairq      = STM32_U5XX_I2C_DMAIRQ,
 #else
-  .irq = -1,
-  .irq_err = -1,
+  .irq         = -1,
+  .irq_err     = -1,
 #endif
-  .timing = i2c_timing,
+  .timing      = i2c_timing,
 };
 
 #if DISP
