@@ -47,7 +47,8 @@ void pin_init()
 
   /* KEY */
   gpio_init_attr(GPIO(2, 13),
-                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PD, GPIO_SPEED_LOW, 0, GPIO_INPUT));
+                 GPIO_ATTR_STM32(GPIO_FLAG_PULL_PD, GPIO_SPEED_LOW, 0,
+                                 GPIO_INPUT));
 
 #if 0
   /* LSE */
