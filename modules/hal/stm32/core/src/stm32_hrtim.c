@@ -239,7 +239,7 @@ void hrtim_set_output_compare(unsigned int timer, unsigned int o,
 }
 
 void hrtim_tim_init(unsigned int tim, unsigned int cntr,
-                   unsigned int div_pow_2, unsigned int flags)
+                    unsigned int div_pow_2, unsigned int flags)
 {
   stm32_hrtim_tim_t *timn = &hrtim->tim[tim];
 
