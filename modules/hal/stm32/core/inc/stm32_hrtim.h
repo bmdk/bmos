@@ -32,7 +32,7 @@ void hrtim_set_output_compare(unsigned int timer, unsigned int o,
 #define HRTIM_TIM_FLG_CONT BIT(HRTIM_TIM_FLG_CONT_NUM)
 
 void hrtim_tim_init(unsigned int tim, unsigned int cntr,
-                   unsigned int div_pow_2, unsigned int flags);
+                    unsigned int div_pow_2, unsigned int flags);
 
 void hrtim_mst_init(unsigned int cntr,
                     unsigned int div_pow_2, unsigned int flags);
