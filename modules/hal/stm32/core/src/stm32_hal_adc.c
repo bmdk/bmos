@@ -36,7 +36,7 @@
 #define DMA_NUM 0
 #define DMA_CHAN 1
 #define DMA_DEVID 5 /* ADC1 */
-#define DMA_IRQ 12 /* DMA1 CH1 */
+#define DMA_IRQ 12  /* DMA1 CH1 */
 #endif
 
 typedef struct {
@@ -159,7 +159,7 @@ typedef struct {
   unsigned short res[16];
   conv_done_f *conv_done;
   unsigned char tcount; /* sample count in each conversion */
-  unsigned char count; /* samples received so far */
+  unsigned char count;  /* samples received so far */
   unsigned char flags;
   void *dma_buf;
   void *dma_bufh;
@@ -209,10 +209,12 @@ static void adc_dma_irq(void *data)
     adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
   } else {
     if (status & DMA_IRQ_STATUS_FULL) {
-      adc_data.conv_done(adc_data.dma_bufh, adc_data.dma_buflen, ADC_CONV_DONE_TYPE_FULL);
+      adc_data.conv_done(adc_data.dma_bufh, adc_data.dma_buflen,
+                         ADC_CONV_DONE_TYPE_FULL);
       FAST_LOG('A', "adc dma full\n", 0, 0);
     } else if (status & DMA_IRQ_STATUS_HALF) {
-      adc_data.conv_done(adc_data.dma_buf, adc_data.dma_buflen, ADC_CONV_DONE_TYPE_HALF);
+      adc_data.conv_done(adc_data.dma_buf, adc_data.dma_buflen,
+                         ADC_CONV_DONE_TYPE_HALF);
       FAST_LOG('A', "adc dma half\n", 0, 0);
     }
   }
@@ -264,7 +266,7 @@ static void _stm32_adc_trig_ev(void *base, int event)
   a->cfgr &= ~(CFGR_DISCEN | CFGR_CONT);
 
   reg_set_field(&a->cfgr, 5, 5, event); /* EXTSEL */
-  reg_set_field(&a->cfgr, 2, 10, 1); /* EXTEN positive edges */
+  reg_set_field(&a->cfgr, 2, 10, 1);    /* EXTEN positive edges */
 }
 
 void stm32_adc_trig_ev(int event)
