@@ -90,7 +90,7 @@ typedef struct _stm32_i2c_t {
 
 #define I2C_MAX_BYTES 255
 
-#define I2C_DMA_IRQ 1
+#define I2C_DMA_IRQ 0
 
 #if I2C_DMA_IRQ
 static void i2c_dma_irq(void *data)
