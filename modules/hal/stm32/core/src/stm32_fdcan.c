@@ -279,9 +279,9 @@ int fdcan_get_rx_idx(const stm32_fdcan_t *fdcan, unsigned int *idx)
 }
 
 void fdcan_get_rx_pkt(const stm32_fdcan_t *fdcan,
-                             unsigned int inst,
-                             unsigned int idx,
-                             can_t *cdata)
+                      unsigned int inst,
+                      unsigned int idx,
+                      can_t *cdata)
 {
   fdcan_buf_t *rx = (void *)(FDCAN_MES_BASE(inst) + MESRAM_RXFIFO0_OFS);
   unsigned int flags, id;
