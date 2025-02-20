@@ -71,6 +71,10 @@ static i2c_dev_t i2c_dev = {
 #if STM32_U5XX
   .irq = 88,
   .irq_err = 89,
+  .dmanum = 0,
+  .dmachan = 1,
+  .dmadevid_tx = 19,
+  .dmadevid_rx = 18,
 #else
   .irq = -1,
   .irq_err = -1,

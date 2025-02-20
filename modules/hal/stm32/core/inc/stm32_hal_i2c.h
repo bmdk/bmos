@@ -35,6 +35,10 @@ typedef struct {
   int irq;
   int irq_err;
   i2c_timing_t *timing;
+  signed char dmanum;
+  signed char dmachan;
+  signed char dmadevid_tx;
+  signed char dmadevid_rx;
 } i2c_dev_t;
 
 void i2c_init(i2c_dev_t *i2c);
