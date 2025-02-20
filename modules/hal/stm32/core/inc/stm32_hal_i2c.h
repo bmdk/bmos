@@ -39,6 +39,7 @@ typedef struct {
   signed char dmachan;
   signed char dmadevid_tx;
   signed char dmadevid_rx;
+  signed char dmairq;
 } i2c_dev_t;
 
 void i2c_init(i2c_dev_t *i2c);

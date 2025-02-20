@@ -90,6 +90,19 @@ typedef struct _stm32_i2c_t {
 
 #define I2C_MAX_BYTES 255
 
+#if I2C_DMA_IRQ
+static void i2c_dma_irq(void *data)
+{
+  i2c_dev_t *i2cdev = (i2c_dev_t *)data;
+
+  dma_irq_ack(i2cdev->dmanum, i2cdev->dmachan);
+
+#if 0
+  debug_printf("I2C DMA ISR\n");
+#endif
+}
+#endif
+
 void i2c_dma_init(i2c_dev_t *i2cdev, void *buf, unsigned int len, int tx)
 {
   stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
@@ -254,6 +267,9 @@ void i2c_init(i2c_dev_t *i2cdev)
 #endif
 #if 0
     i2c->cr1 |= I2C_CR1_TXIE;
+#endif
+#if I2C_DMA_IRQ
+    irq_register("i2c_dma", i2c_dma_irq, i2cdev, i2cdev->dmairq);
 #endif
   }
 

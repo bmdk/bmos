@@ -69,12 +69,15 @@ static i2c_timing_t i2c_timing[] = {
 static i2c_dev_t i2c_dev = {
   .base = (void *)I2C_BASE,
 #if STM32_U5XX
+#define STM32_U5XX_I2C_DMACHAN 1
+#define STM32_U5XX_I2C_DMAIRQ (STM32_U5XX_I2C_DMACHAN + 29)
   .irq = 88,
   .irq_err = 89,
   .dmanum = 0,
   .dmachan = 1,
   .dmadevid_tx = 19,
   .dmadevid_rx = 18,
+  .dmairq = STM32_U5XX_I2C_DMAIRQ,
 #else
   .irq = -1,
   .irq_err = -1,
