@@ -381,7 +381,7 @@ static int i2c_cmd(int argc, char *argv[])
   char buf[16];
   unsigned int addr, reg;
   int err, len, i;
-  unsigned char wbuf;
+  unsigned char wbuf[2];
 
   if (argc < 2)
     return -1;
@@ -426,9 +426,10 @@ static int i2c_cmd(int argc, char *argv[])
     if (len > sizeof(buf))
       len = sizeof(buf);
 
-    wbuf = reg & 0xff;
+    wbuf[0] = (reg >> 8) & 0xff;
+    wbuf[1] = reg & 0xff;
 
-    err = i2c_write_read_buf(&i2c_dev, addr, &wbuf, 1, buf, len);
+    err = i2c_write_read_buf(&i2c_dev, addr, wbuf, 2, buf, len);
     if (err != 0)
       xprintf("error %d\n", err);
 
@@ -470,7 +471,7 @@ static int i2c_cmd(int argc, char *argv[])
   case 'x':
     /* read distance from GP2Y0E03 - needs 10k pullup or oled display */
     addr = 0x40;
-    wbuf = 0x5e;
+    wbuf[0] = 0x5e;
 
     err = i2c_write_read_buf(&i2c_dev, addr, &wbuf, 1, buf, 2);
     if (err != 0)
