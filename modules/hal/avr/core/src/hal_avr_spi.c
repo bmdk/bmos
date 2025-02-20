@@ -68,12 +68,12 @@ int spi_write_read_buf(gpio_handle_t cs,
   rbuf = rbufp;
 
   for (i = 0; i < len; i++) {
-    while((SPSR & SPSR_SPIF) != 0)
+    while ((SPSR & SPSR_SPIF) != 0)
       ;
 
     SPDR = *wbuf++;
 
-    while((SPSR & SPSR_SPIF) == 0)
+    while ((SPSR & SPSR_SPIF) == 0)
       ;
 
     *rbuf++ = SPDR;
