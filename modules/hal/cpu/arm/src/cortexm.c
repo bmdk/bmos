@@ -75,7 +75,7 @@ static void fp_enable()
 
   /* disable automatic floating point context saving
      - only one thread has access to floating point */
-  FPC->fpccr &= ~(FPCCR_ASPEN|FPCCR_LSPEN);
+  FPC->fpccr &= ~(FPCCR_ASPEN | FPCCR_LSPEN);
 }
 #endif
 
