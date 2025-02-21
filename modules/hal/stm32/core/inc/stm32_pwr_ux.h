@@ -24,11 +24,15 @@
 
 /* validate vddio2 and enable PG2-15 */
 void vddio2_en(int on);
+/* enable analog power */
+void vdda_en(int on);
 /* EPOD control */
 void stm32_pwr_boost(int on);
 
 #define STM32_PWR_POWER_LDO 0
 #define STM32_PWR_POWER_SMPS 1
 void stm32_pwr_power(unsigned int val);
+
+void syscfg_boost_en(int on);
 
 #endif

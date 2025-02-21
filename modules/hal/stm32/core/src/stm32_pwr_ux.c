@@ -67,9 +67,26 @@ typedef struct {
 #define SYSCFG_BASE 0x46000400
 #define SYSCFG ((stm32_syscfg_uxxx_t *)SYSCFG_BASE)
 
+void syscfg_boost_en(int on)
+{
+  if (on)
+    SYSCFG->cfgr1 |= BIT(8);
+  else
+    SYSCFG->cfgr1 &= ~BIT(8);
+}
+
 #define PWR_DBPR_DBP BIT(0)
 
 #define PWR_SVMCR_IO2SV BIT(29)
+#define PWR_SVMCR_ANA BIT(30)
+
+void vdda_en(int on)
+{
+  if (on)
+    PWR->svmcr |= PWR_SVMCR_ANA;
+  else
+    PWR->svmcr &= ~PWR_SVMCR_ANA;
+}
 
 void vddio2_en(int on)
 {
