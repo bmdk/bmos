@@ -46,7 +46,7 @@ typedef struct {
   reg32_t cfgr;
   reg32_t cfgr2;
   reg32_t smpr[2];
-  reg32_t pad0;
+  reg32_t pcsel;
   reg32_t tr[3];
   reg32_t pad1;
   reg32_t sqr[4];
@@ -63,7 +63,8 @@ typedef struct {
   reg32_t pad6[2];
   reg32_t difsel;
   reg32_t calfact;
-  reg32_t pad7[4];
+  reg32_t calfact2;
+  reg32_t pad7[3];
   reg32_t or;
 } stm32_adc_t;
 
@@ -90,6 +91,11 @@ typedef struct {
 /* clock range 1.5 - 75MHz
    250MHz / 4 = 62.5 MHz */
 #define ADC_CKMODE 3
+#define ADC1_IRQ 37
+#elif STM32_U5XX
+#define ADC_BASE 0x42028000
+#define ADC_COM_BASE (ADC_BASE + 0x300)
+#define ADC_CKMODE 0
 #define ADC1_IRQ 37
 #else
 #error Define ADC_BASE for this platform
@@ -123,6 +129,7 @@ typedef struct {
 #define CFGR_CONT BIT(13)
 #define CFGR_DISCEN BIT(16)
 
+#define ISR_LDORDY BIT(12)
 #define ISR_OVR BIT(4)
 #define ISR_EOS BIT(3)
 #define ISR_EOC BIT(2)
@@ -153,7 +160,11 @@ typedef struct {
 #define CCR_PRESC_256 11
 #define CCR_CKMODE(_m_) (((_m_) & 0x3) << 16)
 
+#if STM32_U5XX
+#define ADC_PRESC CCR_PRESC_4
+#else
 #define ADC_PRESC CCR_PRESC_1
+#endif
 
 typedef struct {
   unsigned short res[16];
@@ -274,6 +285,20 @@ void stm32_adc_trig_ev(int event)
   _stm32_adc_trig_ev(ADC, event);
 }
 
+#if STM32_U5XX
+#define ADC_RES_BIT14 0
+#define ADC_RES_BIT12 1
+#define ADC_RES_BIT10 2
+#define ADC_RES_BIT8 3
+#else
+#define ADC_RES_BIT12 0
+#define ADC_RES_BIT10 1
+#define ADC_RES_BIT8 2
+#define ADC_RES_BIT6 3
+#endif
+
+#define ADC_RES_DEFAULT ADC_RES_BIT12
+
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
                             unsigned int cnt, conv_done_f *conv_done)
 {
@@ -296,6 +321,8 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->cr &= ~CR_ADCALDIF;
   a->cr |= CR_ADCAL;
 
+  reg_set_field(&a->cfgr, 2, 2, ADC_RES_DEFAULT);
+
   while (a->cr & CR_ADCAL)
     ;
 
@@ -309,6 +336,10 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
     if (reg_seq[i] == 0) {
       a->or |= BIT(0); /* enable IN0 (via OP0) */
     }
+#endif
+
+#if STM32_U5XX
+    a->pcsel |= BIT(reg_seq[i]);
 #endif
 
     reg_set_field(&a->sqr[reg], 5, n * 6, reg_seq[i]);
