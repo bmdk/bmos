@@ -118,32 +118,32 @@ static void i2c_dma_init(i2c_dev_t *i2cdev, void *buf,
 
   dma_en(i2cdev->dmanum, i2cdev->dmachan, 0);
 
+  attr.ssiz = DMA_SIZ_1;
+  attr.dsiz = DMA_SIZ_1;
+  attr.prio = 0;
+#if I2C_DMA_IRQ
+  attr.irq = 1;
+#endif
+
   if (tx) {
     dmadevid = i2cdev->dmadevid_tx;
     src = buf;
     dst = (void *)&i2c->txdr;
-  } else {
-    dmadevid = i2cdev->dmadevid_rx;
-    src = (void *)&i2c->rxdr;
-    dst = buf;
-  }
 
-  dma_set_chan(i2cdev->dmanum, i2cdev->dmachan, dmadevid);
-
-  attr.ssiz = DMA_SIZ_1;
-  attr.dsiz = DMA_SIZ_1;
-  attr.prio = 0;
-  if (tx) {
     attr.dir = DMA_DIR_TO;
     attr.sinc = 1;
     attr.dinc = 0;
   } else {
+    dmadevid = i2cdev->dmadevid_rx;
+    src = (void *)&i2c->rxdr;
+    dst = buf;
+
     attr.dir = DMA_DIR_FROM;
     attr.sinc = 0;
     attr.dinc = 1;
   }
-  attr.irq = 1;
 
+  dma_set_chan(i2cdev->dmanum, i2cdev->dmachan, dmadevid);
   dma_trans(i2cdev->dmanum, i2cdev->dmachan, src, dst, len, attr);
   dma_en(i2cdev->dmanum, i2cdev->dmachan, 1);
 }
