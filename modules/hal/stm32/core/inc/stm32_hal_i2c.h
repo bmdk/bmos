@@ -22,6 +22,10 @@
 #ifndef STM32_HAL_I2C_H
 #define STM32_HAL_I2C_H
 
+#if BMOS
+#include "bmos_sem.h"
+#endif
+
 typedef struct {
   unsigned char presc;
   unsigned char scldel;
@@ -31,10 +35,14 @@ typedef struct {
 } i2c_timing_t;
 
 typedef struct {
+  char *name;
   void *base;
   int irq;
   int irq_err;
   i2c_timing_t *timing;
+#if BMOS
+  bmos_sem_t *sem;
+#endif
   signed char dmanum;
   signed char dmachan;
   signed char dmadevid_tx;

@@ -28,6 +28,9 @@
 #include "hal_int.h"
 #include "hal_time.h"
 #include "hal_dma_if.h"
+#if BMOS
+#include "bmos_sem.h"
+#endif
 
 #include "stm32_hal_i2c.h"
 
@@ -189,9 +192,11 @@ static void decode_isr(unsigned int isr)
 
 static void i2c_irq(void *p)
 {
-  stm32_i2c_t *i2c = (stm32_i2c_t *)p;
+  i2c_dev_t *i2cdev = (i2c_dev_t *)p;
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
   unsigned int isr = i2c->isr;
   i2c_irq_data_t *id = &irq_data;
+  int wait = 1;
 
 #if DEBUG
   decode_isr(isr);
@@ -200,13 +205,13 @@ static void i2c_irq(void *p)
   if (isr & I2C_ISR_NACKF) {
     if (!id->read)
       i2c->cr2 |= I2C_CR2_STOP;
-    id->wait = -1;
+    wait = -1;
   }
 
   if (isr & I2C_ISR_TC) {
     i2c->cr2 |= I2C_CR2_STOP;
-    if (id->wait > 0)
-      id->wait = 0;
+    if (wait > 0)
+      wait = 0;
   }
 
 #if !I2C_USE_DMA
@@ -214,8 +219,8 @@ static void i2c_irq(void *p)
     unsigned char ch = i2c->rxdr;
     if (id->bufc < id->buflen)
       id->buf[id->bufc++] = ch;
-    if (id->bufc >= id->buflen && id->wait > 0)
-      id->wait = 0;
+    if (id->bufc >= id->buflen && wait > 0)
+      wait = 0;
   }
 
   if (!id->read && (isr & I2C_ISR_TXE)) {
@@ -227,6 +232,14 @@ static void i2c_irq(void *p)
 #endif
 
   i2c->icr = (isr & I2C_ICR_MSK);
+
+#if BMOS
+  /* ensure we only signal on the semaphore once */
+  if (id->wait == 1 && wait < 1) {
+    id->wait = wait;
+    sem_post(i2cdev->sem);
+  }
+#endif
 }
 
 static void i2c_err_irq(void *p)
@@ -254,6 +267,10 @@ void i2c_init(i2c_dev_t *i2cdev)
 {
   stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
   i2c_timing_t *t = &i2cdev->timing[0];
+  char *name = "i2c";
+
+  if (i2cdev->name)
+    name = i2cdev->name;
 
   i2c->cr1 &= ~I2C_CR1_PE;
 
@@ -265,7 +282,7 @@ void i2c_init(i2c_dev_t *i2cdev)
   if (i2cdev->irq >= 0) {
     int irq_err = i2cdev->irq_err;
 
-    irq_register("i2c", i2c_irq, i2c, i2cdev->irq);
+    irq_register(name, i2c_irq, i2cdev, i2cdev->irq);
 
     if (irq_err < 0)
       irq_err = i2cdev->irq + 1;
@@ -274,14 +291,16 @@ void i2c_init(i2c_dev_t *i2cdev)
 
     i2c->cr1 |= I2C_CR1_ERRIE;
     i2c->cr1 |= (I2C_CR1_NACKIE | I2C_CR1_TCIE);
-    i2c->cr1 |= I2C_CR1_STOPIE;
 #if I2C_USE_DMA
-    i2c->cr1 |= I2C_CR1_RXDMAEN|I2C_CR1_TXDMAEN;
+    i2c->cr1 |= I2C_CR1_RXDMAEN | I2C_CR1_TXDMAEN;
 #else
-    i2c->cr1 |= I2C_CR1_RXIE|I2C_CR1_TXIE;
+    i2c->cr1 |= I2C_CR1_RXIE | I2C_CR1_TXIE;
 #endif
 #if I2C_DMA_IRQ
     irq_register("i2c_dma", i2c_dma_irq, i2cdev, i2cdev->dmairq);
+#endif
+#if BMOS
+    i2cdev->sem = sem_create(name, 0);
 #endif
   }
 
@@ -314,8 +333,12 @@ static int _i2c_write_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   i2c->cr2 = I2C_CR2_NBYTES(buflen) | I2C_CR2_SADD(addr << 1);
   i2c->cr2 |= I2C_CR2_START;
 
+#if BMOS
+  sem_wait(i2cdev->sem);
+#else
   while (id->wait > 0)
     ;
+#endif
 
   if (id->wait < 0)
     return -1;
@@ -348,8 +371,12 @@ static int _i2c_read_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
 
   i2c->cr2 |= I2C_CR2_START;
 
+#if BMOS
+  sem_wait(i2cdev->sem);
+#else
   while (id->wait > 0)
     ;
+#endif
 
   memcpy(bufp, id->buf, buflen);
 

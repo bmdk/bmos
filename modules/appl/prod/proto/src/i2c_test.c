@@ -73,6 +73,7 @@ static i2c_dev_t i2c_dev = {
 #if STM32_U5XX
 #define STM32_U5XX_I2C_DMACHAN 1
 #define STM32_U5XX_I2C_DMAIRQ (STM32_U5XX_I2C_DMACHAN + 29)
+  .name        = "i2c3",
   .irq         = 88,
   .irq_err     = 89,
   .dmanum      = 0,
