@@ -153,7 +153,7 @@ static void i2c_dma_init(i2c_dev_t *i2cdev, void *buf,
 #endif
 
 typedef struct {
-  unsigned char buf[I2C_MAX_BYTES];
+  unsigned char *buf;
   unsigned char read;
   unsigned char buflen;
 #if !I2C_USE_DMA
@@ -316,7 +316,7 @@ static int _i2c_write_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   if (buflen > I2C_MAX_BYTES)
     return -1;
 
-  memcpy(id->buf, bufp, buflen);
+  id->buf = (void *)bufp;
   id->buflen = buflen;
 #if !I2C_USE_DMA
   id->bufc = 0;
@@ -355,19 +355,20 @@ static int _i2c_read_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   if (buflen == 0)
     return -1;
 
-#if I2C_USE_DMA
-  i2c_dma_init(i2cdev, id->buf, buflen, 0);
-#endif
-
-  i2c->cr2 = /* I2C_CR2_AUTOEND | */ I2C_CR2_NBYTES(buflen) | I2C_CR2_RD_WRN |
+  i2c->cr2 = I2C_CR2_NBYTES(buflen) | I2C_CR2_RD_WRN |
              I2C_CR2_SADD(addr << 1);
 
+  id->buf = bufp;
   id->buflen = buflen;
 #if !I2C_USE_DMA
   id->bufc = 0;
 #endif
   id->wait = 1;
   id->read = 1;
+
+#if I2C_USE_DMA
+  i2c_dma_init(i2cdev, id->buf, buflen, 0);
+#endif
 
   i2c->cr2 |= I2C_CR2_START;
 
@@ -377,8 +378,6 @@ static int _i2c_read_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   while (id->wait > 0)
     ;
 #endif
-
-  memcpy(bufp, id->buf, buflen);
 
   return 0;
 }
