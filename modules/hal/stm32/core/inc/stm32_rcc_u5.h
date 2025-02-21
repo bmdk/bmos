@@ -103,4 +103,12 @@ void set_fdcansel(unsigned int sel);
 #define I2C3SEL_MSIK 3
 void set_i2c3sel(unsigned int sel);
 
+#define ADCDACSEL_HCLK 0
+#define ADCDACSEL_SYSCLK 1
+#define ADCDACSEL_PLL2R 2
+#define ADCDACSEL_HSE 3
+#define ADCDACSEL_HSI 4
+#define ADCDACSEL_MSIK 5
+void set_adcdacsel(unsigned int sel);
+
 #endif

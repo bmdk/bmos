@@ -96,6 +96,7 @@ void pin_init()
   enable_apb2(11); /* TIM 1 */
   enable_apb1(0);  /* TIM 2 */
   enable_apb3(21); /* RTC APB Clock */
+  enable_ahb2(10); /* ADC */
 
   /* GPDMA */
   enable_ahb1(0);
@@ -137,16 +138,19 @@ void hal_board_init()
 
   led_init(leds, ARRSIZ(leds));
 
+  stm32_pwr_power(STM32_PWR_POWER_SMPS);
+
   /* should be done in pll control */
   stm32_pwr_vos(3);
   stm32_pwr_boost(1);
 
   clock_init(&pll_params);
 
-  stm32_pwr_power(STM32_PWR_POWER_SMPS);
-
   set_fdcansel(FDCANSEL_PLL1Q);
   set_i2c3sel(I2C3SEL_PCLK3);
+
+  vdda_en(1);
+  set_adcdacsel(ADCDACSEL_HCLK);
 
 #if APPL
   backup_domain_protect(0);

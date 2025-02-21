@@ -78,6 +78,18 @@ unsigned char adc_seq[] = { 17, 16 };
 #define TS_CAL2_TEMP 130
 #define VREFINT_CAL *(unsigned short *)0x08FFF810
 #define VREFINT_V 3300
+#elif STM32_U5XX
+unsigned char adc_seq[] = { 0, 19 };
+
+/* convert 14 bit values to 12 bit for the moment */
+#define TS_CAL1 ((*(unsigned short *)0x0BFA0710) >> 2)
+#define TS_CAL1_TEMP 30
+#define TS_CAL2 ((*(unsigned short *)0x0BFA0742) >> 2)
+#define TS_CAL2_TEMP 130
+#define VREFINT_CAL_BASE 0x0BFA07A5
+#define VREFINT_CAL (((((unsigned short)(*(unsigned char *)(VREFINT_CAL_BASE + 1))) << 8) + \
+                      (*(unsigned char *)(VREFINT_CAL_BASE))) >> 2)
+#define VREFINT_V 3000
 #elif STM32_C0XX
 unsigned char adc_seq[] = { 10, 9 };
 

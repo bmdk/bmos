@@ -368,6 +368,8 @@ XCFLAGS.u545n += -DSTM32_U545 -DSTM32_U5XX
 CPU.u545n = cortex-m33
 STACK_END.u545n = 0x20040000
 XCFLAGS.u545n += -DDISP
+XCFLAGS.u545n += -DI2C_DEMO
+XCFLAGS.u545n += -DCONFIG_ENABLE_ADC
 
 XCFLAGS.wb55n += -DSTM32_WBXX -DSTM32_WB55
 STACK_END.wb55n = 0x20030000
@@ -819,6 +821,7 @@ FILES.u5xx += stm32_fdcan.o
 FILES.u5xx += can_test.o
 FILES.u5xx += stm32_flash.o
 FILES.u5xx += stm32_hal_i2c.o
+FILES.u5xx += stm32_hal_adc.o
 
 FILES.u575n += $(FILES.u5xx)
 FILES.u545n += $(FILES.u5xx)
@@ -826,6 +829,7 @@ FILES.u545n += i2c_test.o
 FILES.u545n += fb.o
 FILES.u545n += font1.o
 FILES.u545n += ssd1306_fonts.o
+FILES.u545n += adc.o
 
 FILES.wb55n += $(FILES.wbxx)
 FILES.wb55n += stm32_hal_rtc.o

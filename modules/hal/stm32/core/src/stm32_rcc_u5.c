@@ -357,3 +357,8 @@ void set_i2c3sel(unsigned int sel)
 {
   reg_set_field(&RCC->ccipr[2], 2, 6, sel);
 }
+
+void set_adcdacsel(unsigned int sel)
+{
+  reg_set_field(&RCC->ccipr[2], 3, 12, sel);
+}
