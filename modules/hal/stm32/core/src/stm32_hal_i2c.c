@@ -28,15 +28,21 @@
 #include "hal_int.h"
 #include "hal_time.h"
 #include "hal_dma_if.h"
+#include "fast_log.h"
 #if BMOS
 #include "bmos_sem.h"
+#include "bmos_task.h"
 #endif
 
 #include "stm32_hal_i2c.h"
 
 #define DEBUG 0
+#if STM32_U5XX
 #define I2C_USE_DMA 1
 #define I2C_DMA_IRQ 0
+#else
+#define I2C_DMA_IRQ 0
+#endif
 
 typedef struct _stm32_i2c_t {
   reg32_t cr1;
@@ -44,13 +50,19 @@ typedef struct _stm32_i2c_t {
   reg32_t oar1;
   reg32_t oar2;
   reg32_t timingr;
-  reg32_t timoutr;
+  reg32_t timeoutr;
   reg32_t isr;
   reg32_t icr;
   reg32_t pecr;
   reg32_t rxdr;
   reg32_t txdr;
 } stm32_i2c_t;
+
+#define I2C_TIMEOUTR_TIMEOUTA(val) ((val) & 0xfff)
+#define I2C_TIMEOUTR_TIDLE BIT(12)
+#define I2C_TIMEOUTR_TIMOUTEN BIT(15)
+#define I2C_TIMEOUTR_TIMEOUTB(val) (((val) & 0xfff) << 16)
+#define I2C_TIMEOUTR_TEXTEN BIT(31)
 
 #define I2C_CR1_PE BIT(0)
 #define I2C_CR1_TXIE BIT(1)
@@ -83,6 +95,14 @@ typedef struct _stm32_i2c_t {
 #define I2C_TIMINGR_SCLL(n) ((0xffUL & (n)) << 0)
 
 #define I2C_ISR_BUSY BIT(15)
+
+#define I2C_ISR_ALERT BIT(13)
+#define I2C_ISR_TIMEOUT BIT(12)
+#define I2C_ISR_PECERR BIT(11)
+#define I2C_ISR_OVR BIT(10)
+#define I2C_ISR_ARLO BIT(9)
+#define I2C_ISR_BERR BIT(8)
+#define I2C_ISR_TCR BIT(7)
 #define I2C_ISR_TC BIT(6)
 #define I2C_ISR_STOPF BIT(5)
 #define I2C_ISR_NACKF BIT(4)
@@ -91,7 +111,7 @@ typedef struct _stm32_i2c_t {
 #define I2C_ISR_TXIS BIT(1)
 #define I2C_ISR_TXE BIT(0)
 
-#define I2C_ICR_MSK (I2C_ISR_ADDRCF | I2C_ISR_NACKF | I2C_ISR_STOPF)
+#define I2C_ICR_MSK (I2C_ISR_ADDRCF)
 
 #define I2C_ISR_ERR_MSK (0x00003f00)
 
@@ -165,6 +185,29 @@ typedef struct {
 static i2c_irq_data_t irq_data;
 
 #if DEBUG
+static void decode_isr_err(unsigned int isr)
+{
+  if (isr & I2C_ISR_ALERT)
+    debug_printf("ALERT\n");
+
+  if (isr & I2C_ISR_TIMEOUT)
+    debug_printf("TIMEOUT\n");
+
+  if (isr & I2C_ISR_PECERR)
+    debug_printf("PECERR\n");
+
+  if (isr & I2C_ISR_OVR)
+    debug_printf("OVR\n");
+
+  if (isr & I2C_ISR_ARLO)
+    debug_printf("ARLO\n");
+
+  if (isr & I2C_ISR_BERR)
+    debug_printf("BERR\n");
+}
+#endif
+
+#if DEBUG
 static void decode_isr(unsigned int isr)
 {
   debug_printf("I2C ISR %x\n", isr);
@@ -202,6 +245,10 @@ static void i2c_irq(void *p)
   decode_isr(isr);
 #endif
 
+  if (isr & I2C_ISR_STOPF) {
+    FAST_LOG('C', "i2c_irq STOPF\n", 0, 0);
+  }
+
   if (isr & I2C_ISR_NACKF) {
     if (!id->read)
       i2c->cr2 |= I2C_CR2_STOP;
@@ -212,6 +259,7 @@ static void i2c_irq(void *p)
     i2c->cr2 |= I2C_CR2_STOP;
     if (wait > 0)
       wait = 0;
+    i2c->timeoutr &= ~I2C_TIMEOUTR_TIMOUTEN;
   }
 
 #if !I2C_USE_DMA
@@ -231,7 +279,7 @@ static void i2c_irq(void *p)
   }
 #endif
 
-  i2c->icr = (isr & I2C_ICR_MSK);
+  i2c->icr = (isr & ~I2C_ISR_ERR_MSK);
 
 #if BMOS
   /* ensure we only signal on the semaphore once */
@@ -240,16 +288,6 @@ static void i2c_irq(void *p)
     sem_post(i2cdev->sem);
   }
 #endif
-}
-
-static void i2c_err_irq(void *p)
-{
-  stm32_i2c_t *i2c = (stm32_i2c_t *)p;
-  unsigned int isr = i2c->isr & I2C_ISR_ERR_MSK;
-
-  debug_printf("i2c err %x\n", isr);
-
-  i2c->icr = isr;
 }
 
 #if 0
@@ -262,6 +300,34 @@ static void i2c_restart(stm32_i2c_t *i2c)
   i2c->cr1 |= I2C_CR1_PE;
 }
 #endif
+
+static void i2c_err_irq(void *p)
+{
+  i2c_dev_t *i2cdev = (i2c_dev_t *)p;
+  stm32_i2c_t *i2c = (stm32_i2c_t *)i2cdev->base;
+  unsigned int isr = i2c->isr;
+#if 0
+  i2c_irq_data_t *id = &irq_data;
+#endif
+
+#if DEBUG
+  decode_isr_err(isr);
+#endif
+
+  FAST_LOG('C', "i2c_err_irq %02x\n", isr, 0);
+
+  i2c->icr = isr & I2C_ISR_ERR_MSK;
+
+#if 0
+#if BMOS
+  /* ensure we only signal on the semaphore once */
+  if (id->wait == 1) {
+    id->wait = -2;
+    sem_post(i2cdev->sem);
+  }
+#endif
+#endif
+}
 
 void i2c_init(i2c_dev_t *i2cdev)
 {
@@ -279,6 +345,8 @@ void i2c_init(i2c_dev_t *i2cdev)
                  I2C_TIMINGR_SDADEL(t->sdadel) | \
                  I2C_TIMINGR_SCLH(t->sclh) | I2C_TIMINGR_SCLL(t->scll);
 
+  i2c->timeoutr = I2C_TIMEOUTR_TIMEOUTA(0xfff);
+
   if (i2cdev->irq >= 0) {
     int irq_err = i2cdev->irq_err;
 
@@ -287,10 +355,10 @@ void i2c_init(i2c_dev_t *i2cdev)
     if (irq_err < 0)
       irq_err = i2cdev->irq + 1;
 
-    irq_register("i2c_err", i2c_err_irq, i2c, irq_err);
+    irq_register("i2c_err", i2c_err_irq, i2cdev, irq_err);
 
     i2c->cr1 |= I2C_CR1_ERRIE;
-    i2c->cr1 |= (I2C_CR1_NACKIE | I2C_CR1_TCIE);
+    i2c->cr1 |= (/* I2C_CR1_STOPIE | */ I2C_CR1_NACKIE | I2C_CR1_TCIE);
 #if I2C_USE_DMA
     i2c->cr1 |= I2C_CR1_RXDMAEN | I2C_CR1_TXDMAEN;
 #else
@@ -316,6 +384,14 @@ static int _i2c_write_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   if (buflen > I2C_MAX_BYTES)
     return -1;
 
+  /* wait for stop signalling to end */
+  while((i2c->cr2 & I2C_CR2_STOP))
+#if BMOS
+    task_delay(1);
+#else
+    ;
+#endif
+
   id->buf = (void *)bufp;
   id->buflen = buflen;
 #if !I2C_USE_DMA
@@ -328,8 +404,11 @@ static int _i2c_write_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   i2c_dma_init(i2cdev, id->buf, buflen, 1);
 #endif
 
-  /* flush tx buffer */
-  i2c->isr = I2C_ISR_TXE | I2C_ISR_TXIS;
+#if 0
+  i2c->timeoutr = I2C_TIMEOUTR_TIMOUTEN | I2C_TIMEOUTR_TIDLE | \
+                  I2C_TIMEOUTR_TIMEOUTA(0xfff);
+#endif
+
   i2c->cr2 = I2C_CR2_NBYTES(buflen) | I2C_CR2_SADD(addr << 1);
   i2c->cr2 |= I2C_CR2_START;
 
@@ -355,6 +434,11 @@ static int _i2c_read_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   if (buflen == 0)
     return -1;
 
+#if 0
+  i2c->timeoutr = I2C_TIMEOUTR_TIMOUTEN | I2C_TIMEOUTR_TIDLE | \
+                  I2C_TIMEOUTR_TIMEOUTA(0xfff);
+#endif
+
   i2c->cr2 = I2C_CR2_NBYTES(buflen) | I2C_CR2_RD_WRN |
              I2C_CR2_SADD(addr << 1);
 
@@ -378,6 +462,8 @@ static int _i2c_read_buf_irq(i2c_dev_t *i2cdev, unsigned int addr,
   while (id->wait > 0)
     ;
 #endif
+  if (id->wait < 0)
+    return -1;
 
   return 0;
 }
@@ -419,6 +505,10 @@ static int _i2c_write_buf(stm32_i2c_t *i2c, unsigned int addr,
     i2c->txdr = *buf++;
     buflen--;
   }
+
+  /* wait for empty */
+  while ((i2c->isr & I2C_ISR_TXE) == 0)
+    ;
 
   return 0;
 }
