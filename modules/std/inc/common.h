@@ -27,13 +27,24 @@
 
 #define ARRSIZ(arr) (sizeof(arr) / sizeof(arr[0]))
 
-#define SWAP32(_x_) ((((unsigned int)(_x_) << 24) & 0xff000000U) | \
-                     (((unsigned int)(_x_) <<  8) & 0x00ff0000U) | \
-                     (((unsigned int)(_x_) >>  8) & 0x0000ff00U) | \
-                     (((unsigned int)(_x_) >> 24) & 0x000000ffU))
+#define FFMASK(_n_) (0xffULL << ((_n_) << 3))
 
-#define SWAP16(_x_) ((((unsigned short)_x_ <<  8) & 0xff00) | \
-                     (((unsigned short)_x_ >>  8) & 0x00ff))
+#define SWAP64(_v_) ((((uint64_t)(_v_) >> 56) & FFMASK(0)) | \
+                     (((uint64_t)(_v_) >> 40) & FFMASK(1)) | \
+                     (((uint64_t)(_v_) >> 24) & FFMASK(2)) | \
+                     (((uint64_t)(_v_) >> 8)  & FFMASK(3)) | \
+                     (((uint64_t)(_v_) << 8)  & FFMASK(4)) | \
+                     (((uint64_t)(_v_) << 24) & FFMASK(5)) | \
+                     (((uint64_t)(_v_) << 40) & FFMASK(6)) | \
+                     (((uint64_t)(_v_) << 56) & FFMASK(7)))
+
+#define SWAP32(_v_) ((((unsigned int)(_v_) << 24) & FFMASK(3)) | \
+                     (((unsigned int)(_v_) <<  8) & FFMASK(2)) | \
+                     (((unsigned int)(_v_) >>  8) & FFMASK(1)) | \
+                     (((unsigned int)(_v_) >> 24) & FFMASK(0)))
+
+#define SWAP16(_v_) ((((unsigned short)(_v_) <<  8) & FFMASK(1)) | \
+                     (((unsigned short)(_v_) >>  8) & FFMASK(0)))
 
 #define ALIGN(_num_, _n_) (((_num_) + (1U << (_n_)) - 1) & ~((1U << (_n_)) - 1))
 
