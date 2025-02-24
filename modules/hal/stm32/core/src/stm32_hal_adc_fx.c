@@ -196,7 +196,7 @@ static void adc_ext_sel(stm32_adc_t *a, unsigned int sel)
 }
 
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
-                            unsigned int cnt)
+                            unsigned int cnt, unsigned int rate)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
 
@@ -230,7 +230,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   for (i = 0; i < cnt; i++) {
     adc_seq(a, i, reg_seq[i]);
     /* 3 + 12 clocks */
-    adc_srate(a, reg_seq[i], 0);
+    adc_srate(a, reg_seq[i], rate);
   }
 
   reg_set_field(&a->sqr[0], 4, 20, cnt - 1);
@@ -265,22 +265,27 @@ static void _stm32_adc_dma_init(stm32_adc_t *a, int circ,
   dma_en(DMA_NUM, DMA_CHAN, 1);
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+void stm32_adc_init(unsigned int inst,
+                    unsigned char *reg_seq, unsigned int cnt, int rate,
                     conv_done_f *conv_done)
 {
+  XASSERT(inst == 0);
   XASSERT(cnt <= ADC_DMA_LEN);
 
-  _stm32_adc_init(ADC_BASE, reg_seq, cnt);
+  _stm32_adc_init(ADC_BASE, reg_seq, cnt, rate);
   adc_data.tcount = cnt;
   adc_data.flags &= ~ADC_DATA_FLAGS_CONV_ACTIVE;
 }
 
-void stm32_adc_init_dma(unsigned char *reg_seq, unsigned int cnt,
+void stm32_adc_init_dma(unsigned int inst,
+                        unsigned char *reg_seq, unsigned int cnt, int rate,
                         void *buf, unsigned int buflen, conv_done_f *conv_done)
 {
   unsigned int compare[] = { 10 };
 
-  _stm32_adc_init(ADC_BASE, reg_seq, cnt);
+  XASSERT(inst == 0);
+
+  _stm32_adc_init(ADC_BASE, reg_seq, cnt, rate);
 
   adc_data.tcount = 0;
 
@@ -313,7 +318,8 @@ static int _stm32_adc_conv(void *base)
   return 0;
 }
 
-int stm32_adc_conv()
+int stm32_adc_conv(unsigned int inst)
 {
+  XASSERT(inst == 0);
   return _stm32_adc_conv(ADC_BASE);
 }

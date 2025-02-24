@@ -202,11 +202,11 @@ static void adc_conv_done(unsigned short *data, unsigned int count,
 
 static void adc_task(void *arg)
 {
-  stm32_adc_init(adc_seq, sizeof(adc_seq), adc_conv_done);
+  stm32_adc_init(0, adc_seq, sizeof(adc_seq), SAM_RATE_640_5, adc_conv_done);
 
   for (;;) {
     task_delay(2000);
-    stm32_adc_conv();
+    stm32_adc_conv(0);
   }
 }
 
@@ -227,7 +227,7 @@ static void adc_task_dma(void *arg)
 {
   for (;;) {
     task_delay(100);
-    stm32_adc_start();
+    stm32_adc_start(0);
   }
 }
 
@@ -244,7 +244,7 @@ static void adc_conv_done_dma(unsigned short *data, unsigned int count,
 void adc_init_dma()
 {
   debug_printf("dma_buf %p\n", dma_buf);
-  stm32_adc_init_dma(adc_seq, sizeof(adc_seq),
+  stm32_adc_init_dma(0, adc_seq, sizeof(adc_seq), SAM_RATE_640_5,
                      dma_buf, sizeof(dma_buf), adc_conv_done_dma);
 
   task_init(adc_task_dma, NULL, "adc", 2, 0, 194);

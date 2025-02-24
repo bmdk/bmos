@@ -28,6 +28,7 @@
 #include "shell.h"
 #include "stm32_hal.h"
 #include "stm32_hal_adc.h"
+#include "xassert.h"
 
 #define DMA_NUM 0
 #define DMA_CHAN 2
@@ -169,6 +170,7 @@ static void adc_seq(stm32_adc_t *a, unsigned int num, unsigned int chan)
 #endif
 
 static void _stm32_adc_init(void *base, unsigned char *reg_seq,
+                            unsigned int rate,
                             unsigned int cnt, conv_done_f *_conv_done)
 {
   stm32_adc_t *a = (stm32_adc_t *)base;
@@ -195,7 +197,7 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->cfgr1 &= ~REG_ADC_CFGR1_CHSELRMOD;
 #endif
 
-  reg_set_field(&a->smpr, 3, 0, 7);
+  reg_set_field(&a->smpr, 3, 0, rate);
 
 #if CHSELR_ALT
   if (cnt > 8)
@@ -239,10 +241,12 @@ static void _stm32_adc_init(void *base, unsigned char *reg_seq,
   a->ier = ADC_IRQ_EN_MSK;
 }
 
-void stm32_adc_init(unsigned char *reg_seq, unsigned int cnt,
+void stm32_adc_init(unsigned int inst,
+                    unsigned char *reg_seq, unsigned int cnt, int rate,
                     conv_done_f *_conv_done)
 {
-  _stm32_adc_init(ADC, reg_seq, cnt, _conv_done);
+  XASSERT(inst == 0);
+  _stm32_adc_init(ADC, reg_seq, cnt, rate, _conv_done);
 }
 
 static int _stm32_adc_conv(void *base)
@@ -263,7 +267,8 @@ static int _stm32_adc_conv(void *base)
   return 0;
 }
 
-int stm32_adc_conv()
+int stm32_adc_conv(unsigned int inst)
 {
+  XASSERT(inst == 0);
   return _stm32_adc_conv(ADC);
 }
