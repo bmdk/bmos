@@ -105,7 +105,7 @@ int cmd_reset(int argc, char *argv[])
 
 SHELL_CMD(reset, cmd_reset);
 
-
+#if 0
 #define BL_ADDR 0x8000000
 typedef void call(void);
 
@@ -129,3 +129,4 @@ int cmd_reboot(int argc, char *argv[])
 }
 
 SHELL_CMD(reboot, cmd_reboot);
+#endif
