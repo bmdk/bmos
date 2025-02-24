@@ -27,7 +27,7 @@
 #define CONFIG_IO_CHECK 1
 
 #if CONFIG_IO_CHECK
-#define __CHECK_PRINTF__ __attribute__ ((format (printf, 1, 2)))
+#define __CHECK_PRINTF__ __attribute__ ((format(printf, 1, 2)))
 #else
 #define __CHECK_PRINTF__
 #endif

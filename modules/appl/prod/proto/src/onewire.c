@@ -537,7 +537,8 @@ restart:
 
       crc = ow_crc_update(0, data, 8);
       if (crc != data[8])
-        xslog(LOG_ERR, "crc error %02x %02x %u\n", crc, data[8], hal_time_us());
+        xslog(LOG_ERR, "crc error %02x %02x %u\n", crc, data[8],
+              (unsigned int)hal_time_us());
       else {
         temp = ((int)(short)(((unsigned int)data[1] << 8) + data[0])) * 1000 /
                16;
