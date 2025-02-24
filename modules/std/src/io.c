@@ -107,10 +107,14 @@ void xputs(const char *str)
 #endif
 }
 
+#ifndef CONFIG_MAX_XPRINTF
+#define CONFIG_MAX_XPRINTF 64
+#endif
+
 int xvprintf(const char *fmt, va_list ap)
 {
   int r;
-  char buf[64];
+  char buf[CONFIG_MAX_XPRINTF];
 
   r = vsnprintf(buf, sizeof(buf), fmt, ap);
 
