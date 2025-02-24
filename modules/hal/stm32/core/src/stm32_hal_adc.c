@@ -222,11 +222,11 @@ static void adc_dma_irq(void *data)
     if (status & DMA_IRQ_STATUS_FULL) {
       adc_data.conv_done(adc_data.dma_bufh, adc_data.dma_buflen,
                          ADC_CONV_DONE_TYPE_FULL);
-      FAST_LOG('A', "adc dma full\n", 0, 0);
+      FAST_LOG('A', "adc dma full len=%d\n", adc_data.dma_buflen, 0);
     } else if (status & DMA_IRQ_STATUS_HALF) {
       adc_data.conv_done(adc_data.dma_buf, adc_data.dma_buflen,
                          ADC_CONV_DONE_TYPE_HALF);
-      FAST_LOG('A', "adc dma half\n", 0, 0);
+      FAST_LOG('A', "adc dma half len=%d\n", adc_data.dma_buflen, 0);
     }
   }
 }
