@@ -23,6 +23,7 @@
 #define COMMON_H
 
 #define BIT(_x_) (1UL << (_x_))
+#define WBIT(_x_) (1ULL << (_x_))
 
 #define ARRSIZ(arr) (sizeof(arr) / sizeof(arr[0]))
 

@@ -23,6 +23,7 @@
 #define HAL_COMMON_H
 
 #include "common.h"
+#include "stdint.h"
 
 static inline void reg_set_clear(
   volatile unsigned int *reg, unsigned int clear, unsigned int set)
@@ -55,6 +56,41 @@ static inline unsigned int reg_get_field(
   volatile unsigned int *reg, unsigned int width, unsigned int pos)
 {
   unsigned int mask = (BIT(width) - 1);
+
+  return ((*reg) >> pos) & mask;
+}
+
+static inline void u64_set_clear(
+  uint64_t *reg, uint64_t clear, uint64_t set)
+{
+  uint64_t val;
+
+  val = *reg;
+  val &= ~clear;
+  val |= set;
+  *reg = val;
+}
+
+static inline void u64_set_clear_shift(
+  uint64_t *reg, uint64_t clear,
+  uint64_t set, unsigned int shift)
+{
+  u64_set_clear(reg, clear << shift, set << shift);
+}
+
+static inline void u64_set_field(
+  uint64_t *reg, unsigned int width,
+  unsigned int pos, uint64_t set)
+{
+  uint64_t mask = (WBIT(width) - 1);
+
+  u64_set_clear(reg, mask << pos, (set & mask) << pos);
+}
+
+static inline uint64_t u64_get_field(
+  const uint64_t *reg, unsigned int width, unsigned int pos)
+{
+  uint64_t mask = (WBIT(width) - 1);
 
   return ((*reg) >> pos) & mask;
 }
