@@ -96,4 +96,6 @@ typedef struct {
 
 #define SHELL_CMD(_name_, _fun_) _SHELL_CMD(_name_, _fun_, 0)
 
+void _run_command(int argc, char *argv[]);
+
 #endif

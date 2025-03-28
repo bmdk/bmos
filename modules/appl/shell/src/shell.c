@@ -24,18 +24,13 @@
 #include "common.h"
 #include "io.h"
 #include "shell.h"
+#include "ansiesc.h"
 
 extern cmd_ent_t cmd_list_start, cmd_list_end;
 
 #define MIN(a, b) ((a) < (b)) ? (a) : (b)
 
 #define CMD_LIST_LEN (&cmd_list_end - &cmd_list_start)
-
-#define ANSI_SEQ_INS "\033[1@"
-#define ANSI_SEQ_DEL "\033[1P"
-#define ANSI_SEQ_LEFT "\033[D"
-#define ANSI_SEQ_RIGHT "\033[C"
-#define ANSI_SEQ_ERASE "\033[2K"
 
 #define MAX_ARGV 8
 
@@ -184,17 +179,10 @@ cmd_ent_t *find_command(const char *name)
   return 0;
 }
 
-void run_command(char *cmdline)
+void _run_command(int argc, char *argv[])
 {
-  char *argv[MAX_ARGV];
-  int argc;
   int rc;
   cmd_ent_t *ent;
-
-  argc = strsplit(argv, MAX_ARGV, cmdline);
-
-  if (argc == 0)
-    return;
 
   ent = find_command(argv[0]);
 
@@ -212,6 +200,19 @@ void run_command(char *cmdline)
       xprintf("error %d\n", rc);
     }
   }
+}
+
+void run_command(char *cmdline)
+{
+  char *argv[MAX_ARGV];
+  int argc;
+
+  argc = strsplit(argv, MAX_ARGV, cmdline);
+
+  if (argc == 0)
+    return;
+
+  _run_command(argc, argv);
 }
 
 static void cmdline_del_char(cmdline_t *cmdline)

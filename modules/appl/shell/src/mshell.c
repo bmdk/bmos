@@ -9,6 +9,7 @@
 #include "hal_uart.h"
 #include "xassert.h"
 
+#include "ansiesc.h"
 #include "mshell.h"
 
 #ifndef CONFIG_SHELL_SRC_COUNT
@@ -172,3 +173,24 @@ bmos_queue_t *mshell_queue()
 {
   return shell_info.rxq;
 }
+
+int cmd_watch(int argc, char *argv[])
+{
+  if (argc < 2)
+    return -1;
+
+  for (;;) {
+    xputs(ANSI_SEQ_POS11);
+    xputs(ANSI_SEQ_CLEAR_SCREEN);
+    _run_command(argc - 1, &argv[1]);
+    int c = _xgetc(2000);
+    if (c == '\003')
+      break;
+  }
+
+  return 0;
+}
+
+SHELL_CMD_H(watch, cmd_watch,
+            "run a command periodically\n\n"
+            "watch [command]");
